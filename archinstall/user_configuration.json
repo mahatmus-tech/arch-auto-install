@@ -21,7 +21,7 @@
                         "fs_type": "fat32",
                         "mount_options": [],
                         "mountpoint": "/boot",
-                        "obj_id": "aaf4a9b4-cacd-467f-858a-23a15b8af1e5",
+                        "obj_id": "3d071cbd-89d8-4f42-94e5-f6e29e4060d0",
                         "size": {
                             "sector_size": {
                                 "unit": "B",
@@ -48,7 +48,7 @@
                         "fs_type": "ext4",
                         "mount_options": [],
                         "mountpoint": "/",
-                        "obj_id": "841dd8a1-02b2-485d-a19e-e67a68c8583b",
+                        "obj_id": "aa7818c3-68fc-4521-9d4c-d9bae49f83fa",
                         "size": {
                             "sector_size": {
                                 "unit": "B",
@@ -98,16 +98,16 @@
                 "https://mirrors.ic.unicamp.br/archlinux/$repo/os/$arch"
             ]
         },
-        "optional_repositories": []
+        "optional_repositories": [
+            "multilib"
+        ]
     },
     "network_config": {
         "type": "nm"
     },
     "ntp": true,
-    "packages": [
-        "fastfetch"
-    ],
-    "parallel_downloads": 10,
+    "packages": [],
+    "parallel_downloads": 0,
     "profile_config": {
         "gfx_driver": null,
         "greeter": null,
@@ -118,7 +118,7 @@
         }
     },
     "services": [],
-    "swap": true,
+    "swap": false,
     "timezone": "America/Sao_Paulo",
     "version": null
 }

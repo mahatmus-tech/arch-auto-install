@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -euo pipefail
 
 # Check if we're running in the live environment
 if ! mount | grep -q '/mnt'; then
