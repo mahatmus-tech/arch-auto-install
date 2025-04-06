@@ -1,0 +1,106 @@
+---
+- name: Install essential packages
+  pacman:
+    name:
+      - git
+      - base-devel
+      - curl
+      - python
+      - ansible
+      - flatpak
+      - amd-ucode
+    state: present
+
+- name: Install yay
+  shell: |
+    git clone https://aur.archlinux.org/yay.git /tmp/yay
+    cd /tmp/yay
+    makepkg -si --noconfirm
+  args:
+    creates: /usr/bin/yay
+
+- name: Install firmware
+  pacman:
+    name:
+      - linux-headers
+      - linux-firmware
+      - linux-firmware-qlogic
+    state: present
+
+- name: Install firmware(yay)
+  shell: yay -S --noconfirm ast-firmware mkinitcpio-firmware
+  args:
+    executable: /bin/bash
+
+- name: Install firmware(git clone)
+  shell: |
+    git clone https://github.com/mahatmus-tech/uPD72020x-Firmware.git /tmp/uPD72020x-Firmware
+    cd /tmp/uPD72020x-Firmware
+    makepkg -si --noconfirm
+  args:
+    creates: /usr/local/bin/uPD72020x-Firmware
+
+- name: Install terminal and utilities
+  pacman:
+    name:
+      - kitty
+      - man-db
+      - wget
+      - htop
+      - nvtop
+      - fastfetch
+      - pokemon-colorscripts
+    state: present
+
+- name: Install codecs and libraries
+  pacman:
+    name:
+      - gst-libav
+      - gst-plugins-bad
+      - gst-plugins-good
+      - gst-plugins-ugly
+      - ffmpeg
+      - gstreamer
+      - libva
+      - libvdpau
+      - lame
+      - flac
+      - wavpack
+      - opus
+      - faac
+      - faad2
+      - x264
+      - x265
+      - libvpx
+      - dav1d
+      - aom
+      - libmpeg2
+      - libmad
+    state: present
+
+- name: Install codecs and libraries(yay)
+  shell: yay -S --noconfirm ffmpeg-full
+  args:
+    executable: /bin/bash
+
+- name: Install compression tools
+  pacman:
+    name:
+      - zip
+      - unzip
+      - p7zip
+      - gzip
+      - bzip2
+      - xz
+      - tar
+      - rar
+      - unrar
+      - lrzip
+      - zstd
+      - lzip
+      - lzop
+      - arj
+      - cabextract
+      - cpio
+      - unace
+    state: present

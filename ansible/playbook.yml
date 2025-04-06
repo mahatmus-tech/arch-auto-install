@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  connection: local
+  become: yes
+  roles:
+    - base-packages
+    - nvidia
+    - hyprland
+    - gaming
+    - user-config

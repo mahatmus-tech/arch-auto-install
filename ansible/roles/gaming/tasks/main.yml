@@ -1,0 +1,82 @@
+---
+- name: Install gaming packages
+  pacman:
+    name:
+      - steam
+      - gamescope
+      - gamemode
+      - lib32-gamemode
+      - mangohud
+      - lib32-mangohud
+      - wine-staging
+    state: present
+
+- name: Install Wine dependencies
+  pacman:
+    name:
+      - giflib
+      - lib32-giflib
+      - gnutls
+      - lib32-gnutls
+      - v4l-utils
+      - lib32-v4l-utils
+      - libpulse
+      - lib32-libpulse
+      - alsa-plugins
+      - lib32-alsa-plugins
+      - alsa-lib
+      - lib32-alsa-lib
+      - sqlite
+      - lib32-sqlite
+      - libxcomposite
+      - lib32-libxcomposite
+      - ocl-icd
+      - lib32-ocl-icd
+      - libva
+      - lib32-libva
+      - gtk3
+      - lib32-gtk3
+      - gst-plugins-base-libs
+      - lib32-gst-plugins-base-libs
+      - vulkan-icd-loader
+      - lib32-vulkan-icd-loader
+      - sdl2-compat
+      - lib32-sdl2-compat
+    state: present
+
+- name: Add user to gamemode group
+  user:
+    name: mahatmus
+    groups: gamemode
+    append: yes
+
+- name: Configure gamemode
+  copy:
+    dest: /etc/gamemode.ini
+    content: |
+      [general]
+      ; Enable GameMode by default when requested
+      ; (0 = off, 1 = on)
+      defaultgamemode=1
+
+      [cpu]
+      ; Set CPU governor to "performance" (lowers latency)
+      governor=performance
+
+      [gpu]
+      ; Optimize GPU performance
+      gpu_performance_mode=1
+
+      [supervisor]
+      ; Prevent GameMode from being killed
+      softrealtime=auto
+      ioprio=0
+    mode: '0644'
+
+- name: Install blstrobe for BENQ monitor
+  shell: |
+    git clone https://github.com/fhunleth/blstrobe.git /tmp/blstrobe
+    cd /tmp/blstrobe
+    ./autogen.sh && ./configure && make && make install
+  args:
+    creates: /usr/local/bin/blstrobe

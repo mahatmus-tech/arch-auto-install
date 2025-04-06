@@ -1,0 +1,160 @@
+---
+- name: Install Hyprland dependencies
+  pacman:
+    name:
+      - ninja
+      - gcc
+      - cmake
+      - meson
+      - libxcb
+      - xcb-proto
+      - xcb-util
+      - xcb-util-keysyms
+      - libxfixes
+      - libx11
+      - libxcomposite
+      - libxrender
+      - libxcursor
+      - pixman
+      - wayland-protocols
+      - cairo
+      - pango
+      - libxkbcommon
+      - xcb-util-wm
+      - xorg-xwayland
+      - libinput
+      - libliftoff
+      - libdisplay-info
+      - cpio
+      - tomlplusplus
+      - hyprland-git
+      - hyprcursor-git
+      - hyprwayland-scanner-git
+      - xcb-util-errors
+      - hypruilts-git
+      - glaze
+      - hyprgraphics-git
+      - aquamarine-git
+      - re2
+      - hyprland-qtuilts
+    state: present
+
+- name: Install Hyprland
+  shell: |
+    git clone --recursive https://github.com/hyprwm/Hyprland /tmp/Hyprland
+    cd /tmp/Hyprland
+    make all && make install
+  args:
+    creates: /usr/bin/Hyprland
+
+- name: Automate JaKooLit Hyprland installation
+  hosts: localhost
+  become: yes
+  vars:
+    repo_url: "https://github.com/JaKooLit/Arch-Hyprland.git"
+    clone_dir: "/tmp/Arch-Hyprland"
+    aur_helper: "1"  # 1 for yay, 2 for paru
+    enable_nvidia: "ON"
+    enable_nouveau: "ON"    
+
+  tasks:
+    - name: Check prerequisites
+      block:
+        - name: Check if git is installed
+          ansible.builtin.command: which git
+          changed_when: false
+          register: git_check
+          failed_when: git_check.rc != 0
+
+        - name: Check if expect is installed
+          ansible.builtin.package:
+            name: expect
+            state: present
+      rescue:
+        - name: Fail if prerequisites not met
+          ansible.builtin.fail:
+            msg: "Required packages (git, expect) are not installed"
+
+    - name: Clean up previous clone if exists
+      ansible.builtin.file:
+        path: "{{ clone_dir }}"
+        state: absent
+
+    - name: Clone the repository
+      ansible.builtin.git:
+        repo: "{{ repo_url }}"
+        dest: "{{ clone_dir }}"
+        clone: yes
+        depth: 1
+
+    - name: Modify preset.sh to enable Nvidia and Nouveau
+      ansible.builtin.replace:
+        path: "{{ clone_dir }}/preset.sh"
+        regexp: '(nvidia=")OFF("|.*nouveau=")OFF(")'
+        replace: '\1{{ enable_nvidia }}\2\3{{ enable_nouveau }}\4'
+        backup: yes
+
+    - name: Create expect script for non-interactive installation
+      ansible.builtin.copy:
+        dest: "{{ clone_dir }}/auto-install.exp"
+        content: |
+          #!/usr/bin/expect -f
+          set timeout -1
+          
+          # Start the installation script
+          spawn ./auto-install.sh
+          
+          # Handle initial confirmation
+          expect "KooL Arch-Hyprland (2025) Install Script"
+          send "\r"
+          expect "Proceed with Installation?"
+          send "y\r"
+          
+          # Handle AUR helper selection
+          expect "Choose one AUR."
+          send "{{ aur_helper }}\r"
+          
+          # Handle package installation confirmation
+          expect "Confirm Your Choices"
+          send "y\r"
+          
+          # Handle Hyprland installation confirmation
+          expect "Do you want to install Hyprland? (y/N):"
+          send "y\r"
+          
+          # Handle Nvidia drivers prompt if it appears
+          expect {
+              "Do you have an Nvidia GPU? (y/N):" {
+                  send "n\r"
+                  exp_continue
+              }
+              "Do you want to install Nvidia drivers? (y/N):" {
+                  send "n\r"
+                  exp_continue
+              }
+              "Do you want to install additional Nvidia packages?" {
+                  send "n\r"
+                  exp_continue
+              }
+              eof
+          }
+        mode: '0755'
+
+    - name: Run the installation with expect
+      ansible.builtin.command: >
+        expect -d auto-install.exp
+      args:
+        chdir: "{{ clone_dir }}"
+      register: installation_result
+      no_log: false  # Set to true in production to hide sensitive output
+
+    - name: Check installation result
+      ansible.builtin.fail:
+        msg: "Installation failed. Check logs for details."
+      when: installation_result.rc != 0
+
+    - name: Clean up
+      ansible.builtin.file:
+        path: "{{ clone_dir }}"
+        state: absent
+      when: installation_result.rc == 0
