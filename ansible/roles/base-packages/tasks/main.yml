@@ -16,7 +16,6 @@
 
 - name: Install yay from AUR
   become: yes
-  become_user: nobody  # Build as unprivileged user for security
   shell: |
     git clone https://aur.archlinux.org/yay.git /tmp/yay
     cd /tmp/yay
