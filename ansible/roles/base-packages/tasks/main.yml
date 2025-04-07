@@ -16,7 +16,7 @@
 
 - name: Install YAY from AUR
   become: yes
-  become_user: nobody  # makepkg can't execute as root
+  become_user: mahatmus # makepkg can't execute as root
   shell: |
     git clone https://aur.archlinux.org/yay.git /usr/local/yay
     cd /usr/local/yay
@@ -38,12 +38,8 @@
     update_cache: yes    
 
 - name: Install Firmware via YAY
-  ansible.builtin.command: yay -S package_name
-  
-  #become: yes
-  #shell: yay -S --noconfirm --needed mkinitcpio-firmware ast-firmware
-  #args:
-  #  executable: /usr/local/yay
+  ansible.builtin.command: yay -S mkinitcpio-firmware ast-firmware
+
 
 - name: Install Firmware via Github
   shell: |
