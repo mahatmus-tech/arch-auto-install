@@ -40,8 +40,6 @@
 - name: Install Firmware via YAY
   become: yes
   shell: yay -S --noconfirm --needed mkinitcpio-firmware ast-firmware
-  args:
-    executable: /bin/bash
 
 - name: Install Firmware via Github
   shell: |
