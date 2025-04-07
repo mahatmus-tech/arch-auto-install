@@ -14,13 +14,19 @@
     extra_args: "--noconfirm"
     update_cache: yes
 
-- name: Install yay
+- name: Install yay from AUR
+  become: yes
+  become_user: nobody  # Build as unprivileged user for security
   shell: |
     git clone https://aur.archlinux.org/yay.git /tmp/yay
     cd /tmp/yay
-    makepkg -si --noconfirm
+    makepkg -si --noconfirm --needed
+    cd ..
+    rm -rf /tmp/yay
   args:
     creates: /usr/bin/yay
+  environment:
+    HOME: /tmp  # Needed for makepkg to work as nobody
 
 - name: Install firmware
   become: yes
