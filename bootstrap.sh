@@ -10,7 +10,7 @@ sudo pacman -S --needed --noconfirm git ansible
 
 # Clone the installation repository
 echo "📥 Cloning installation repository..."
-INSTALL_DIR="/tmp/arch-auto-install"
+INSTALL_DIR="/usr/local/arch-auto-install"
 rm -rf "$INSTALL_DIR"
 sudo git clone https://github.com/mahatmus-tech/arch-auto-install.git "$INSTALL_DIR"
 
