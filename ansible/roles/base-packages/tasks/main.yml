@@ -38,10 +38,12 @@
     update_cache: yes    
 
 - name: Install Firmware via YAY
-  become: yes
-  shell: yay -S --noconfirm --needed mkinitcpio-firmware ast-firmware
-  args:
-    executable: /usr/local/yay  
+  ansible.builtin.command: yay -S package_name
+  
+  #become: yes
+  #shell: yay -S --noconfirm --needed mkinitcpio-firmware ast-firmware
+  #args:
+  #  executable: /usr/local/yay
 
 - name: Install Firmware via Github
   shell: |
