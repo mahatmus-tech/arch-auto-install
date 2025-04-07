@@ -2,7 +2,10 @@
 - name: Install Essential Packages
   become: yes
   pacman:
-    name:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  loop:
       - git
       - base-devel
       - curl
@@ -10,21 +13,16 @@
       - ansible
       - flatpak
       - amd-ucode
-    state: present
-    extra_args: "--noconfirm --needed"
-    update_cache: yes
 
 - name: Install YAY from AUR
   become: yes
-  become_user: mahatmus # makepkg can't execute as root
   shell: |
-    git clone https://aur.archlinux.org/yay.git /usr/local/yay
-    cd /usr/local/yay
-    makepkg -si --noconfirm
+    git clone https://aur.archlinux.org/yay.git /tmp/yay
+    cd /tmp/yay
+    sudo -u nobody makepkg -si --noconfirm
+    rm -rf /tmp/yay
   args:
-    creates: /usr/local/yay
-  environment:
-    HOME: "{{ ansible_env.HOME }}" #HOME: /usr  # Needed for makepkg to work as nobody
+    creates: /usr/bin/yay
 
 - name: Install Firmware
   become: yes
@@ -35,16 +33,14 @@
   loop:
     - linux-headers
     - linux-firmware
-    - linux-firmware-qlogic
-    
+    - linux-firmware-qlogic    
 
 - name: Install Firmware via YAY
   become: yes
   become_user: mahatmus
-  command: yay -S mkinitcpio-firmware ast-firmware
+  command: yay -S --noconfirm mkinitcpio-firmware ast-firmware
   environment:
     HOME: "{{ ansible_env.HOME }}"
-
 
 - name: Install Firmware via Github
   shell: |
