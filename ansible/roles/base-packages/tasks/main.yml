@@ -38,8 +38,12 @@
     extra_args: "--noconfirm"
     update_cache: yes    
 
-- name: Install firmware(yay)
-  shell: yay -S --noconfirm ast-firmware mkinitcpio-firmware
+- name: Install firmware packages via yay
+  become: yes
+  shell: |
+    yay -S --noconfirm --needed \
+    ast-firmware \
+    mkinitcpio-firmware
   args:
     executable: /bin/bash
 

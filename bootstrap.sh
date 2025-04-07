@@ -6,7 +6,7 @@ echo "🚀 Starting Arch-Hyprland automated installation..."
 
 # Ensure git  is installed in the live environment
 echo "📦 Installing Ansible..."
-sudo pacman -Sy --needed --noconfirm git ansible
+sudo pacman -S --needed --noconfirm git ansible
 
 # Clone the installation repository
 echo "📥 Cloning installation repository..."
