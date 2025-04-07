@@ -9,7 +9,7 @@ if ! grep -q "archiso" /etc/hostname 2>/dev/null; then
 fi
 
 # Install dependencies for archinstall
-pacman -Sy --noconfirm git python python-pip ansible curl base-devel
+#pacman -Sy --noconfirm git python python-pip ansible curl base-devel
 
 # Clone this repository
 git clone https://github.com/mahatmus-tech/arch-auto-install.git /tmp/arch-auto-install
@@ -21,7 +21,7 @@ chmod +x install.sh
 ./install.sh
 
 # Chroot into the new system and run Ansible
-arch-chroot /mnt bash -c "pacman -Sy --noconfirm ansible git && \
+arch-chroot /mnt bash -c "pacman -S --needed --noconfirm ansible && \
                           git clone https://github.com/mahatmus-tech/arch-auto-install.git /tmp/arch-auto-install && \
                           cd /tmp/arch-auto-install/ansible && \
                           ansible-playbook -i localhost, -c local playbook.yml"
