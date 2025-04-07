@@ -10,6 +10,10 @@ if ! grep -i "archiso" /etc/hostname 2>/dev/null; then
     exit 1
 fi
 
+# Ensure git  is installed in the live environment
+echo "📦 Installing git in the live ISO..."
+pacman -Sy --noconfirm git
+
 # Clone the installation repository
 echo "📥 Cloning installation repository..."
 INSTALL_DIR="/tmp/arch-auto-install"

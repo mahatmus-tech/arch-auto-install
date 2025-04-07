@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# Use the provided user configuration
-python -m archinstall --config user_configuration.json --creds user_credentials.json
+archinstall --config user_configuration.json --creds user_credentials.json
+
