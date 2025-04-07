@@ -12,7 +12,7 @@ fi
 
 # Ensure git  is installed in the live environment
 echo "📦 Installing git in the live ISO..."
-pacman -Sy --noconfirm git
+pacman -Sy --noconfirm git archinstall
 
 # Clone the installation repository
 echo "📥 Cloning installation repository..."
