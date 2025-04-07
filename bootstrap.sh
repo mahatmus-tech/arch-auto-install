@@ -21,7 +21,7 @@ chmod +x install.sh
 ./install.sh
 
 # Chroot into the new system and run Ansible
-arch-chroot /mnt bash -c "pacman -S --needed --noconfirm ansible && \
+arch-chroot /mnt bash -c "pacman -Sy --needed --noconfirm ansible && \
                           git clone https://github.com/mahatmus-tech/arch-auto-install.git /tmp/arch-auto-install && \
                           cd /tmp/arch-auto-install/ansible && \
                           ansible-playbook -i localhost, -c local playbook.yml"
