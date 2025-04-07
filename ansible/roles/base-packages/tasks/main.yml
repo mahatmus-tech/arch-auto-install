@@ -104,3 +104,16 @@
       - cpio
       - unace
     state: present
+
+- name: Wayland
+  pacman:
+    name:
+      - waybar
+      - wayland    
+      - qt5-wayland
+      - qt6-wayland
+      - qt5ct
+      - qt6ct
+      - wayland-protocols
+      - wlr-randr
+    state: present

@@ -18,13 +18,6 @@
   args:
     executable: /bin/bash
 
-#- name: Configure Brave for Wayland
-#  lineinfile:
-#    path: /usr/share/applications/brave-browser.desktop
-#    regexp: '^Exec='
-#    line: 'Exec=brave-browser --enable-features=UseOzonePlatform --ozone-platform=wayland %U'
-#    backup: yes
-
 - name: Create 120hz monitor config
   copy:
     dest: /home/mahatmus/.config/hypr/Monitor_Profiles/120hz.conf
@@ -63,3 +56,10 @@
 
 # make it later
 #- name: Configure environment variablesk
+
+#- name: Configure Brave for Wayland
+#  lineinfile:
+#    path: /usr/share/applications/brave-browser.desktop
+#    regexp: '^Exec='
+#    line: 'Exec=brave-browser --enable-features=UseOzonePlatform --ozone-platform=wayland %U'
+#    backup: yes
