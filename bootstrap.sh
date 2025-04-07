@@ -3,8 +3,8 @@
 set -euo pipefail
 
 # Check if we're running in the live environment
-if ! mount | grep -q '/mnt'; then
-    echo "This script must be run from the Arch Linux live environment"
+if ! grep -q "archiso" /etc/hostname 2>/dev/null; then
+    echo "This script must be run from the Arch Linux live environment."
     exit 1
 fi
 
