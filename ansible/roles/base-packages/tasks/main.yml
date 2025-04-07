@@ -93,9 +93,10 @@
       - libmad
     state: present
     extra_args: "--noconfirm --needed"
-    update_cache: yes    
+    update_cache: yes
 
 - name: Install Codecs and Libraries via YAY
+  become: yes
   shell: yay -S --noconfirm ffmpeg-full
   args:
     executable: /usr/local/yay  
