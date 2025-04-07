@@ -40,6 +40,8 @@
 - name: Install Firmware via YAY
   become: yes
   shell: yay -S --noconfirm --needed mkinitcpio-firmware ast-firmware
+  args:
+    executable: /usr/local/yay  
 
 - name: Install Firmware via Github
   shell: |
@@ -96,7 +98,7 @@
 - name: Install Codecs and Libraries via YAY
   shell: yay -S --noconfirm ffmpeg-full
   args:
-    executable: /bin/bash
+    executable: /usr/local/yay  
 
 - name: Install Compression Tools
   become: yes
