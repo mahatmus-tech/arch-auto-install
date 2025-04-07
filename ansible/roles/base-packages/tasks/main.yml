@@ -1,7 +1,6 @@
 ---
 - name: Install Essential Packages
   become: yes
-  become_user: mahatmus  
   pacman:
     name:
       - git
