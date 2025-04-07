@@ -16,7 +16,7 @@ sudo git clone https://github.com/mahatmus-tech/arch-auto-install.git "$INSTALL_
 
 # Run archinstall using the custom script
 echo "⚙️  Running archinstall..."
-cd "$INSTALL_DIR/archinstall/ansible"
+cd "$INSTALL_DIR/ansible"
 ansible-playbook -i localhost, -c local playbook.yml -K
 
 echo "✅ Installation complete! You can now reboot into your new Arch system."
