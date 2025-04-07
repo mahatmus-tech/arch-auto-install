@@ -1,6 +1,7 @@
 ---
 - name: Install Essential Packages
   become: yes
+  become_user: mahatmus  
   pacman:
     name:
       - git
@@ -24,7 +25,7 @@
   args:
     creates: /usr/local/yay
   environment:
-    HOME: /usr  # Needed for makepkg to work as nobody
+    HOME: "{{ ansible_env.HOME }}" #HOME: /usr  # Needed for makepkg to work as nobody
 
 - name: Install Firmware
   become: yes
@@ -39,6 +40,8 @@
 
 - name: Install Firmware via YAY
   ansible.builtin.command: yay -S mkinitcpio-firmware ast-firmware
+  environment:
+  HOME: "{{ ansible_env.HOME }}"
 
 
 - name: Install Firmware via Github
