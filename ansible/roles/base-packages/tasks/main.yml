@@ -22,7 +22,9 @@
     cd /usr/local/yay
     makepkg -si --noconfirm
   args:
-    executable: /bin/bash
+    creates: /usr/local/yay
+  environment:
+    HOME: /usr  # Needed for makepkg to work as nobody
 
 - name: Install Firmware
   become: yes
