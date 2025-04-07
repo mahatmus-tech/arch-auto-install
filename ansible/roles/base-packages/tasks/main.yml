@@ -1,5 +1,5 @@
 ---
-- name: Install essential packages
+- name: Install Essential Packages
   become: yes
   pacman:
     name:
@@ -11,23 +11,19 @@
       - flatpak
       - amd-ucode
     state: present
-    extra_args: "--noconfirm"
+    extra_args: "--noconfirm --needed"
     update_cache: yes
 
-- name: Install yay from AUR
+- name: Install YAY from AUR
   become: yes
   shell: |
-    git clone https://aur.archlinux.org/yay.git /tmp/yay
-    cd /tmp/yay
-    makepkg -si --noconfirm --needed
-    cd ..
-    rm -rf /tmp/yay
+    git clone https://aur.archlinux.org/yay.git /usr/local/yay
+    cd /usr/local/yay
+    makepkg -si --noconfirm
   args:
-    creates: /usr/bin/yay
-  environment:
-    HOME: /tmp  # Needed for makepkg to work as nobody
+    executable: /bin/bash
 
-- name: Install firmware
+- name: Install Firmware
   become: yes
   pacman:
     name:
@@ -35,27 +31,24 @@
       - linux-firmware
       - linux-firmware-qlogic
     state: present
-    extra_args: "--noconfirm"
+    extra_args: "--noconfirm --needed"
     update_cache: yes    
 
-- name: Install firmware packages via yay
+- name: Install Firmware via YAY
   become: yes
-  shell: |
-    yay -S --noconfirm --needed \
-    ast-firmware \
-    mkinitcpio-firmware
+  shell: yay -S --noconfirm --needed mkinitcpio-firmware ast-firmware
   args:
     executable: /bin/bash
 
-- name: Install firmware(git clone)
+- name: Install Firmware via Github
   shell: |
-    git clone https://github.com/mahatmus-tech/uPD72020x-Firmware.git /tmp/uPD72020x-Firmware
-    cd /tmp/uPD72020x-Firmware
+    git clone https://github.com/mahatmus-tech/uPD72020x-Firmware.git /usr/local/uPD72020x-Firmware
+    cd /usr/local/uPD72020x-Firmware
     makepkg -si --noconfirm
   args:
-    creates: /usr/local/bin/uPD72020x-Firmware
+    executable: /bin/bash
 
-- name: Install terminal and utilities
+- name: Install Terminal and Utilities
   become: yes
   pacman:
     name:
@@ -67,10 +60,10 @@
       - fastfetch
       - pokemon-colorscripts
     state: present
-    extra_args: "--noconfirm"
+    extra_args: "--noconfirm --needed"
     update_cache: yes      
 
-- name: Install codecs and libraries
+- name: Install Codecs and Libraries
   become: yes
   pacman:
     name:
@@ -96,15 +89,15 @@
       - libmpeg2
       - libmad
     state: present
-    extra_args: "--noconfirm"
+    extra_args: "--noconfirm --needed"
     update_cache: yes    
 
-- name: Install codecs and libraries(yay)
+- name: Install Codecs and Libraries via YAY
   shell: yay -S --noconfirm ffmpeg-full
   args:
     executable: /bin/bash
 
-- name: Install compression tools
+- name: Install Compression Tools
   become: yes
   pacman:
     name:
@@ -126,10 +119,10 @@
       - cpio
       - unace
     state: present
-    extra_args: "--noconfirm"
-    update_cache: yes    
+    extra_args: "--noconfirm --needed"
+    update_cache: yes
 
-- name: Wayland
+- name: Install Wayland
   become: yes
   pacman:
     name:
@@ -142,5 +135,5 @@
       - wayland-protocols
       - wlr-randr
     state: present
-    extra_args: "--noconfirm"
+    extra_args: "--noconfirm --needed"
     update_cache: yes      
