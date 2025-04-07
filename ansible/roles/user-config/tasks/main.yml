@@ -9,21 +9,15 @@
     extra_args: "--noconfirm"
     update_cache: yes    
 
-- name: Force-install flatpaks without confirmation
+- name: Install system-wide Flatpak applications
   become: yes
-  command: >
-    flatpak install -y --noninteractive --system
-    dev.vencord.Vesktop com.freerdp.FreeRDP
-  args:
-    creates: /var/lib/flatpak/app/{{ item }}
+  flatpak:
+    name: "{{ item }}"
+    state: present
+    method: system
   loop:
     - dev.vencord.Vesktop
-    - com.freerdp.FreeRDP- name: Install flatpak applications
-  flatpak:
-    name:
-      - dev.vencord.Vesktop
-      - com.freerdp.FreeRDP
-    state: present
+    - com.freerdp.FreeRDP
 
 - name: Install AUR applications
   shell: yay -S --noconfirm brave-bin teams-for-linux
