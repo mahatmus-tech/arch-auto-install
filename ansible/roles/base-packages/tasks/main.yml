@@ -29,18 +29,19 @@
 - name: Install Firmware
   become: yes
   pacman:
-    name:
-      - linux-headers
-      - linux-firmware
-      - linux-firmware-qlogic
-    state: present
-    extra_args: "--noconfirm --needed"
-    update_cache: yes    
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  loop:
+    - linux-headers
+    - linux-firmware
+    - linux-firmware-qlogic
+    
 
 - name: Install Firmware via YAY
   become: yes
   become_user: mahatmus
-  ansible.builtin.command: yay -S mkinitcpio-firmware ast-firmware
+  command: yay -S mkinitcpio-firmware ast-firmware
   environment:
     HOME: "{{ ansible_env.HOME }}"
 
