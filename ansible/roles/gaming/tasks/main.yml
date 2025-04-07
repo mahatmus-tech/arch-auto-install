@@ -1,5 +1,6 @@
 ---
 - name: Install Gaming Apps
+  become: yes
   pacman:
     name:
       - steam
@@ -7,8 +8,11 @@
       - mangohud
       - lib32-mangohud
     state: present
+    extra_args: "--noconfirm"
+    update_cache: yes    
 
 - name: Install Wine & dependencies
+  become: yes
   pacman:
     name:
       - wine-staging
@@ -41,8 +45,11 @@
       - sdl2-compat
       - lib32-sdl2-compat
     state: present
+    extra_args: "--noconfirm"
+    update_cache: yes      
 
 - name: Install GameMode & Dependencies
+  become: yes
   pacman:
     name:
       - gamemode    
@@ -53,6 +60,8 @@
       - libinih    
       - lib32-gamemode
     state: present
+    extra_args: "--noconfirm"
+    update_cache: yes
 
 - name: Add user to gamemode group
   user:

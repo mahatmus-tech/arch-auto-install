@@ -1,5 +1,6 @@
 ---
 - name: Install Hyprland dependencies
+  become: yes
   pacman:
     name:
       - ninja
@@ -38,6 +39,8 @@
       - re2
       - hyprland-qtuilts
     state: present
+    extra_args: "--noconfirm"
+    update_cache: yes    
 
 - name: Install Hyprland
   shell: |

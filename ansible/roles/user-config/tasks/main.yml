@@ -1,12 +1,24 @@
 ---
 - name: Install user applications
+  become: yes
   pacman:
     name:
       - emacs
       - micro
     state: present
+    extra_args: "--noconfirm"
+    update_cache: yes    
 
-- name: Install flatpak applications
+- name: Force-install flatpaks without confirmation
+  become: yes
+  command: >
+    flatpak install -y --noninteractive --system
+    dev.vencord.Vesktop com.freerdp.FreeRDP
+  args:
+    creates: /var/lib/flatpak/app/{{ item }}
+  loop:
+    - dev.vencord.Vesktop
+    - com.freerdp.FreeRDP- name: Install flatpak applications
   flatpak:
     name:
       - dev.vencord.Vesktop

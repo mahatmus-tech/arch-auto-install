@@ -1,5 +1,6 @@
 ---
 - name: Install Nvidia packages
+  become: yes
   pacman:
     name:
       - nvidia-dkms
@@ -13,6 +14,8 @@
       - libglvnd
       - opencl-nvidia
     state: present
+    extra_args: "--noconfirm"
+    update_cache: yes      
 
 #- name: Configure mkinitcpio
 #  lineinfile:
