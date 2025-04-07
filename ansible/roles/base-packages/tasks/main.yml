@@ -1,18 +1,16 @@
 ---
 - name: Install Essential Packages
   become: yes
-  pacman:
-    name: "{{ item }}"
-    state: latest
-    update_cache: yes
-  loop:
+  community.general.pacman:
+    name:
       - git
       - base-devel
       - curl
       - python
       - ansible
       - flatpak
-      - amd-ucode
+      - amd-ucode    
+    state: latest
 
 - name: Install YAY from AUR
   become: yes
@@ -29,18 +27,19 @@
   pacman:
     name: "{{ item }}"
     state: latest
-    update_cache: yes
   loop:
     - linux-headers
     - linux-firmware
     - linux-firmware-qlogic    
 
 - name: Install Firmware via YAY
-  become: yes
-  become_user: mahatmus
-  command: yay -S --noconfirm mkinitcpio-firmware ast-firmware
-  environment:
-    HOME: "{{ ansible_env.HOME }}"
+  community.general.pacman:
+    name:
+      - mkinitcpio-firmware
+      - ast-firmware
+    state: latest
+    executable: yay
+    extra_args: --builddir /usr/bin/yay
 
 - name: Install Firmware via Github
   shell: |
@@ -61,9 +60,8 @@
       - nvtop
       - fastfetch
       - pokemon-colorscripts
-    state: present
+    state: latest
     extra_args: "--noconfirm --needed"
-    update_cache: yes      
 
 - name: Install Codecs and Libraries
   become: yes
