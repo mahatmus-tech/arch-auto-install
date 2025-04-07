@@ -15,16 +15,18 @@ fi
 #pacman -Sy --noconfirm git archinstall python
 
 # Clone the installation repository
-echo "📥 Cloning installation repository..."
-INSTALL_DIR="/tmp/arch-auto-install"
-rm -rf "$INSTALL_DIR"
-git clone https://github.com/mahatmus-tech/arch-auto-install.git "$INSTALL_DIR"
+#echo "📥 Cloning installation repository..."
+#INSTALL_DIR="/tmp/arch-auto-install"
+#rm -rf "$INSTALL_DIR"
+#git clone https://github.com/mahatmus-tech/arch-auto-install.git "$INSTALL_DIR"
 
 # Run archinstall using the custom script
-echo "⚙️  Running archinstall..."
-cd "$INSTALL_DIR/archinstall"
-chmod +x install.sh
-./install.sh
+#echo "⚙️  Running archinstall..."
+#cd "$INSTALL_DIR/archinstall"
+#chmod +x install.sh
+#./install.sh
+
+archinstall
 
 # Validate that /mnt was created
 if [[ ! -d /mnt ]]; then
