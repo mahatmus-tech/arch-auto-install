@@ -138,3 +138,4 @@
     ./autogen.sh && ./configure && make && make install
   args:
     creates: /usr/local/bin/blstrobe
+
