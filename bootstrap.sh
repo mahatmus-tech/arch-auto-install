@@ -21,9 +21,12 @@ sudo git clone https://aur.archlinux.org/yay.git "$INSTALL_DIR"
 # Compila e instala o yay como aur-builder
 echo "⚙️  Instalando yay..."
 cd "$INSTALL_DIR"
-sudo chown $USER:$USER "$INSTALL_DIR"
+#sudo chown $USER:$USER "$INSTALL_DIR"
+echo "makepkg with nobody"
+sudo chown nobody:nobody "$INSTALL_DIR"
 chmod 755 "$INSTALL_DIR"
-makepkg -si --noconfirm --skippgpcheck --nocheck --nodeps
+sudo -u nobody makepkg -si --noconfirm
+#makepkg -si --noconfirm --skippgpcheck --nocheck --nodeps
 
 # Clone the installation repository
 echo "📥 Cloning installation repository..."
