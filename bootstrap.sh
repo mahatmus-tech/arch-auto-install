@@ -21,7 +21,7 @@ git clone https://aur.archlinux.org/yay.git "$INSTALL_DIR"
 # Run yay install
 echo "⚙️  Running yay install..."
 cd "$INSTALL_DIR"
-makepkg -si --noconfirm
+sudo -u nobody makepkg -si --noconfirm
 
 # Clone the installation repository
 echo "📥 Cloning installation repository..."
