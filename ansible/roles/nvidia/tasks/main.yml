@@ -1,7 +1,7 @@
 ---
 - name: Install Nvidia packages
   become: yes
-  pacman:
+  community.general.pacman:
     name:
       - nvidia-dkms
       - nvidia-utils
@@ -13,10 +13,13 @@
       - vulkan-tools
       - libglvnd
       - opencl-nvidia
-    state: present
-    extra_args: "--noconfirm"
-    update_cache: yes      
+    state: latest
 
+- name: Run the equivalent of "pacman -Sy" as a separate step
+  community.general.pacman:
+    update_cache: true
+    
+# ------------------------
 #- name: Configure mkinitcpio
 #  lineinfile:
 #    path: /etc/mkinitcpio.conf

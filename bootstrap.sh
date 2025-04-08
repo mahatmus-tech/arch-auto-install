@@ -23,7 +23,7 @@ echo "⚙️  Instalando yay..."
 cd "$INSTALL_DIR"
 sudo chown $USER:$USER "$INSTALL_DIR"
 chmod 755 "$INSTALL_DIR"
-makepkg -si --noconfirm
+makepkg -si -buildvcs=false --noconfirm
 
 # Clone the installation repository
 echo "📥 Cloning installation repository..."
