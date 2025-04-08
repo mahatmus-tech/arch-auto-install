@@ -21,13 +21,16 @@ git clone https://aur.archlinux.org/yay.git "$INSTALL_DIR"
 # Create temporary user
 
 # 1. Remove o usuário aur-builder se existir
-if id "aur-builder" &>/dev/null; then
+if id -u "aur-builder" >/dev/null 2>&1; then
     echo "Removendo usuário aur-builder existente..."
     userdel aur-builder
 fi
 
+echo "criando pasta /tmp/aur-build"
 mkdir -p /tmp/aur-build
+echo "criando usuario aur-builder"
 useradd -r -d /tmp/aur-build -s /bin/bash aur-builder
+echo "chown aur-builder"
 chown aur-builder /tmp/aur-build
 
 # Run yay install
