@@ -22,11 +22,9 @@
     state: latest
 
 - name: Install Firmware via YAY
-  mnussbaum.yay:
-    name:
-      - mkinitcpio-firmware
-      - ast-firmware
-    state: lastest
+  aur_packages:
+    - mkinitcpio-firmware
+    - ast-firmware
 
 - name: Install Firmware via Github
   shell: |
@@ -77,10 +75,8 @@
     state: latest
 
 - name: Install Codecs and Libraries via YAY
-  mnussbaum.yay:  
-  name:
+  aur_packages:
     - ffmpeg-full
-  state: latest
 
 - name: Install Compression Tools
   become: yes

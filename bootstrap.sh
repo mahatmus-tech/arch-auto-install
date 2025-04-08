@@ -10,7 +10,7 @@ sudo pacman -Syu --needed --noconfirm
 
 # Ensuring dependencies
 echo "📦 Installing Ansible..."
-sudo pacman -S --needed --noconfirm git base-devel ansible ansible-yay
+sudo pacman -S --needed --noconfirm git base-devel ansible
 
 # Clone YAY repository
 echo "📦 Cloning yay respository..."
@@ -32,6 +32,7 @@ git clone https://github.com/mahatmus-tech/arch-auto-install.git "$INSTALL_DIR"
 # Run archinstall using the custom script
 echo "⚙️  Running archinstall..."
 cd "$INSTALL_DIR/ansible"
+ansible-galaxy role install jahrik.yay
 ansible-playbook -i localhost, -c local playbook.yml -K
 
 echo "✅ Installation complete! You can now reboot into your new Arch system."
