@@ -21,6 +21,7 @@ fi
 mkdir -p /tmp/aur-build
 useradd -r -d /tmp/aur-build -s /bin/bash aur-builder
 chown aur-builder /tmp/aur-build
+chmod 1777 /tmp/aur-build
 
 # Clone YAY repository
 echo "📦 Cloning yay respository..."
