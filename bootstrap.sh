@@ -39,7 +39,8 @@ chown -R aur-builder "$YAY_DIR"
 # Compila e instala o yay como aur-builder
 echo "⚙️  Instalando yay..."
 cd "$YAY_DIR"
-sudo -u aur-builder makepkg -si --noconfirm
+sudo -u aur-builder makepkg -s --noconfirm
+pacman -U *.pkg.tar.zst --noconfirm
 
 # Cleanup
 userdel aur-builder
