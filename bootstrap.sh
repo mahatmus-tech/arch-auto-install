@@ -19,6 +19,7 @@ rm -rf "$INSTALL_DIR"
 git clone https://aur.archlinux.org/yay.git "$INSTALL_DIR"
 
 # Create temporary user
+mkdir /tmp/aur-build
 useradd -r -d /tmp/aur-build -s /bin/bash aur-builder
 chown aur-builder /tmp/aur-build
 
