@@ -55,6 +55,7 @@ echo "📥 Cloning installation repository..."
 INSTALL_DIR="/usr/local/arch-auto-install"
 rm -rf "$INSTALL_DIR"
 mkdir -p "$INSTALL_DIR"
+chmod 755 "$INSTALL_DIR"
 git clone https://github.com/mahatmus-tech/arch-auto-install.git "$INSTALL_DIR"
 
 # Run archinstall using the custom script
