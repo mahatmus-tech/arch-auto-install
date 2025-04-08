@@ -30,7 +30,6 @@ chown aur-builder "$INSTALL_DIR"
 
 # Clone YAY repository
 echo "📦 Cloning yay respository..."
-rm -rf "$INSTALL_DIR"
 git clone https://aur.archlinux.org/yay.git "$INSTALL_DIR"
 
 # Run yay install
