@@ -13,19 +13,23 @@ echo "📦 Installing Ansible..."
 sudo pacman -S --needed --noconfirm git base-devel ansible
 
 # Create temporary user
-# 1. Remove o usuário aur-builder se existir
+# Remove o usuário aur-builder se existir
 if id -u "aur-builder" >/dev/null 2>&1; then
-    userdel aur-builder
+    echo "🧹 Removendo usuário aur-builder existente..."
+    userdel -r aur-builder || true  # ignora erro se home não existir
 fi
 
-mkdir -p /tmp/aur-build
-useradd -r -d /tmp/aur-build -s /bin/bash aur-builder
-chown aur-builder /tmp/aur-build
-chmod 1777 /tmp/aur-build
+# Cria diretório temporário
+INSTALL_DIR="/tmp/aur-build"
+mkdir -p "$INSTALL_DIR"
+chmod 1777 "$INSTALL_DIR"
+
+# Cria o usuário aur-builder com home no diretório temporário
+useradd -r -d "$INSTALL_DIR" -s /bin/bash aur-builder
+chown aur-builder "$INSTALL_DIR"
 
 # Clone YAY repository
 echo "📦 Cloning yay respository..."
-INSTALL_DIR="/tmp/aur-build"
 rm -rf "$INSTALL_DIR"
 git clone https://aur.archlinux.org/yay.git "$INSTALL_DIR"
 
