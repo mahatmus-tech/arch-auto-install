@@ -28,8 +28,8 @@
 
 - name: Install Firmware via Github
   shell: |
-    git clone https://github.com/mahatmus-tech/uPD72020x-Firmware.git /usr/local/uPD72020x-Firmware
-    cd /usr/local/uPD72020x-Firmware
+    git clone https://github.com/mahatmus-tech/uPD72020x-Firmware.git /tmp/uPD72020x-Firmware
+    cd /tmp/uPD72020x-Firmware
     makepkg -si --noconfirm
   args:
     executable: /bin/bash
