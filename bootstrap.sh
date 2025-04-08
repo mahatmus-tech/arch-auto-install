@@ -23,11 +23,10 @@ git clone https://aur.archlinux.org/yay.git "$INSTALL_DIR"
 # 1. Remove o usuário aur-builder se existir
 if id "aur-builder" &>/dev/null; then
     echo "Removendo usuário aur-builder existente..."
-    sudo userdel -r aur-builder 2>/dev/null || true
+    userdel aur-builder
 fi
 
 mkdir -p /tmp/aur-build
-userdel aur-builder
 useradd -r -d /tmp/aur-build -s /bin/bash aur-builder
 chown aur-builder /tmp/aur-build
 
