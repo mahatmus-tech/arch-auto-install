@@ -18,10 +18,18 @@ INSTALL_DIR="/usr/local/yay"
 rm -rf "$INSTALL_DIR"
 git clone https://aur.archlinux.org/yay.git "$INSTALL_DIR"
 
+# Create temporary user
+useradd -r -d /tmp/aur-build -s /bin/bash aur-builder
+chown aur-builder /tmp/aur-build
+
 # Run yay install
 echo "⚙️  Running yay install..."
 cd "$INSTALL_DIR"
-sudo -u nobody makepkg -si --noconfirm
+sudo -u aur-builder makepkg -si --noconfirm
+
+# Cleanup
+userdel aur-builder
+rm -rf /tmp/aur-build
 
 # Clone the installation repository
 echo "📥 Cloning installation repository..."
