@@ -1,13 +1,11 @@
 ---
 - name: Install user applications
   become: yes
-  pacman:
+  community.general.pacman:
     name:
       - emacs
       - micro
-    state: present
-    extra_args: "--noconfirm"
-    update_cache: yes    
+    state: latest
 
 - name: Install system-wide Flatpak applications
   become: yes
