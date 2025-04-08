@@ -24,7 +24,7 @@ cd "$INSTALL_DIR"
 #sudo chown $USER:$USER "$INSTALL_DIR"
 echo "makepkg with nobody"
 sudo chown nobody:nobody "$INSTALL_DIR"
-chmod 755 "$INSTALL_DIR"
+sudo chmod 755 "$INSTALL_DIR"
 sudo -u nobody makepkg -si --noconfirm
 #makepkg -si --noconfirm --skippgpcheck --nocheck --nodeps
 
