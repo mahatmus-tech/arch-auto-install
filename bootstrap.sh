@@ -40,6 +40,7 @@ chown -R aur-builder "$YAY_DIR"
 echo "⚙️  Instalando yay..."
 cd "$YAY_DIR"
 echo "makepkg com aur-builder"
+echo "aur-builder ALL=(ALL) NOPASSWD: /usr/bin/pacman" | sudo tee -a /etc/sudoers.d/10-aur-builder
 sudo -u aur-builder makepkg -s --noconfirm
 
 echo "instala com pacman"
