@@ -23,7 +23,7 @@ echo "⚙️  Instalando yay..."
 cd "$INSTALL_DIR"
 sudo chown $USER:$USER "$INSTALL_DIR"
 chmod 755 "$INSTALL_DIR"
-makepkg -si --noconfirm --skippgpcheck --nocheck --nodeps --nobuildvcs
+makepkg -si --noconfirm --skippgpcheck --nocheck --nodeps
 
 # Clone the installation repository
 echo "📥 Cloning installation repository..."
