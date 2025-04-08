@@ -40,7 +40,7 @@ chown -R aur-builder "$YAY_DIR"
 echo "⚙️  Instalando yay..."
 cd "$YAY_DIR"
 echo "makepkg com aur-builder"
-sudo -u aur-builder makepkg -s --noconfirm\
+sudo -u aur-builder makepkg -s --noconfirm
 echo "instala com pacman"
 pacman -U *.pkg.tar.zst --noconfirm
 
