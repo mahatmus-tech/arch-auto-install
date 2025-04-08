@@ -52,7 +52,7 @@ rm -rf /tmp/aur-build
 
 # Clone the installation repository
 echo "📥 Cloning installation repository..."
-INSTALL_DIR="/usr/local/arch-auto-install"
+INSTALL_DIR="$HOME/arch-auto-install"  
 mkdir -p "$INSTALL_DIR"
 chmod 755 "$INSTALL_DIR"
 git clone https://github.com/mahatmus-tech/arch-auto-install.git "$INSTALL_DIR"
