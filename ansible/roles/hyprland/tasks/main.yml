@@ -1,8 +1,6 @@
 ---
 - name: Install Hyprland dependencies
-  become: yes
-  pacman:
-    name:
+  aur_packages:
       - ninja
       - gcc
       - cmake
@@ -38,9 +36,6 @@
       - aquamarine-git
       - re2
       - hyprland-qtuilts
-    state: present
-    extra_args: "--noconfirm"
-    update_cache: yes    
 
 - name: Install Hyprland
   shell: |
