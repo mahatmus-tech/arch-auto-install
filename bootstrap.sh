@@ -12,51 +12,22 @@ sudo pacman -Syu --needed --noconfirm
 echo "📦 Installing Ansible..."
 sudo pacman -S --needed --noconfirm git base-devel ansible
 
-# Create temporary user
-INSTALL_DIR="/tmp/aur-build"
-YAY_DIR="$INSTALL_DIR/yay"
-
-# Remove o usuário aur-builder se existir
-if id -u "aur-builder" >/dev/null 2>&1; then
-    echo "🧹 Removendo usuário aur-builder existente..."
-    userdel -r aur-builder || true
-fi
-
-# Cria diretório temporário
-mkdir -p "$INSTALL_DIR"
-chmod 755 "$INSTALL_DIR"
-
-# Cria o usuário aur-builder com home no diretório temporário
-useradd -r -d "$INSTALL_DIR" -s /bin/bash aur-builder
-chown -R aur-builder "$INSTALL_DIR"
-
 # Clona o repositório do yay dentro do diretório
 echo "📦 Clonando repositório yay..."
-rm -rf "$YAY_DIR"
-git clone https://aur.archlinux.org/yay.git "$YAY_DIR"
-chown -R aur-builder "$YAY_DIR"
+INSTALL_DIR="/tmp/yay"
+rm -rf "$INSTALL_DIR"
+sudo git clone https://aur.archlinux.org/yay.git "$INSTALL_DIR"
 
 # Compila e instala o yay como aur-builder
 echo "⚙️  Instalando yay..."
 cd "$YAY_DIR"
-echo "makepkg com aur-builder"
-echo "aur-builder ALL=(ALL) NOPASSWD: /usr/bin/pacman" | sudo tee -a /etc/sudoers.d/10-aur-builder
-sudo -u aur-builder makepkg -s --noconfirm
-
-echo "instala com pacman"
-pacman -U *.pkg.tar.zst --noconfirm
-
-# Cleanup
-userdel aur-builder
-rm -rf /tmp/aur-build
+makepkg -si --noconfirm
 
 # Clone the installation repository
 echo "📥 Cloning installation repository..."
-INSTALL_DIR="/tmp/arch-auto-install"  
-mkdir -p "$INSTALL_DIR"
-chmod 755 "$INSTALL_DIR"
-chown -R $USER "$INSTALL_DIR"
-git clone https://github.com/mahatmus-tech/arch-auto-install.git "$INSTALL_DIR"
+INSTALL_DIR="/tmp/arch-auto-install"
+rm -rf "$INSTALL_DIR"
+sudo git clone https://github.com/mahatmus-tech/arch-auto-install.git "$INSTALL_DIR"
 
 # Run archinstall using the custom script
 echo "⚙️  Running archinstall..."
