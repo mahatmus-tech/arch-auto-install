@@ -20,7 +20,7 @@ sudo git clone https://aur.archlinux.org/yay.git "$INSTALL_DIR"
 
 # Compila e instala o yay como aur-builder
 echo "⚙️  Instalando yay..."
-cd "$YAY_DIR"
+cd "$INSTALL_DIR"
 makepkg -si --noconfirm
 
 # Clone the installation repository

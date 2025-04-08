@@ -22,4 +22,4 @@ This project automates the installation of Arch Linux with a customized configur
 2. Run the following command:
 
 ```bash
-curl -L https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/main/bootstrap.sh | bash
+bash <(curl -L https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/main/bootstrap.sh)
