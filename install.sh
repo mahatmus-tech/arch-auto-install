@@ -176,12 +176,6 @@ install_hyprland_stack() {
     # Required dependencies
     install_packages \
         xdg-desktop-portal-hyprland hyprpolkitagent hyprland
-
-    status "Installing Hyprland JakooLit DotFiles..."    
-    sudo git clone --depth=1 https://github.com/JaKooLit/Arch-Hyprland.git ~/Arch-Hyprland
-    cd ~/Arch-Hyprland
-    sudo chmod +x install.sh
-    ./install.sh    
 }
 
 install_multimedia() {
