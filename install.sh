@@ -192,8 +192,6 @@ install_multimedia() {
         lame flac wavpack opus faac faad2 \
         x264 x265 libvpx dav1d aom libmpeg2 libmad
 
-    install_aur \
-        ffmpeg-full
 }
 
 install_gaming() {
