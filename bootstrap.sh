@@ -55,12 +55,13 @@ sudo flatpak install flathub dev.vencord.Vesktop
 sudo flatpak install com.freerdp.FreeRDP
 
 echo "⚙️  Installing Hyprland..."
-sudo git clone --recursive https://github.com/hyprwm/Hyprland
-cd Hyprland
-make all && sudo make install  git clone --recursive https://github.com/hyprwm/Hyprland
-cd Hyprland
+INSTALL_DIR="/tmp/Hyprland"
+sudo rm -rf "$INSTALL_DIR"
+sudo git clone --recursive https://github.com/hyprwm/Hyprland "$INSTALL_DIR"
+cd "$INSTALL_DIR"
+sudo chown $USER:$USER "$INSTALL_DIR"
+sudo chmod 755 "$INSTALL_DIR"
 make all && sudo make install
-
 
 
 
