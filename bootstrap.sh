@@ -17,11 +17,9 @@ sudo git clone https://aur.archlinux.org/yay-bin.git "$INSTALL_DIR"
 
 echo "⚙️  Instaling yay..."
 cd "$INSTALL_DIR"
-#sudo chown nobody:nobody "$INSTALL_DIR"
-#sudo chmod 755 "$INSTALL_DIR"
 sudo chown $USER:$USER "$INSTALL_DIR"
 sudo chmod 755 "$INSTALL_DIR"
-makepkg -si --noconfirm
+makepkg -si
 
 echo "📦 Cloning uPD72020x-Firmware..."
 INSTALL_DIR="/tmp/uPD72020x-Firmware"
@@ -30,12 +28,17 @@ sudo git clone https://github.com/mahatmus-tech/uPD72020x-Firmware.git "$INSTALL
 
 echo "⚙️  Instaling uPD72020x..."
 cd "$INSTALL_DIR"
-sudo chown nobody:nobody "$INSTALL_DIR"
+sudo chown $USER:$USER "$INSTALL_DIR"
 sudo chmod 755 "$INSTALL_DIR"
-sudo -u nobody makepkg -si --noconfirm
+makepkg -si
 
 echo "⚙️  Installing BLSTROBE..."
-sudo git clone https://github.com/fhunleth/blstrobe.git && cd blstrobe && ./autogen.sh && ./configure && make && sudo make install
+sudo git clone https://github.com/fhunleth/blstrobe.git
+cd blstrobe
+./autogen.sh
+./configure
+make
+sudo make install
 
 echo "⚙️  Installing PACMAM ALL..."
 # Depois de instalar o YAY, bora instalar tudo
