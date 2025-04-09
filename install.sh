@@ -229,8 +229,8 @@ install_apps() {
     install_aur \
 	brave-bin teams-for-linux
 
-    flatpak install flathub dev.vencord.Vesktop
-    flatpak install com.freerdp.FreeRDP
+    flatpak install -y flathub dev.vencord.Vesktop
+    flatpak install -y com.freerdp.FreeRDP
 
 }
 
@@ -244,8 +244,8 @@ configure_system() {
     sudo usermod -aG docker,video,input,gamemode $USER
 
     # Get the dot files
-    sudo wget -P ~/.config/hypr/Monitor_Profiles https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/dotfiles/120hz.conf
-    sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/dotfiles/gamemode.ini
+   # sudo wget -P ~/.config/hypr/Monitor_Profiles https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/dotfiles/120hz.conf
+   # sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/dotfiles/gamemode.ini
 }
 
 # ======================
@@ -267,11 +267,7 @@ main() {
     install_graphics_stack
     install_multimedia
     install_compressions
-    
-    read -p "Install gaming support? (y/n) " -n 1 -r
-    echo
-    [[ $REPLY =~ ^[Yy]$ ]] && install_gaming
-
+    install_gaming
     install_apps    
     install_hyprland_stack
     configure_system
