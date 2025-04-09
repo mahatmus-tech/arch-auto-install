@@ -257,8 +257,7 @@ configure_system() {
 
     # Get the dot files
     sudo wget -P ~/.config/hypr/Monitor_Profiles https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/dotfiles/120hz.conf
-
-    sudo wget -P /etc/ https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/dotfiles/gamemode.ini
+    sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/dotfiles/gamemode.ini
 }
 
 # ======================
