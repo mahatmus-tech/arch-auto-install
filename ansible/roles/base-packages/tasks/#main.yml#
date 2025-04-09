@@ -105,7 +105,6 @@
   community.general.pacman:
     name:
       - waybar
-      - wayland    
       - qt5-wayland
       - qt6-wayland
       - qt5ct

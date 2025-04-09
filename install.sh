@@ -109,7 +109,7 @@ clone_and_build() {
 install_base_system() {
     status "Updating system and installing base packages..."
     sudo pacman -Syu --needed --noconfirm
-    install_packages git base-devel curl python
+    install_packages git base-devel curl python flatpak
     
     # Create user directories
     mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config}
@@ -128,9 +128,15 @@ install_firmware() {
         "amd") install_packages amd-ucode;;
     esac
 
+    install_packages \
+	linux-headers linux-firmware linux-firmware-qlogic
+    
+    install_aur \
+	ast-firmware mkinitcpio-firmware
+    
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
     clone_and_build "https://github.com/fhunleth/blstrobe.git" "blstrobe" \
-        "./autogen.sh && ./configure && make && sudo make install"
+		    "./autogen.sh && ./configure && make && sudo make install"    
 }
 
 install_graphics_stack() {
@@ -166,17 +172,15 @@ install_graphics_stack() {
 
 install_hyprland_stack() {
     status "Installing Hyprland and components..."
-    install_aur
-        hyprland-git
-    
-#        ninja gcc cmake meson libxcb xcb-proto xcb-util \
-#       xcb-util-keysyms libxfixes libx11 libxcomposite \
-#	libxrender libxcursor pixman wayland-protocols \
-#	cairo pango libxkbcommon xcb-util-wm xorg-xwayland \
-#	libinput libliftoff libdisplay-info cpio tomlplusplus \
-#	hyprlang-git hyprcursor-git hyprwayland-scanner-git \
-#	xcb-util-errors hyprutils-git glaze hyprgraphics-git \
-#	aquamarine-git re2 hyprland-qtutils 
+    install_aur    
+        ninja gcc cmake meson libxcb xcb-proto xcb-util \
+        xcb-util-keysyms libxfixes libx11 libxcomposite \
+	libxrender libxcursor pixman wayland-protocols \
+	cairo pango libxkbcommon xcb-util-wm xorg-xwayland \
+	libinput libliftoff libdisplay-info cpio tomlplusplus \
+	hyprlang-git hyprcursor-git hyprwayland-scanner-git \
+	xcb-util-errors hyprutils-git glaze hyprgraphics-git \
+	aquamarine-git re2 hyprland-qtutils hyprland-git
     
     # Required dependencies
     install_packages \
@@ -223,9 +227,9 @@ install_compressions() {
 install_apps() {
     status "Installing optional packages..."
     install_packages \
-        emacs micro \
-        htop nvtop btop fastfetch kitty man-db \
-        docker docker-compose flatpak       
+        emacs micro kitty man-db \
+        htop nvtop btop wget fastfetch \
+        docker docker-compose wlr-randr
 
     install_aur \
 	brave-bin teams-for-linux
@@ -247,7 +251,7 @@ configure_system() {
     sudo systemctl enable --now docker
     
     # Add user to required groups
-    sudo usermod -aG docker,video,input $USER
+    sudo usermod -aG docker,video,input,gamemode $USER
 }
 
 # ======================
