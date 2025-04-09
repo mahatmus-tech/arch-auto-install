@@ -42,13 +42,13 @@ sudo make install
 
 echo "⚙️  Installing PACMAM ALL..."
 # Depois de instalar o YAY, bora instalar tudo
-sudo pacman -S --needed --noconfirm linux-headers linux-firmware linux-firmware-qlogic kitty man-db wget htop nvtop fastfetch gst-libav gst-plugins-bad gst-plugins-good gst-plugins-ugly ffmpeg gstreamer libva libvdpau lame flac wavpack opus faac faad2 x264 x265 libvpx dav1d aom libmpeg2 libmad zip unzip p7zip gzip bzip2 xz tar unrar lrzip zstd lzip lzop arj cabextract cpio unace waybar wayland qt5-wayland qt6-wayland qt5ct qt6ct wayland-protocols wlr-randr steam gamescope mangohud lib32-mangohud nvidia-dkms nvidia-utils nvidia-settings lib32-nvidia-utils libva-nvidia-driver egl-wayland vulkan-icd-loader vulkan-tools libglvnd opencl-nvidia wine-staging emacs micro flatpak amd-ucode
+sudo pacman -Sy --needed --noconfirm linux-headers linux-firmware linux-firmware-qlogic kitty man-db wget htop nvtop fastfetch gst-libav gst-plugins-bad gst-plugins-good gst-plugins-ugly ffmpeg gstreamer libva libvdpau lame flac wavpack opus faac faad2 x264 x265 libvpx dav1d aom libmpeg2 libmad zip unzip p7zip gzip bzip2 xz tar unrar lrzip zstd lzip lzop arj cabextract cpio unace waybar wayland qt5-wayland qt6-wayland qt5ct qt6ct wayland-protocols wlr-randr steam gamescope mangohud lib32-mangohud nvidia-dkms nvidia-utils nvidia-settings lib32-nvidia-utils libva-nvidia-driver egl-wayland vulkan-icd-loader vulkan-tools libglvnd opencl-nvidia wine-staging emacs micro flatpak amd-ucode
 
 echo "⚙️  Installing Wine Dependencies..."
 sudo pacman -S --needed --asdeps giflib lib32-giflib gnutls lib32-gnutls v4l-utils lib32-v4l-utils libpulse lib32-libpulse alsa-plugins lib32-alsa-plugins alsa-lib lib32-alsa-lib sqlite lib32-sqlite libxcomposite lib32-libxcomposite ocl-icd lib32-ocl-icd libva lib32-libva gtk3 lib32-gtk3 gst-plugins-base-libs lib32-gst-plugins-base-libs vulkan-icd-loader lib32-vulkan-icd-loader sdl2-compat lib32-sdl2-compat
 
 echo "⚙️  Installing YAY ALL ..."
-sudo yay -S --needed --noconfirm mkinitcpio-firmware ast-firmware ffmpeg-full ninja gcc cmake meson libxcb xcb-proto xcb-util xcb-util-keysyms libxfixes libx11 libxcomposite libxrender libxcursor pixman wayland-protocols cairo pango libxkbcommon xcb-util-wm xorg-xwayland libinput libliftoff libdisplay-info cpio tomlplusplus hyprlang-git hyprcursor-git hyprwayland-scanner-git xcb-util-errors hyprutils-git glaze hyprgraphics-git aquamarine-git re2 hyprland-qtutils teams-for-linux brave-bin
+yay -Sy --needed --noconfirm mkinitcpio-firmware ast-firmware ffmpeg-full ninja gcc cmake meson libxcb xcb-proto xcb-util xcb-util-keysyms libxfixes libx11 libxcomposite libxrender libxcursor pixman wayland-protocols cairo pango libxkbcommon xcb-util-wm xorg-xwayland libinput libliftoff libdisplay-info cpio tomlplusplus hyprlang-git hyprcursor-git hyprwayland-scanner-git xcb-util-errors hyprutils-git glaze hyprgraphics-git aquamarine-git re2 hyprland-qtutils teams-for-linux brave-bin
 
 echo "⚙️  Installing Flatpak..."
 sudo flatpak install flathub dev.vencord.Vesktop
