@@ -95,10 +95,10 @@ clone_and_build() {
     
     status "Building $dir_name from source..."
     sudo rm -rf "$INSTALL_DIR/$dir_name"
-    git clone "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
+    sudo git clone "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
     cd "$INSTALL_DIR/$dir_name" || error "Failed to enter $dir_name directory"
-    chown -R $USER:$USER . || error "Failed to change ownership"
-    chmod -R 755 . || error "Failed to change permissions"
+    sudo chown -R $USER:$USER . || error "Failed to change ownership"
+    sudo chmod -R 755 . || error "Failed to change permissions"
     eval "$build_cmd" || warning "Failed to build/install $dir_name"
     cd - >/dev/null || error "Failed to return to previous directory"
 }
@@ -135,6 +135,7 @@ install_firmware() {
 	ast-firmware mkinitcpio-firmware
     
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
+    
     clone_and_build "https://github.com/fhunleth/blstrobe.git" "blstrobe" \
 		    "./autogen.sh && ./configure && make && sudo make install"    
 }
@@ -185,6 +186,12 @@ install_hyprland_stack() {
     # Required dependencies
     install_packages \
         xdg-desktop-portal-hyprland hyprpolkitagent
+
+    status "Installing Hyprland JakooLit DotFiles..."    
+    sudo git clone --depth=1 https://github.com/JaKooLit/Arch-Hyprland.git ~/Arch-Hyprland
+    cd ~/Arch-Hyprland
+    sudo chmod +x install.sh
+    ./install.sh    
 }
 
 install_multimedia() {
@@ -245,13 +252,13 @@ install_apps() {
 configure_system() {
     status "Configuring system..."
     
-    # Enable services
-    sudo systemctl enable --now NetworkManager
-    sudo systemctl enable --now bluetooth
-    sudo systemctl enable --now docker
-    
     # Add user to required groups
     sudo usermod -aG docker,video,input,gamemode $USER
+
+    # Get the dot files
+    sudo wget -P ~/.config/hypr/Monitor_Profiles https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/dotfiles/120hz.conf
+
+    sudo wget -P /etc/ https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/dotfiles/gamemode.ini
 }
 
 # ======================
@@ -277,9 +284,9 @@ main() {
     read -p "Install gaming support? (y/n) " -n 1 -r
     echo
     [[ $REPLY =~ ^[Yy]$ ]] && install_gaming
-    
+
+    install_apps    
     install_hyprland_stack
-    install_apps
     configure_system
     
     # Cleanup
