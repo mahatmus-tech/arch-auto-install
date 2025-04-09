@@ -220,21 +220,19 @@ install_compressions() {
         cabextract cpio unace tar
 }
 
-install_optional() {
+install_apps() {
     status "Installing optional packages..."
     install_packages \
         emacs micro \
-        htop nvtop btop \
-        docker docker-compose flatpak
-    
-    # Flatpak setup
-    if ! command -v flatpak &>/dev/null; then
-        sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-        sudo flatpak install -y flathub \
-            dev.vencord.Vesktop \
-            com.freerdp.FreeRDP \
-            com.spotify.Client
-    fi
+        htop nvtop btop fastfetch kitty man-db \
+        docker docker-compose flatpak       
+
+    install_aur \
+	brave-bin teams-for-linux
+
+    flatpak install flathub dev.vencord.Vesktop
+    flatpak install com.freerdp.FreeRDP
+
 }
 
 # ======================
@@ -277,7 +275,7 @@ main() {
     [[ $REPLY =~ ^[Yy]$ ]] && install_gaming
     
     install_hyprland_stack
-    install_optional
+    install_apps
     configure_system
     
     # Cleanup
