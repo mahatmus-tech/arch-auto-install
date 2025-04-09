@@ -10,31 +10,31 @@ sudo pacman -Syu --needed --noconfirm
 echo "📦 Installing basics..."
 sudo pacman -S --needed --noconfirm git base-devel curl python
 
-echo "📦 Cloning yay..."
+echo "⚙️  Instaling yay..."
 INSTALL_DIR="/tmp/yay-bin"
 sudo rm -rf "$INSTALL_DIR"
 sudo git clone https://aur.archlinux.org/yay-bin.git "$INSTALL_DIR"
-
-echo "⚙️  Instaling yay..."
 cd "$INSTALL_DIR"
 sudo chown $USER:$USER "$INSTALL_DIR"
 sudo chmod 755 "$INSTALL_DIR"
 makepkg -si
 
-echo "📦 Cloning uPD72020x-Firmware..."
+echo "⚙️  Instaling uPD72020x..."
 INSTALL_DIR="/tmp/uPD72020x-Firmware"
 sudo rm -rf "$INSTALL_DIR"
 sudo git clone https://github.com/mahatmus-tech/uPD72020x-Firmware.git "$INSTALL_DIR"
-
-echo "⚙️  Instaling uPD72020x..."
 cd "$INSTALL_DIR"
 sudo chown $USER:$USER "$INSTALL_DIR"
 sudo chmod 755 "$INSTALL_DIR"
 makepkg -si
 
 echo "⚙️  Installing BLSTROBE..."
-sudo git clone https://github.com/fhunleth/blstrobe.git
-cd blstrobe
+INSTALL_DIR="/tmp/blstrobe"
+sudo rm -rf "$INSTALL_DIR"
+sudo git clone https://github.com/fhunleth/blstrobe.git "$INSTALL_DIR"
+cd "$INSTALL_DIR"
+sudo chown $USER:$USER "$INSTALL_DIR"
+sudo chmod 755 "$INSTALL_DIR"
 ./autogen.sh
 ./configure
 make
