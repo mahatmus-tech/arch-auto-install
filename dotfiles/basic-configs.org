@@ -197,7 +197,7 @@ terminal execution:
   # -g resolução, -M use local mouse cursor, -E -E: disable encryption from client to server
   # -z: enable rdp compression, -x: RDP5 experience (l[lan]) -d: domain
   # 
-  nohup rdesktop -g 1920 /h1080 -M -E -z -x l -d SENIOR -u ara.pasta -p Mahatma2002 192.168.1.22 &
+  nohup rdesktop -g 1920x1080 -M -E -z -x l -d SENIOR -u ara.pasta -p Mahatma2002 192.168.1.22 &
 
   # flatpak
   nohup flatpak run com.freerdp.FreeRDP /u:ara.pasta /p:Mahatma2002 /d:SENIOR /size:1920x1080 +compression +mouse-motion +clipboard /network:lan /dynamic-resolution /v:192.168.1.22 &
