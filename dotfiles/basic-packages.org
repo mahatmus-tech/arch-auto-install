@@ -1,0 +1,154 @@
+#+TITLE: Installing Linux Packages
+#+PROPERTY: header-args:sh :shebang #!/usr/bin/env zsh :results output replace
+* Contents :toc:
+- [[#start-packages][Start Packages]]
+  - [[#arch-microcode][arch microcode]]
+  - [[#essential][essential]]
+  - [[#packages][packages]]
+  - [[#firmwares][firmware's]]
+  - [[#terminal][terminal]]
+  - [[#essential-codecs--libraries][essential codecs & libraries]]
+  - [[#essential-compresstion--decompression][essential compresstion & decompression]]
+  - [[#graphics][graphics]]
+  - [[#hyprland][hyprland]]
+  - [[#others][Others]]
+- [[#apps][Apps]]
+
+* Start Packages
+** arch microcode
+#+begin_src sh
+  sudo pacman -S amd-ucode
+#+end_src
+
+** essential
+#+begin_src sh
+  sudo pacman -S git base-devel curl python ansible
+#+end_src
+
+** packages
+#+begin_src sh
+  # support to flatpak installs
+  sudo pacman -S --needed flatpak
+  # YAY repo
+  git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+#+end_src
+
+** firmware's
+#+begin_src sh
+  
+  # basic firmwares
+  sudo pacman -S linux-headers linux-firmware linux-firmware-qlogic
+
+  # iniframes firmwares
+  # https://wiki.archlinux.org/title/Mkinitcpio#Possibly_missing_firmware_for_module_XXXX
+  yay -S ast-firmware
+  yay -S mkinitcpio-firmware
+  # the upd72020x-fw link is not found. So use my own pkg version
+  git clone https://github.com/mahatmus-tech/uPD72020x-Firmware.git && cd uPD72020x-Firmware && makepkg -si
+#+end_src
+
+** terminal
+#+begin_src sh
+  # terminal
+  sudo pacman -S kitty
+  # manual in terminal
+  sudo pacman -S man-db
+#+end_src
+
+** essential codecs & libraries
+#+begin_src sh
+  
+  # GStreamer (for applications using it)
+  sudo pacman -S gst-libav gst-plugins-bad gst-plugins-good gst-plugins-ugly ffmpeg gstreamer
+  # GStreamer & FFmpeg Dependencies
+  sudo pacman -S libva libvdpau
+  # Audio Codecs
+  sudo pacman -S lame flac wavpack opus faac faad2
+  # Video Codecs
+  sudo pacman -S x264 x265 libvpx dav1d
+  # Miscellaneous & Proprietary Codecs
+  sudo pacman -S aom libmpeg2 libmad
+  # more features
+  yay -S ffmpeg-full
+
+#+end_src
+
+** essential compresstion & decompression
+#+begin_src sh
+  sudo pacman -S zip unzip p7zip gzip bzip2 xz tar unrar lrzip zstd lzip lzop arj cabextract cpio unace
+#+end_src
+
+** graphics
+*** Nvidia
+#+begin_src sh
+  # nvidia
+     sudo pacman -S nvidia-dkms nvidia-utils nvidia-settings lib32-nvidia-utils
+
+  # Hardware Acceleration
+     sudo pacman -S libva-nvidia-driver egl-wayland vulkan-icd-loader vulkan-tools libglvnd opencl-nvidia
+     
+  # Wine - https://github.com/lutris/docs/blob/master/WineDependencies.md
+     sudo pacman -S wine-staging
+     sudo pacman -S --needed --asdeps giflib lib32-giflib gnutls lib32-gnutls v4l-utils lib32-v4l-utils libpulse \
+  	lib32-libpulse alsa-plugins lib32-alsa-plugins alsa-lib lib32-alsa-lib sqlite lib32-sqlite libxcomposite \
+  	lib32-libxcomposite ocl-icd lib32-ocl-icd libva lib32-libva gtk3 lib32-gtk3 gst-plugins-base-libs \
+  	lib32-gst-plugins-base-libs vulkan-icd-loader lib32-vulkan-icd-loader sdl2-compat lib32-sdl2-compat
+     
+#+end_src
+
+*** Wayland
+#+begin_src sh
+  # Wayland Support
+     sudo pacman -S qt5-wayland qt6-wayland qt5ct qt6ct
+#+end_src
+
+*** Monitor BENQ Tweak1350
+#+begin_src sh
+  
+  # Install Strobe
+  git clone https://github.com/fhunleth/blstrobe.git && cd blstrobe && ./autogen.sh && ./configure && make && sudo make install
+
+#+end_src
+
+** hyprland
+#+begin_src sh
+  # https://wiki.hyprland.org/
+
+  # Manual Dependencies
+  yay -S ninja gcc cmake meson libxcb xcb-proto xcb-util xcb-util-keysyms libxfixes libx11 libxcomposite libxrender libxcursor pixman wayland-protocols cairo pango libxkbcommon xcb-util-wm xorg-xwayland libinput libliftoff libdisplay-info cpio tomlplusplus hyprlang-git hyprcursor-git hyprwayland-scanner-git xcb-util-errors hyprutils-git glaze hyprgraphics-git aquamarine-git re2 hyprland-qtutils
+
+  # Installing using CMAKE
+  git clone --recursive https://github.com/hyprwm/Hyprland
+  cd Hyprland
+  make all && sudo make install  git clone --recursive https://github.com/hyprwm/Hyprland
+  cd Hyprland
+  make all && sudo make install
+#+end_src
+
+** Others
+#+begin_src sh
+  sudo pacman -S wlr-randr jq
+#+end_src
+
+* Apps
+#+begin_src sh
+  # editor
+  sudo pacman -S emacs micro
+  # communication
+  flatpak install flathub dev.vencord.Vesktop
+  yay -S teams-for-linux
+  # browser
+  yay -S brave-bin
+  # RDP
+  flatpak install com.freerdp.FreeRDP
+  # terminal & utilities
+  sudo pacman -S fastfetch htop nvtop pokemon-colorscripts
+  # gaming
+  sudo pacman -S steam gamescope gamemode lib32-gamemode mangohud lib32-mangohud
+  # waybar
+  sudo pacman -S waybar
+  # screenshot
+  sudo pacman -S grim slurp
+#+end_src
+
+
