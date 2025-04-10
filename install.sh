@@ -108,6 +108,11 @@ clone_and_build() {
 # ======================
 install_base_system() {
     status "Updating system and installing base packages..."
+
+    # change pacman parallel downloads
+    sudo sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
+
+    # Update packages
     sudo pacman -Syu --needed --noconfirm
     install_packages git base-devel curl python flatpak
     
@@ -233,13 +238,23 @@ install_apps() {
 # ======================
 configure_system() {
     status "Configuring system..."
+
+    # Synchronize package database
+    sudo pacman -Sy --noconfirm
     
     # Add user to required groups
     sudo usermod -aG docker,video,input,gamemode $USER
 
     # Get the dot files
-   # sudo wget -P ~/.config/hypr/Monitor_Profiles https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/dotfiles/120hz.conf
+
+    # monitor profile
     sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/dotfiles/gamemode.ini
+
+    # get blstrobe script	
+    mkdir -p ~/Documents/scripts
+    cd ~/Documents/scripts
+    sudo wget -P https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/dotfiles/blstrobe-start.sh
+    sudo chmod +x blstrobe-start.sh
 }
 
 # ======================
