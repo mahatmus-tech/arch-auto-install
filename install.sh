@@ -155,7 +155,7 @@ install_graphics_stack() {
                 nvidia-dkms nvidia-utils nvidia-settings \
 		lib32-nvidia-utils libva-nvidia-driver opencl-nvidia \
   		vulkan-tools vulkan-icd-loader lib32-vulkan-icd-loader \
-                libglvnd
+                vulkan-headers
             ;;
         "amd")
             install_packages \
@@ -171,16 +171,18 @@ install_graphics_stack() {
 
     # Input & GPU Acceleration
     install_packages \
-        libinput mesa lib32-mesa
+        libinput libglvnd mesa lib32-mesa \
+	libvdpau lib32-libvdpau libva lib32-libva 
 
     # Wayland Packages
     install_packages \
-        wayland wayland-protocols lib32-wayland xorg-xwayland lib32-xorg-xwayland egl-wayland
-	
-        mesa lib32-mesa vulkan-icd-loader lib32-vulkan-icd-loader \
-        wayland-protocols xorg-xwayland libglvnd \
-        qt5-wayland qt6-wayland qt5ct qt6ct \
-        egl-wayland libva libvdpau vulkan-tools    
+        wayland wayland-protocols lib32-wayland xorg-xwayland \
+	lib32-xorg-xwayland egl-wayland qt5-wayland qt6-wayland \
+        egl-wayland
+
+    # QT Support
+    install_packages \
+        qt5ct qt6ct
 }
 
 install_hyprland_stack() {
