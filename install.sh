@@ -178,7 +178,7 @@ install_graphics_stack() {
     install_packages \
         wayland wayland-protocols lib32-wayland xorg-xwayland \
 	lib32-xorg-xwayland egl-wayland qt5-wayland qt6-wayland \
-        egl-wayland
+        egl-wayland lib32-egl-wayland
 
     # QT Support
     install_packages \
@@ -222,13 +222,13 @@ install_multimedia() {
 install_gaming() {
     status "Installing gaming support..."
     install_packages \
-        steam gamescope gamemode lib32-gamemode mangohud lib32-mangohud \
-        wine-staging lutris
-
+        steam lutris wine-staging goverlay \
+	gamescope gamemode lib32-gamemode mangohud lib32-mangohud        
+         
     install_aur \
       proton-ge-custom-bin
     
-    # Wine dependencies
+    # Wine dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
     install_packages_asdeps \
         giflib lib32-giflib gnutls lib32-gnutls v4l-utils \
         lib32-v4l-utils libpulse lib32-libpulse alsa-plugins \
