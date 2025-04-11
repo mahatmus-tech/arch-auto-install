@@ -217,6 +217,9 @@ install_gaming() {
     install_packages \
         steam gamescope gamemode lib32-gamemode mangohud lib32-mangohud \
         wine-staging lutris
+
+    install_aur \
+      proton-ge-custom-bin
     
     # Wine dependencies
     install_packages_asdeps \
