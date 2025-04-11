@@ -209,15 +209,6 @@ install_multimedia() {
 
 install_gaming() {
     status "Installing gaming support..."
-
-    # Gamemode Dependencies - https://github.com/FeralInteractive/gamemode
-    install_packages \
-      meson systemd git dbus libinih
-
-    # Installing gamemode
-    clone_and_build "https://github.com/FeralInteractive/gamemode.git" "gamemode" \
-	            "git checkout && ./bootstrap.sh"
-    
     install_packages \
         steam gamescope gamemode lib32-gamemode mangohud lib32-mangohud \
         wine-staging lutris
