@@ -156,6 +156,10 @@ install_graphics_stack() {
 		lib32-nvidia-utils libva-nvidia-driver opencl-nvidia \
   		vulkan-tools vulkan-icd-loader lib32-vulkan-icd-loader \
                 vulkan-headers
+# incluir esse stript que faz tudo
+#  git clone https://github.com/Frogging-Family/nvidia-all.git
+#  cd nvidia-all
+#  makepkg -si
             ;;
         "amd")
             install_packages \
