@@ -159,9 +159,10 @@ install_graphics_stack() {
     case $GPU in
         "nvidia")
             install_packages \
-                nvidia-dkms nvidia-utils nvidia-settings \
-                lib32-nvidia-utils libva-nvidia-driver \
-                opencl-nvidia
+                nvidia-dkms nvidia-utils nvidia-settings 
+		lib32-nvidia-utils libva-nvidia-driver 
+                egl-wayland vulkan-icd-loader vulkan-tools
+		libglvnd opencl-nvidia
             ;;
         "amd")
             install_packages \
