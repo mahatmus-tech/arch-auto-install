@@ -148,21 +148,14 @@ install_firmware() {
 install_graphics_stack() {
     status "Installing graphics stack for $GPU..."
     
-    # Common graphics packages
-    install_packages \
-        mesa lib32-mesa vulkan-icd-loader lib32-vulkan-icd-loader \
-        wayland-protocols xorg-xwayland libglvnd \
-        qt5-wayland qt6-wayland qt5ct qt6ct \
-        egl-wayland libva libvdpau vulkan-tools
-    
     # GPU-specific packages
     case $GPU in
         "nvidia")
             install_packages \
-                nvidia-dkms nvidia-utils nvidia-settings 
-		lib32-nvidia-utils libva-nvidia-driver 
-                egl-wayland vulkan-icd-loader vulkan-tools
-		libglvnd opencl-nvidia
+                nvidia-dkms nvidia-utils nvidia-settings \
+		lib32-nvidia-utils libva-nvidia-driver opencl-nvidia \
+  		vulkan-tools vulkan-icd-loader lib32-vulkan-icd-loader \
+                libglvnd
             ;;
         "amd")
             install_packages \
@@ -175,6 +168,19 @@ install_graphics_stack() {
                 intel-media-sdk libva-intel-driver
             ;;
     esac
+
+    # Input & GPU Acceleration
+    install_packages \
+        libinput mesa lib32-mesa
+
+    # Wayland Packages
+    install_packages \
+        wayland wayland-protocols lib32-wayland xorg-xwayland lib32-xorg-xwayland egl-wayland
+	
+        mesa lib32-mesa vulkan-icd-loader lib32-vulkan-icd-loader \
+        wayland-protocols xorg-xwayland libglvnd \
+        qt5-wayland qt6-wayland qt5ct qt6ct \
+        egl-wayland libva libvdpau vulkan-tools    
 }
 
 install_hyprland_stack() {
@@ -190,8 +196,7 @@ install_hyprland_stack() {
 	
     # Builing and installing Hyprland 
     clone_and_build "--recursive https://github.com/hyprwm/Hyprland" "Hyprland" \
-		    "make all && sudo make install"
-      
+		    "make all && sudo make install"      
     
     # Required dependencies
     install_packages \
@@ -295,12 +300,12 @@ main() {
     install_base_system
     install_aur_helper
     install_firmware
-    install_graphics_stack
     install_multimedia
     install_compressions
+    install_graphics_stack
     install_gaming
-    install_apps    
-    install_hyprland_stack
+    install_hyprland_stack    
+    install_apps
     configure_system
     
     # Cleanup
