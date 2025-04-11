@@ -177,10 +177,24 @@ install_graphics_stack() {
 }
 
 install_hyprland_stack() {
-    status "Installing Hyprland and components..."    
+    status "Installing Hyprland and components..."
+    
+    # Installing Dendencies of Hyprland
+    install_aur \
+    	ninja gcc cmake meson libxcb xcb-proto xcb-util xcb-util-keysyms libxfixes 
+        libx11 libxcomposite libxrender libxcursor pixman wayland-protocols cairo 
+	pango libxkbcommon xcb-util-wm xorg-xwayland libinput libliftoff libdisplay-info 
+        cpio tomlplusplus hyprlang-git hyprcursor-git hyprwayland-scanner-git xcb-util-errors 
+        hyprutils-git glaze hyprgraphics-git aquamarine-git re2 hyprland-qtutils
+	
+    # Builing and installing Hyprland 
+    clone_and_build "--recursive https://github.com/hyprwm/Hyprland" "Hyprland" \
+		    "make all && sudo make install"
+      
+    
     # Required dependencies
     install_packages \
-        xdg-desktop-portal-hyprland hyprpolkitagent hyprland
+        xdg-desktop-portal-hyprland hyprpolkitagent
 }
 
 install_multimedia() {
@@ -195,6 +209,15 @@ install_multimedia() {
 
 install_gaming() {
     status "Installing gaming support..."
+
+    # Gamemode Dependencies - https://github.com/FeralInteractive/gamemode
+    install_packages \
+      meson systemd git dbus libinih
+
+    # Installing gamemode
+    clone_and_build "https://github.com/FeralInteractive/gamemode.git" "gamemode" \
+	            "git checkout && ./bootstrap.sh"
+    
     install_packages \
         steam gamescope gamemode lib32-gamemode mangohud lib32-mangohud \
         wine-staging lutris
