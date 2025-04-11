@@ -86,7 +86,7 @@ terminal execution:
 *** 1. Set gamemode server to startup with hyprland
 edit file: /home/mahatmus/.config/hypr/UserConfigs/Startup_Apps.conf
 #+begin_src conf
-  exec-once = systemctl --user start gamemoded.services
+  exec-once = systemctl --user start gamemoded.service
 #+end_src
   
 *** 2. Add Your User to the =gamemode= Group
