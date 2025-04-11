@@ -194,7 +194,11 @@ install_hyprland_stack() {
     
     # Required dependencies
     install_packages \
-        xdg-desktop-portal-hyprland hyprpolkitagent
+        hyprpolkitagent
+	
+    install_aur \
+      xdg-desktop-portal-hyprland-git
+ 
 }
 
 install_multimedia() {
