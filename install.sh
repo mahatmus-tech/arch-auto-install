@@ -120,6 +120,14 @@ install_base_system() {
     mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config}
 }
 
+install_personal_kernel() {
+    status "Building kernel linux-tkg ..."
+    git clone https://github.com/Frogging-Family/linux-tkg.git
+    cd linux-tkg
+    # Optional: edit the "customization.cfg" file
+    makepkg -si
+}
+
 install_aur_helper() {
     status "Installing yay (AUR helper)..."
     clone_and_build "$YAY_URL" "yay-bin"
@@ -306,6 +314,7 @@ main() {
     install_base_system
     install_aur_helper
     install_firmware
+    install_personal_kernel
     install_multimedia
     install_compressions
     install_graphics_stack
