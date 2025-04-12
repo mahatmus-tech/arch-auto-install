@@ -22,6 +22,56 @@ terminal execution:
 #  sh <(curl -L https://raw.githubusercontent.com/JaKooLit/Arch-Hyprland/main/auto-install.sh)
 #+end_src
 
+* Hyprland
+terminal execution:
+#+begin_src conf
+
+# Window rules for gamming
+# BLUR & FULLSCREEN
+windowrulev2 = nodim, tag:games*
+windowrulev2 = noblur, tag:games*
+windowrulev2 = noanim, tag:games*
+windowrulev2 = noborder, tag:games*
+windowrulev2 = noshadow, tag:games*
+windowrulev2 = norounding, tag:games*
+windowrulev2 = content game, tag:games*
+windowrulev2 = immediate, tag:games*
+windowrulev2 = fullscreen, tag:games*
+windowrulev2 = monitor DP-3, tag:games*
+windowrulev2 = allowsinput, tag:games*
+windowrulev2 = stayfocused, tag:games*
+
+# Remote Senior
+windowrulev2 = maximize, class:^(wl-freerdp)$
+windowrulev2 = idleinhibit always, class:^(wl-freerdp)$
+#windowrulev2 = maximize, class:^(sdl-freerdp)$
+#windowrulev2 = idleinhibit always, class:^(sdl-freerdp)$
+windowrulev2 = idleinhibit always, class:^(teams-for-linux)$
+
+# User envrioments
+bind = $mainMod SHIFT, R, exec, ~/Documents/scripts/remote-senior.sh
+bind = $mainMod SHIFT, C, exec, ~/Documents/scripts/camera-sara.sh
+
+# User Settings
+input.accel_profile = flat
+input.sensitivity = 0
+opengl {
+  nvidia_anti_flicker = true
+}
+render {
+  explicit_sync = 2
+  explicit_sync_kms = 2
+  direct_scanout = 2
+}
+
+cursor {
+  no_hardware_cursors =  0 # change to 1 if want to disable
+  use_cpu_buffer = 2
+  default_monitor = DP-3
+}
+
+#+end_src
+
 * Monitors
 *** 2 Monitors ON - TV OFF
 create file: /home/mahatmus/.config/hypr/Monitor_Profiles/120hz.conf
