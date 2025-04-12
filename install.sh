@@ -133,7 +133,8 @@ install_personal_kernel() {
 	title   Arch Linux (linux-tkg)
 	linux   /vmlinuz-linux614-tkg-eevdf
 	initrd  /initramfs-linux614-tkg-eevdf.img
-	options root=PARTUUID=52cd2305-c1ca-4c5c-ba62-9b265a1cf699 rw rootfstype=ext4 nvidia-drm.modeset=1 nvidia_drm.fbdev=1 usbcore.autosuspend=-1 usbhid.mousepoll=8    
+	options root=PARTUUID=52cd2305-c1ca-4c5c-ba62-9b265a1cf699 rw rootfstype=ext4 nvidia-drm.modeset=1 nvidia_drm.fbdev=1 usbcore.autosuspend=-1 usbhid.mousepoll=8
+ 
  
     #create the linux-tkg-fallback.conf file in /boot/loader/entries
 	# Created by: mahatmus
@@ -142,9 +143,10 @@ install_personal_kernel() {
 	initrd  /initramfs-linux614-tkg-eevdf-fallback.img 
 	options root=PARTUUID=52cd2305-c1ca-4c5c-ba62-9b265a1cf699 rw rootfstype=ext4 nvidia-drm.modeset=1 nvidia_drm.fbdev=1 
    # verificar qual é o PARTUUID
- 
+
+  sudo bootctl update
   # set linux-tkg as default
-  sudo bootctl set-default linux-tkg.conf
+  sudo bootctl set-default linux-tkg.conf  
 }
 
 install_aur_helper() {
