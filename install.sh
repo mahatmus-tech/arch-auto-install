@@ -310,6 +310,15 @@ configure_system() {
     # Add ftrim to ssd
     sudo systemctl enable --now fstrim.timer
 
+    # set async journal
+    sudo tune2fs -O journal_async_commit $(findmnt -n -o SOURCE /)
+	
+    # set fstab
+    
+    # remount the root partition
+    sudo mount -o remount /
+    
+
     # Get the dot files
 
     # monitor profile
