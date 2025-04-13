@@ -337,6 +337,8 @@ main() {
     # Installation phases
     install_base_system
     install_aur_helper
+    install_snap
+    https://snapcraft.io/install/spotify/arch#install
     install_firmware
     install_personal_kernel
     install_multimedia
