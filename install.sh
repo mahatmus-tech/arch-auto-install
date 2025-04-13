@@ -114,7 +114,7 @@ install_base_system() {
 
     # Update packages
     sudo pacman -Syu --needed --noconfirm
-    install_packages git base-devel curl python flatpak
+    install_packages git base-devel curl python flatpak meson systemd dbus libinih
     
     # Create user directories
     mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config}
