@@ -307,6 +307,9 @@ configure_system() {
     # Add user to required groups
     sudo usermod -aG docker,video,input,gamemode $USER
 
+    # Add ftrim to ssd
+    sudo systemctl enable --now fstrim.timer
+
     # Get the dot files
 
     # monitor profile
