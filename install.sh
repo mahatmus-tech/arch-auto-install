@@ -312,9 +312,13 @@ configure_system() {
 
     # set async journal
     sudo tune2fs -O journal_async_commit $(findmnt -n -o SOURCE /)
-	
-    # set fstab
-    
+    sudo tune2fs -o journal_data_writeback $(findmnt -n -o SOURCE /)        
+    # Define the UUID of the partition
+    UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
+    # Define the new mount options
+    NEW_MOUNT_OPTIONS="defaults,noatime"
+    # Edit the fstab file to change the mount options
+    sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID /mnt ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab    
     # remount the root partition
     sudo mount -o remount /
     
