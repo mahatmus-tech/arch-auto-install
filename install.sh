@@ -311,8 +311,8 @@ configure_system() {
     sudo systemctl enable --now fstrim.timer
 
     # set async journal
-    sudo tune2fs -O journal_async_commit $(findmnt -n -o SOURCE /)
-    sudo tune2fs -o journal_data_writeback $(findmnt -n -o SOURCE /)        
+    sudo tune2fs -E mount_opts=journal_async_commit $(findmnt -n -o SOURCE /)
+    sudo tune2fs -o journal_data_writeback $(findmnt -n -o SOURCE /)
     # Define the UUID of the partition
     UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
     # Define the new mount options
