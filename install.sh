@@ -114,7 +114,7 @@ install_base_system() {
 
     # Update packages
     sudo pacman -Syu --needed --noconfirm
-    install_packages git base-devel curl python flatpak meson systemd dbus libinih
+    install_packages git base-devel curl python meson systemd dbus libinih sysfsutils
     
     # Create user directories
     mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config}
@@ -351,6 +351,7 @@ main() {
     install_base_system
     install_aur_helper
     install_snap
+    install_flatpak
     https://snapcraft.io/install/spotify/arch#install
     install_firmware
     install_personal_kernel
