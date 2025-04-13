@@ -318,7 +318,7 @@ configure_system() {
     # Define the new mount options
     NEW_MOUNT_OPTIONS="defaults,noatime"
     # Edit the fstab file to change the mount options
-    sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID /mnt ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab    
+    sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID \/ ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab    
     # remount the root partition
     sudo mount -o remount /
     
