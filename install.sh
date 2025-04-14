@@ -120,15 +120,19 @@ install_base_system() {
     mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config,Apps}
 }
 
-install_personal_kernel() {
+install_tkg_kernel() {
     # clone linux-tkg kernel
-    status "Cloning kernel linux-tkg ..."
+    status "Cloning linux-tkg kernel..."
     clone_and_build "git clone https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
-		    "echo Linux TKG Downloaded!"
+		    "echo Repository Linux TKG has been cloned!"
 
-    #include linux-tkg to boot with systemd
-    #create the linux-tkg.conf file in /boot/loader/entries
-	# Created by: mahatmus
+    #Download linux-tkg kernel 
+    sudo wget -P /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/tkg-kernel/vmlinuz-linux614-tkg-eevdf
+    sudo wget -P /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/tkg-kernel/initramfs-linux614-tkg-eevdf.img
+    sudo wget -P /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/tkg-kernel/initramfs-linux614-tkg-eevdf-fallback.img
+
+    #create the linux-tkg.conf file for systemd
+    cd /boot/loader/entries
         # Created by: mahatmus
 	title   Arch Linux (linux-tkg)
 	linux   /vmlinuz-linux614-tkg-eevdf
@@ -138,12 +142,13 @@ install_personal_kernel() {
  
     #create the linux-tkg-fallback.conf file in /boot/loader/entries
 	# Created by: mahatmus
-	# Created by: mahatmus
 	title   Arch Linux (linux-tkg-fallback)
 	linux   /vmlinuz-linux614-tkg-eevdf
 	initrd  /initramfs-linux614-tkg-eevdf-fallback.img 
 	options root=PARTUUID=52cd2305-c1ca-4c5c-ba62-9b265a1cf699 rw rootfstype=ext4 nvidia-drm.modeset=1 nvidia_drm.fbdev=1 usbcore.autosuspend=-1 usbhid.mousepoll=1 usbhid.kbpoll=1 usbhid.jspoll=1 usbhid.elsepoll=1 usbhid.quirks=0x2516:0x0141:0x0002
    # verificar qual é o PARTUUID
+   blkid -s UUID -o value $(findmnt -n -o SOURCE /)   
+   findmnt -n -o SOURCE /
 
   sudo bootctl update
   # set linux-tkg as default
