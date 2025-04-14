@@ -5,7 +5,7 @@ set -euo pipefail
 # ======================
 # CONFIGURATION
 # ======================
-INSTALL_DIR="/tmp/arch-install"
+INSTALL_DIR="~/Apps"
 YAY_URL="https://aur.archlinux.org/yay-bin.git"
 COLORS_ENABLED=true
 
@@ -114,34 +114,35 @@ install_base_system() {
 
     # Update packages
     sudo pacman -Syu --needed --noconfirm
-    install_packages git base-devel curl python meson systemd dbus libinih sysfsutils
+    install_packages git base-devel curl python meson systemd dbus libinih
     
     # Create user directories
-    mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config}
+    mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config,Apps}
 }
 
 install_personal_kernel() {
-    status "Building kernel linux-tkg ..."
-    git clone https://github.com/Frogging-Family/linux-tkg.git
-    cd linux-tkg
-    # Optional: edit the "customization.cfg" file
-    makepkg -si
+    # clone linux-tkg kernel
+    status "Cloning kernel linux-tkg ..."
+    clone_and_build "git clone https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
+		    "echo Linux TKG Downloaded!"
 
     #include linux-tkg to boot with systemd
     #create the linux-tkg.conf file in /boot/loader/entries
 	# Created by: mahatmus
+        # Created by: mahatmus
 	title   Arch Linux (linux-tkg)
 	linux   /vmlinuz-linux614-tkg-eevdf
 	initrd  /initramfs-linux614-tkg-eevdf.img
-	options root=PARTUUID=52cd2305-c1ca-4c5c-ba62-9b265a1cf699 rw rootfstype=ext4 nvidia-drm.modeset=1 nvidia_drm.fbdev=1 usbcore.autosuspend=-1 usbhid.mousepoll=8
+	options root=PARTUUID=52cd2305-c1ca-4c5c-ba62-9b265a1cf699 rw rootfstype=ext4 nvidia-drm.modeset=1 nvidia_drm.fbdev=1 usbcore.autosuspend=-1 usbhid.mousepoll=1 usbhid.kbpoll=1 usbhid.jspoll=1 usbhid.elsepoll=1 usbhid.quirks=0x2516:0x0141:0x0002
  
  
     #create the linux-tkg-fallback.conf file in /boot/loader/entries
 	# Created by: mahatmus
+	# Created by: mahatmus
 	title   Arch Linux (linux-tkg-fallback)
 	linux   /vmlinuz-linux614-tkg-eevdf
 	initrd  /initramfs-linux614-tkg-eevdf-fallback.img 
-	options root=PARTUUID=52cd2305-c1ca-4c5c-ba62-9b265a1cf699 rw rootfstype=ext4 nvidia-drm.modeset=1 nvidia_drm.fbdev=1 
+	options root=PARTUUID=52cd2305-c1ca-4c5c-ba62-9b265a1cf699 rw rootfstype=ext4 nvidia-drm.modeset=1 nvidia_drm.fbdev=1 usbcore.autosuspend=-1 usbhid.mousepoll=1 usbhid.kbpoll=1 usbhid.jspoll=1 usbhid.elsepoll=1 usbhid.quirks=0x2516:0x0141:0x0002
    # verificar qual é o PARTUUID
 
   sudo bootctl update
@@ -171,7 +172,7 @@ install_firmware() {
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
     
     clone_and_build "https://github.com/fhunleth/blstrobe.git" "blstrobe" \
-		    "./autogen.sh && ./configure && make && sudo make install"    
+		    "./autogen.sh && ./configure && make && sudo make install"
 }
 
 install_graphics_stack() {
@@ -185,6 +186,8 @@ install_graphics_stack() {
 		lib32-nvidia-utils libva-nvidia-driver opencl-nvidia \
   		vulkan-tools vulkan-icd-loader lib32-vulkan-icd-loader \
                 vulkan-headers
+
+        clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"  
 # incluir esse stript que faz tudo
 #  git clone https://github.com/Frogging-Family/nvidia-all.git
 #  cd nvidia-all
@@ -283,7 +286,7 @@ install_compressions() {
 install_apps() {
     status "Installing optional packages..."
     install_packages \
-        emacs micro kitty man-db \
+        emacs micro kitty man-db sysfsutils \
         htop nvtop btop wget fastfetch \
         docker docker-compose wlr-randr
 
@@ -340,9 +343,6 @@ configure_system() {
 # ======================
 main() {
     echo -e "\n${GREEN}🚀 Starting Arch-Hyprland Automated Installation${NC}"
-    
-    # Create installation directory
-    mkdir -p "$INSTALL_DIR" || error "Failed to create installation directory"
     
     # Detection phase
     detect_system
