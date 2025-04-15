@@ -114,7 +114,7 @@ install_base_system() {
 
     # Update packages
     sudo pacman -Syu --needed --noconfirm
-    install_packages git base-devel curl python meson systemd dbus libinih
+    install_packages git base-devel curl python meson systemd dbus libinih wget
     
     # Create user directories
     mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config,Apps}
@@ -126,43 +126,35 @@ install_tkg_kernel() {
     clone_and_build "git clone https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
 		    "echo Repository Linux TKG has been cloned!"
 
-    #Download linux-tkg kernel 
-    sudo wget -P /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/tkg-kernel/vmlinuz-linux614-tkg-eevdf
-    sudo wget -P /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/tkg-kernel/initramfs-linux614-tkg-eevdf.img
-    sudo wget -P /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/tkg-kernel/initramfs-linux614-tkg-eevdf-fallback.img
+    #Download linux-tkg kernel
+    sudo wget -P /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/vmlinuz-linux614-tkg-eevdf
+    sudo wget -P /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf.img
+    sudo wget -P /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf-fallback.img
+    sudo wget -P /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg.conf
+    sudo wget -P /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg-fallback.conf
 
-    #create the linux-tkg.conf file for systemd
-    entry_template = textwrap.dedent(
-		f"""\
-		# Created by: archinstall
-		# Created on: {self.init_time}
-		title   Arch Linux ({{kernel}}{{variant}})
-		linux   /vmlinuz-{{kernel}}
-		initrd  /initramfs-{{kernel}}{{variant}}.img
-		options {" ".join(self._get_kernel_params(root))}
-		"""
-	)    
+    #Edit the linux-tkg.conf
     cd /boot/loader/entries
-        # Created by: mahatmus
-	title   Arch Linux (linux-tkg)
-	linux   /vmlinuz-linux614-tkg-eevdf
-	initrd  /initramfs-linux614-tkg-eevdf.img
-	options root=PARTUUID=52cd2305-c1ca-4c5c-ba62-9b265a1cf699 rw rootfstype=ext4 nvidia-drm.modeset=1 nvidia_drm.fbdev=1 usbcore.autosuspend=-1 usbhid.mousepoll=1 usbhid.kbpoll=1 usbhid.jspoll=1 usbhid.elsepoll=1 usbhid.quirks=0x2516:0x0141:0x0002
- 
- 
-    #create the linux-tkg-fallback.conf file in /boot/loader/entries
-	# Created by: mahatmus
-	title   Arch Linux (linux-tkg-fallback)
-	linux   /vmlinuz-linux614-tkg-eevdf
-	initrd  /initramfs-linux614-tkg-eevdf-fallback.img 
-	options root=PARTUUID=52cd2305-c1ca-4c5c-ba62-9b265a1cf699 rw rootfstype=ext4 nvidia-drm.modeset=1 nvidia_drm.fbdev=1 usbcore.autosuspend=-1 usbhid.mousepoll=1 usbhid.kbpoll=1 usbhid.jspoll=1 usbhid.elsepoll=1 usbhid.quirks=0x2516:0x0141:0x0002
-   # verificar qual é o PARTUUID
-   blkid -s UUID -o value $(findmnt -n -o SOURCE /)   
-   findmnt -n -o SOURCE /
+    options root=PARTUUID=52cd2305-c1ca-4c5c-ba62-9b265a1cf699 rw rootfstype=ext4 nvidia-drm.modeset=1 nvidia_drm.fbdev=1 usbcore.autosuspend=-1 usbhid.mousepoll=1 usbhid.kbpoll=1 usbhid.jspoll=1 usbhid.elsepoll=1 usbhid.quirks=0x2516:0x0141:0x0002
+    #Edit the linux-tkg-fallback.conf
+    options root=PARTUUID=52cd2305-c1ca-4c5c-ba62-9b265a1cf699 rw rootfstype=ext4 nvidia-drm.modeset=1 nvidia_drm.fbdev=1 usbcore.autosuspend=-1 usbhid.mousepoll=1 usbhid.kbpoll=1 usbhid.jspoll=1 usbhid.elsepoll=1 usbhid.quirks=0x2516:0x0141:0x0002
+    # verificar qual é o PARTUUID
+    blkid -s UUID -o value $(findmnt -n -o SOURCE /)   
+    findmnt -n -o SOURCE /
 
-  sudo bootctl update
-  # set linux-tkg as default
-  sudo bootctl set-default linux-tkg.conf  
+    sudo bootctl update
+    # set linux-tkg as default
+    sudo bootctl set-default linux-tkg.conf
+
+    # set async journal
+    sudo tune2fs -E mount_opts=journal_async_commit $(findmnt -n -o SOURCE /)
+    sudo tune2fs -o journal_data_writeback $(findmnt -n -o SOURCE /)
+    # Define the UUID of the partition
+    UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
+    # Define the new mount options
+    NEW_MOUNT_OPTIONS="defaults,noatime"
+    # Edit the fstab file to change the mount options
+    sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID|" /etc/fstab
 }
 
 install_aur_helper() {
@@ -302,7 +294,7 @@ install_apps() {
     status "Installing optional packages..."
     install_packages \
         emacs micro kitty man-db sysfsutils \
-        htop nvtop btop wget fastfetch \
+        htop nvtop btop fastfetch \
         docker docker-compose wlr-randr
 
     install_aur \
