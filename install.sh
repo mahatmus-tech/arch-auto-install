@@ -134,32 +134,26 @@ install_tkg_kernel() {
     sudo wget -P /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg-fallback.conf
 
     #Edit the linux-tkg.conf
-    cd /boot/loader/entries
-    options root=PARTUUID=52cd2305-c1ca-4c5c-ba62-9b265a1cf699 rw rootfstype=ext4 nvidia-drm.modeset=1 nvidia_drm.fbdev=1 usbcore.autosuspend=-1 usbhid.mousepoll=1 usbhid.kbpoll=1 usbhid.jspoll=1 usbhid.elsepoll=1 usbhid.quirks=0x2516:0x0141:0x0002
-    #Edit the linux-tkg-fallback.conf
-    options root=PARTUUID=52cd2305-c1ca-4c5c-ba62-9b265a1cf699 rw rootfstype=ext4 nvidia-drm.modeset=1 nvidia_drm.fbdev=1 usbcore.autosuspend=-1 usbhid.mousepoll=1 usbhid.kbpoll=1 usbhid.jspoll=1 usbhid.elsepoll=1 usbhid.quirks=0x2516:0x0141:0x0002
-    # verificar qual é o PARTUUID
-    blkid -s UUID -o value $(findmnt -n -o SOURCE /)   
-    findmnt -n -o SOURCE /
-
+    UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))    
+    sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg.conf
+    sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg-fallback.conf    
     sudo bootctl update
     # set linux-tkg as default
     sudo bootctl set-default linux-tkg.conf
-
-    # set async journal
-    sudo tune2fs -E mount_opts=journal_async_commit $(findmnt -n -o SOURCE /)
-    sudo tune2fs -o journal_data_writeback $(findmnt -n -o SOURCE /)
-    # Define the UUID of the partition
-    UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
-    # Define the new mount options
-    NEW_MOUNT_OPTIONS="defaults,noatime"
-    # Edit the fstab file to change the mount options
-    sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID|" /etc/fstab
 }
 
-install_aur_helper() {
+install_extra_package_managers() {
     status "Installing yay (AUR helper)..."
     clone_and_build "$YAY_URL" "yay-bin"
+
+    status "Installing flatpak..."
+    install_packages flatpak
+
+    status "Installing snap..."
+    clone_and_build "https://aur.archlinux.org/snapd.git" "snapd"
+
+    sudo systemctl enable --now snapd.socket
+    sudo ln -s /var/lib/snapd/snap /snap
 }
 
 install_firmware() {
@@ -169,17 +163,11 @@ install_firmware() {
         "intel") install_packages intel-ucode;;
         "amd") install_packages amd-ucode;;
     esac
-
-    install_packages \
-	linux-headers linux-firmware linux-firmware-qlogic
     
     install_aur \
 	ast-firmware mkinitcpio-firmware
     
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
-    
-    clone_and_build "https://github.com/fhunleth/blstrobe.git" "blstrobe" \
-		    "./autogen.sh && ./configure && make && sudo make install"
 }
 
 install_graphics_stack() {
@@ -188,22 +176,22 @@ install_graphics_stack() {
     # GPU-specific packages
     case $GPU in
         "nvidia")
-            install_packages \
-                nvidia-dkms nvidia-utils nvidia-settings \
-		lib32-nvidia-utils libva-nvidia-driver opencl-nvidia \
-  		vulkan-tools vulkan-icd-loader lib32-vulkan-icd-loader \
-                vulkan-headers
-
-        clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"  
-# incluir esse stript que faz tudo
-#  git clone https://github.com/Frogging-Family/nvidia-all.git
-#  cd nvidia-all
-#  makepkg -si
+	    clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all"
+            # Old cards 
+            # install_packages nvidia-dkms 
+            # Turing or newer hardware only
+            # install_packages nvidia-open-dkms
+            #install_packages \
+            #   nvidia-utils nvidia-settings nvidia-prime \
+	    #	lib32-nvidia-utils  opencl-nvidia \
+  	    #	libva-nvidia-driver lib32-libva-nvidia-driver
             ;;
         "amd")
-            install_packages \
-                vulkan-radeon lib32-vulkan-radeon \
-                libva-mesa-driver lib32-libva-mesa-driver
+	install_packages \
+		xf86-video-amdgpu \
+		vulkan-radeon lib32-vulkan-radeon \
+		libva-mesa-driver lib32-libva-mesa-driver \
+		mesa-vdpau lib32-mesa-vdpau
             ;;
         "intel")
             install_packages \
@@ -214,18 +202,27 @@ install_graphics_stack() {
 
     # Input & GPU Acceleration
     install_packages \
-        libinput libglvnd mesa lib32-mesa \
-	libvdpau lib32-libvdpau libva lib32-libva 
-
-    # Wayland Packages
-    install_packages \
-        wayland wayland-protocols lib32-wayland xorg-xwayland \
-	lib32-xorg-xwayland egl-wayland qt5-wayland qt6-wayland \
-        egl-wayland lib32-egl-wayland
-
+	libinput libglvnd mesa lib32-mesa \
+	libvdpau lib32-libvdpau libva lib32-libva \
+	vulkan-icd-loader lib32-vulkan-icd-loader
+ 
     # QT Support
     install_packages \
         qt5ct qt6ct
+}
+
+install_wayland() {
+    status "Installing Wayland..."
+    install_packages \
+        wayland wayland-protocols wayland-utils \
+	lib32-wayland xorg-xwayland \
+	egl-wayland qt5-wayland qt6-wayland
+}
+
+install_xorg() {
+    status "Installing Xorg..."
+    install_packages \
+        xorg-server xorg-xinit xorg-xinput egl-x11
 }
 
 install_hyprland_stack() {
@@ -302,6 +299,7 @@ install_apps() {
 
     flatpak install -y flathub dev.vencord.Vesktop
     flatpak install -y com.freerdp.FreeRDP
+    sudo snap install spotify
 
 }
 
@@ -356,19 +354,18 @@ main() {
     
     # Installation phases
     install_base_system
-    install_aur_helper
-    install_snap
-    install_flatpak
-    https://snapcraft.io/install/spotify/arch#install
+    install_tkg_kernel
+    install_extra_package_managers
     install_firmware
-    install_personal_kernel
     install_multimedia
     install_compressions
     install_graphics_stack
+    install_wayland
+    #install_worg
     install_gaming
-    install_hyprland_stack    
-    install_apps
+    install_hyprland_stack
     configure_system
+    install_apps
     
     # Cleanup
     status "Cleaning up..."
