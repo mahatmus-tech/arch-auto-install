@@ -1,0 +1,48 @@
+#+TITLE: Todo List
+#+STARTUP: hideeverything
+#+OPTIONS: toc:2
+
+* contents :toc:
+- [[#home-05][Home]]
+- [[#work-04][Work]]
+- [[#reforma-tributária-07][Reforma Tributária]]
+- [[#study-010][Study]]
+
+* TODO Home [0/5]
+   - [ ] presente casamento
+   - [ ] passar roupas
+   - [ ] abastecer o carro
+   - [ ] sacar dinheiro
+   - [ ] fazer a barba
+
+* TODO Work [0/4]
+ - [ ] Ajustar apontamentos
+ - [ ] Finalizar tarefa da F440GNE
+ - [ ] responder happy hour Darlei
+
+* TODO Reforma Tributária [0/7]
+ - [ ] Inserir gerenciador no fechamento
+ - [ ] chamar objeto nos outros calculaitemnfc
+ - [ ] ver carregamento do NOPOPE
+ - [ ] adicionar carregamento e gravação do IdeNbs
+ - [ ] Pegar a base da qualidade
+ - [ ] verificar o orimer para serviço com o Marlon Dognini
+
+* TODO Study [0/10]
+- [ ] Aprender o Org-Roam
+- [ ] Instalar outros pacotes no Emacs
+- [ ] Fazer o advent of code Day 3
+- [ ] Aprender a usar o paraedit do Emacs
+- [ ] Aprender a sua o ivy ivy rich
+- [ ] Aprender a sua o counsel
+- [ ] Aprender a sua o swiper
+- [ ] Aprender a sua o grep
+- [ ] Aprender a sua o rip
+- [ ] aprender rgrep
+
+  sites uteis de emacs:
+  - https://emacsrocks.com/
+  - https://plantuml.com/sequence-diagram
+  - https://adventofcode.com/2024/day/1
+  - https://stegosaurusdormant.com/bare-git-repo/
+    
