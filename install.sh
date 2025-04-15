@@ -132,6 +132,16 @@ install_tkg_kernel() {
     sudo wget -P /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/tkg-kernel/initramfs-linux614-tkg-eevdf-fallback.img
 
     #create the linux-tkg.conf file for systemd
+    entry_template = textwrap.dedent(
+		f"""\
+		# Created by: archinstall
+		# Created on: {self.init_time}
+		title   Arch Linux ({{kernel}}{{variant}})
+		linux   /vmlinuz-{{kernel}}
+		initrd  /initramfs-{{kernel}}{{variant}}.img
+		options {" ".join(self._get_kernel_params(root))}
+		"""
+	)    
     cd /boot/loader/entries
         # Created by: mahatmus
 	title   Arch Linux (linux-tkg)
