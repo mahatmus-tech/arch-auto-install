@@ -102,6 +102,8 @@ clone_and_build() {
     cd - >/dev/null || error "Failed to return to previous directory"
 }
 
+}
+
 # ======================
 # INSTALLATION SECTIONS
 # ======================
@@ -208,6 +210,7 @@ install_graphics_stack() {
     # GPU-specific packages
     case $GPU in
         "nvidia")
+	    $NVIDIA_INSTALLED=true
 	    clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all"
             # Old cards 
             # install_packages nvidia-dkms 
@@ -235,13 +238,14 @@ install_graphics_stack() {
     # Input & GPU Acceleration
     install_packages \
 	libinput libglvnd mesa lib32-mesa \
-	libvdpau lib32-libvdpau libva lib32-libva \
-	vulkan-icd-loader lib32-vulkan-icd-loader
+	libvdpau lib32-libvdpau libvdpau-va-gl libva lib32-libva \
+	vulkan-icd-loader lib32-vulkan-icd-loader 
     # - instalar input para touchpad
 }
 
 install_wayland() {
     status "Installing Wayland..."
+    $WAYLAND_INSTALLED=true
     install_packages \
         wayland wayland-protocols wayland-utils \
 	lib32-wayland xorg-xwayland \
@@ -256,6 +260,7 @@ install_xorg() {
 
 install_gaming() {
     status "Installing gaming support..."
+    $GAMING_INSTALLED=true
     install_packages \
         steam goverlay gamescope gamemode \
 	lib32-gamemode mangohud lib32-mangohud
@@ -341,10 +346,28 @@ configure_system() {
     # Add user to required groups
     sudo usermod -aG docker,video,input,gamemode $USER
 
-    # Download gamemode.ini
-    sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
     # Download scx using LAVD
     sudo wget -P /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
+        
+    if [ "$GAMING_INSTALLED" = true ]; then
+        # Download gamemode.ini
+	sudo rm -f /etc/gamemode.ini
+        sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
+	# Cooler Master MM720 mouse fix
+        sudo rm -f /etc/udev/rules.d/99-mm720-power.rules
+        sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/99-mm720-power.rules
+	# nvidia rules
+        sudo rm -f /etc/udev/rules.d/89-nvidia-pm.rules
+        sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules
+    fi
+    
+    if [ "$NVIDIA_INSTALLED" = true ]; then
+        # nvidia.conf 
+	sudo rm -f /etc/modprobe.d/nvidia.conf
+        sudo wget -P /etc/modprobe.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/nvidia.conf
+	# mkinitcpio.conf
+        sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
+    fi
 
     # services
     sudo systemctl enable --now gamemoded.service
@@ -364,7 +387,7 @@ improve_performance_ext4_nvme() {
     # Define the new mount options
     NEW_MOUNT_OPTIONS="defaults,noatime"
     # Edit the fstab file to change the mount options
-    sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID \/ ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab    
+    sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID \/ ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab
     # remount the root partition
     sudo mount -o remount /
 }
