@@ -225,10 +225,6 @@ install_graphics_stack() {
 	libvdpau lib32-libvdpau libva lib32-libva \
 	vulkan-icd-loader lib32-vulkan-icd-loader
     # - instalar input para touchpad
- 
-    # QT Support
-    install_packages \
-        qt5ct qt6ct
 }
 
 install_wayland() {
@@ -270,9 +266,37 @@ install_gaming() {
 install_apps() {
     status "Installing optional packages..."
     install_packages \
-        emacs-wayland micro kitty man-db \
-        htop nvtop btop fastfetch rdesktop \
-        docker docker-compose
+        # terminal & editor
+        emacs-wayland micro kitty man-db fastfetch jq \
+	# Linux resource monitors
+        htop nvtop btop inxi \
+	# RDP client
+        rdesktop \
+	# audio
+        pipewire pipewire-alsa pipewire-jack pipewire-pulse \
+	gst-plugin-pipewire wireplumber pavucontrol pamixer \
+        # media controller & player
+	playerctl mpv mpv-mpris\
+        # brightness control
+	brightnessctl \
+        # image viewer
+	loupe imagemagick libspng \
+        # calculator
+	qalculate-gtk \
+        # Desktop Theme
+	kvantum qt5ct qt6ct qt6-svg \
+        # notifications
+	swaync \
+        # docker
+        docker docker-compose  
+ 
+	# Wayland apps
+        if [ "$WAYLAND_INSTALLED" = true ]; then
+	install_packages \
+	grim slurp waybar wl-clipboard cliphist \
+        nwg-displays swappy swww wlogout
+          	
+
 	
     if [ "$YAY_INSTALLED" = true ]; then
 	install_aur \
