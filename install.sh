@@ -113,7 +113,9 @@ install_base_system() {
 
     # Update packages
     sudo pacman -Syu --needed --noconfirm
-    install_packages git base-devel curl python meson systemd dbus libinih wget
+    install_packages \
+        git base-devel curl python wget \
+	meson systemd dbus libinih scx-scheds
     
     # Create user directories
     mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config,Apps,Scrips}
@@ -299,6 +301,15 @@ configure_system() {
     
     # Add user to required groups
     sudo usermod -aG docker,video,input,gamemode $USER
+
+    # Download gamemode.ini
+    sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
+    # Download scx using LAVD
+    sudo wget -P /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/vmlinuz-linux614-tkg-eevdf
+
+    # services
+    sudo systemctl enable --now gamemoded.service
+    sudo systemctl enable --now scx.service
 }
 
 improve_performance_ext4_nvme() {
