@@ -116,7 +116,7 @@ install_base_system() {
     # Update packages
     sudo pacman -Syu --needed --noconfirm
     install_packages \
-        git base-devel curl python wget \
+        git base-devel curl python wget ufw \
 	meson systemd dbus libinih scx-scheds
     
     # Create user directories
@@ -339,8 +339,8 @@ install_apps() {
 # ======================
 configure_system() {
     status "Configuring system..."
-
-    # Synchronize package database
+	
+    # Update and Synchronize package database
     sudo pacman -Syu --noconfirm
     
     # Add user to required groups
@@ -350,15 +350,17 @@ configure_system() {
     sudo wget -P /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
         
     if [ "$GAMING_INSTALLED" = true ]; then
-        # Download gamemode.ini
-	sudo rm -f /etc/gamemode.ini
-        sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
-	# Cooler Master MM720 mouse fix
-        sudo rm -f /etc/udev/rules.d/99-mm720-power.rules
-        sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/99-mm720-power.rules
-	# nvidia rules
-        sudo rm -f /etc/udev/rules.d/89-nvidia-pm.rules
-        sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules
+	    # Download gamemode.ini
+		sudo rm -f /etc/gamemode.ini
+	    sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
+		# Cooler Master MM720 mouse fix
+	    sudo rm -f /etc/udev/rules.d/99-mm720-power.rules
+	    sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/99-mm720-power.rules
+		# nvidia rules
+	    sudo rm -f /etc/udev/rules.d/89-nvidia-pm.rules
+	    sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules
+		# start
+	    sudo systemctl enable --now gamemoded.service
     fi
     
     if [ "$NVIDIA_INSTALLED" = true ]; then
@@ -369,15 +371,36 @@ configure_system() {
         sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
     fi
 
-    # services
-    sudo systemctl enable --now gamemoded.service
+    status "Setting fstrim ..."
+	# Get root filesystem type
+	local root_fs_type=$(findmnt -n -o FSTYPE /)
+	# Get the base device name (strip /dev/ and partition suffix)
+	local root_source=$(findmnt -n -o SOURCE /)
+	local root_device=$(basename "$root_source" | sed -E 's/p?[0-9]+$//')
+	
+	# Check for SSD or NVMe (rotational = 0)
+	local is_ssd_or_nvme="false"
+	if [[ -e /sys/block/$root_device/queue/rotational ]]; then
+	    if [[ "$(cat /sys/block/$root_device/queue/rotational)" == "0" ]]; then
+		is_ssd_or_nvme="true"
+	    fi
+	fi
+	
+	# Filesystems known to support TRIM
+	if [[ "$is_ssd_or_nvme" == "true" && \
+	      "$root_fs_type" =~ ^(ext3|ext4|btrfs|f2fs|xfs|vfat|exfat|jfs|nilfs2|ntfs-3g)$ ]]; then
+	    echo "Filesystem '$root_fs_type' supports TRIM. Enabling fstrim.timer..."
+	    systemctl enable fstrim.timer
+	    sudo systemctl enable --now fstrim.timer    
+	fi
+
+    # services    
     sudo systemctl enable --now scx.service
+    sudo systemctl enable --now ufw.service && sudo ufw enable
 }
 
 improve_performance_ext4_nvme() {
-    status "Optimizing Ext4..."
-    # Add ftrim to ssd
-    sudo systemctl enable --now fstrim.timer
+    status "Setting ext4 performance..."
     
     # set async journal
     sudo tune2fs -E mount_opts=journal_async_commit $(findmnt -n -o SOURCE /)
