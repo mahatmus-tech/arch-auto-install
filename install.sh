@@ -130,7 +130,7 @@ clone_and_build() {
 
 ask_user() {
 	while [true]
-    do
+	do
 		read -rp "$1 [y/n]: " choice
 		if [ "${choice,,}" in YES|yes|y|Y ]; then
 			info "Continuing..."
