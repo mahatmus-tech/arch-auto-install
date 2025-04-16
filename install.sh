@@ -120,26 +120,26 @@ ask_user() {
 # INSTALLATION SECTIONS
 # ======================
 install_base_system() {
-    status "Updating system and installing base packages..."
-
-    status "Changing pacman settings..."
-    sudo sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
-    sudo sed -i 's/^#VerbosePkgLists$/VerbosePkgLists/' /etc/pacman.conf
-    sudo sed -i 's/^#ILoveCandy$/ILoveCandy/' /etc/pacman.conf
-
-    # Update packages
-    sudo pacman -Syu --needed --noconfirm
-    # Base packages
-    install_packages git base-devel curl python wget meson systemd dbus libinih
-    # firmware
-    install_packages ufw
-    # scheaduler
-    install_packages scx-scheds
-    # pacman tool
-    install_packages pacman-contrib
-    
-    # Create user directories
-    mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config,Apps,Scrips}
+	status "Updating system and installing base packages..."
+	
+	status "Changing pacman settings..."
+	sudo sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
+	sudo sed -i 's/^#VerbosePkgLists$/VerbosePkgLists/' /etc/pacman.conf
+	sudo sed -i 's/^#ILoveCandy$/ILoveCandy/' /etc/pacman.conf
+	
+	# Update packages
+	sudo pacman -Syu --needed --noconfirm
+	# Base packages
+	install_packages git base-devel curl python wget meson systemd dbus libinih
+	# firmware
+	install_packages ufw
+	# scheaduler
+	install_packages scx-scheds
+	# pacman tool
+	install_packages pacman-contrib
+	
+	# Create user directories
+	mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config,Apps,Scrips}
 }
 
 install_tkg_kernel() {
@@ -148,20 +148,20 @@ install_tkg_kernel() {
     clone_and_build "git clone https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
 		    "echo Repository Linux TKG has been cloned!"
 
-    #Download linux-tkg kernel
-    sudo wget -P /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/vmlinuz-linux614-tkg-eevdf
-    sudo wget -P /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf.img
-    sudo wget -P /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf-fallback.img
-    sudo wget -P /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg.conf
-    sudo wget -P /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg-fallback.conf
-
-    #Edit the linux-tkg.conf
-    UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
-    sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg.conf
-    sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg-fallback.conf
-    sudo bootctl update
-    # set linux-tkg as default
-    sudo bootctl set-default linux-tkg.conf
+	#Download linux-tkg kernel
+	sudo wget -P /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/vmlinuz-linux614-tkg-eevdf
+	sudo wget -P /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf.img
+	sudo wget -P /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf-fallback.img
+	sudo wget -P /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg.conf
+	sudo wget -P /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg-fallback.conf
+	
+	#Edit the linux-tkg.conf
+	UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
+	sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg.conf
+	sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg-fallback.conf
+	sudo bootctl update
+	# set linux-tkg as default
+	sudo bootctl set-default linux-tkg.conf
 }
 
 install_extra_package_managers() {
@@ -231,10 +231,10 @@ install_compressions() {
 install_fonts() {
     status "Installing fonts support..."
     install_packages \
-        ttf-droid ttf-fantasque-nerd ttf-fira-code \
-	ttf-jetbrains-mono ttf-jetbrains-mono-nerd \
-	adobe-source-code-pro-fonts noto-fonts \
-        noto-fonts-emoji otf-font-awesome
+		ttf-droid ttf-fantasque-nerd ttf-fira-code \
+		ttf-jetbrains-mono ttf-jetbrains-mono-nerd \
+		adobe-source-code-pro-fonts noto-fonts \
+		noto-fonts-emoji otf-font-awesome
 }
 
 install_graphics_stack() {
@@ -287,84 +287,84 @@ install_xorg() {
 }
 
 install_gaming() {
-    status "Installing gaming support..."
-    $GAMING_INSTALLED=true
-    install_packages \
-        steam goverlay gamescope gamemode \
-	    lib32-gamemode mangohud lib32-mangohud
-         
-    # installl proton-ge-custom
-    sudo wget -P ~/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
-    ./proton-ge-custom-install.sh
-    
-    # Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
-    install_packages wine-staging
-    install_packages_asdeps \
-        giflib lib32-giflib gnutls lib32-gnutls v4l-utils \
-        lib32-v4l-utils libpulse lib32-libpulse alsa-plugins \
-        lib32-alsa-plugins alsa-lib lib32-alsa-lib sqlite lib32-sqlite \
-        libxcomposite lib32-libxcomposite ocl-icd lib32-ocl-icd libva \
-        lib32-libva gtk3 lib32-gtk3 gst-plugins-base-libs \
-        lib32-gst-plugins-base-libs vulkan-icd-loader \
-        lib32-vulkan-icd-loader sdl2-compat lib32-sdl2-compat
-
+	status "Installing gaming support..."
+	$GAMING_INSTALLED=true
+	install_packages \
+		steam goverlay gamescope gamemode \
+		lib32-gamemode mangohud lib32-mangohud
+		 
+	# installl proton-ge-custom
+	sudo wget -P ~/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
+	./proton-ge-custom-install.sh
+	
+	# Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
+	install_packages wine-staging
+	install_packages_asdeps \
+		giflib lib32-giflib gnutls lib32-gnutls v4l-utils \
+		lib32-v4l-utils libpulse lib32-libpulse alsa-plugins \
+		lib32-alsa-plugins alsa-lib lib32-alsa-lib sqlite lib32-sqlite \
+		libxcomposite lib32-libxcomposite ocl-icd lib32-ocl-icd libva \
+		lib32-libva gtk3 lib32-gtk3 gst-plugins-base-libs \
+		lib32-gst-plugins-base-libs vulkan-icd-loader \
+		lib32-vulkan-icd-loader sdl2-compat lib32-sdl2-compat
+	
 	status "Installing controller support..."
-    if ask_user "Do you want to install xpadneo? - It Improves Xbox gamepad support:"; then
-        install_packages xpadneo-dkms-git
-    fi
-
-    if ask_user "Do you want to install xone? - It improves Xbox gamepad support with a USB wireless dongle:"; then
-    	install_packages xone-dkms-git xone-dongle-firmware
-    fi
-
-    if ask_user "Do you want to install PS5 controller support?:"; then
-        install_packages dualsensectl-git
-    fi
+	if ask_user "Do you want to install xpadneo? - It Improves Xbox gamepad support:"; then
+		install_packages xpadneo-dkms-git
+	fi
+	
+	if ask_user "Do you want to install xone? - It improves Xbox gamepad support with a USB wireless dongle:"; then
+		install_packages xone-dkms-git xone-dongle-firmware
+	fi
+	
+	if ask_user "Do you want to install PS5 controller support?:"; then
+		install_packages dualsensectl-git
+	fi
 }
 
 install_apps() {
-    status "Installing optional packages..."
+	status "Installing optional packages..."
 	# terminal & editor
 	install_packages micro kitty man-db man-pages fastfetch jq
 	# coding
-    install_packages bash-completion
+	install_packages bash-completion
 	# Linux resource monitors
-    install_packages htop nvtop btop inxi duf
+	install_packages htop nvtop btop inxi duf
 	# RDP client
-    install_packages rdesktop
-    # media controller & player
+	install_packages rdesktop
+	# media controller & player
 	install_packages playerctl mpv mpv-mpris
-    # brightness control
+	# brightness control
 	install_packages brightnessctl
-    # image viewer
+	# image viewer
 	install_packages loupe imagemagick libspng
-    # calculator
+	# calculator
 	install_packages qalculate-gtk
-    # Desktop Theme
+	# Desktop Theme
 	install_packages kvantum qt5ct qt6ct qt6-svg
-    # notifications
+	# notifications
 	install_packages swaync
 	# docker
 	install_packages docker docker-compose 
-    # Wayland apps
-    if [ "$WAYLAND_INSTALLED" = true ]; then
-        install_packages \
-		    grim slurp waybar wl-clipboard cliphist \
-		    nwg-displays swappy swww wlogout emacs-wayland
-    fi
+	# Wayland apps
+	if [ "$WAYLAND_INSTALLED" = true ]; then
+		install_packages \
+			grim slurp waybar wl-clipboard cliphist \
+			nwg-displays swappy swww wlogout emacs-wayland
+	fi
 	
-    if [ "$YAY_INSTALLED" = true ]; then
+	if [ "$YAY_INSTALLED" = true ]; then
 		install_aur brave-bin teams-for-linux
-    fi
-
-    if [ "$FLATPAK_INSTALLED" = true ]; then
-    	flatpak install -y flathub dev.vencord.Vesktop
-    	flatpak install -y com.freerdp.FreeRDP
-    fi
-
-    if [ "$SNAP_INSTALLED" = true ]; then
-        sudo snap install spotify
-    fi
+	fi
+	
+	if [ "$FLATPAK_INSTALLED" = true ]; then
+		flatpak install -y flathub dev.vencord.Vesktop
+		flatpak install -y com.freerdp.FreeRDP
+	fi
+	
+	if [ "$SNAP_INSTALLED" = true ]; then
+		sudo snap install spotify
+	fi
 }
 
 # ======================
@@ -373,29 +373,29 @@ install_apps() {
 configure_system() {
     status "Configuring system..."
 	
-    # Upgrade and Synchronize package database
-    sudo pacman -Syyu --noconfirm
-
+	# Upgrade and Synchronize package database
+	sudo pacman -Syyu --noconfirm
+	
 	# Detect actual user even if script is run with sudo
 	local target_user="${SUDO_USER:-$USER}"
 	# Add user to all required groups in one go (remove duplicates)
 	sudo usermod -aG wheel,docker,video,input,gamemode,audio,network,lp,storage,users,rfkill,sys "$target_user"	 	
-
-    # Download scx using LAVD
-    sudo wget -P /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
+	
+	# Download scx using LAVD
+	sudo wget -P /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
         
     if [ "$GAMING_INSTALLED" = true ]; then
-	    # Download gamemode.ini
+		# Download gamemode.ini
 		sudo rm -f /etc/gamemode.ini
-	    sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
+		sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
 		# Cooler Master MM720 mouse fix
-	    sudo rm -f /etc/udev/rules.d/99-mm720-power.rules
-	    sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/99-mm720-power.rules
+		sudo rm -f /etc/udev/rules.d/99-mm720-power.rules
+		sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/99-mm720-power.rules
 		# nvidia rules
-	    sudo rm -f /etc/udev/rules.d/89-nvidia-pm.rules
-	    sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules
+		sudo rm -f /etc/udev/rules.d/89-nvidia-pm.rules
+		sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules
 		# start
-	    sudo systemctl enable --now gamemoded.service
+		sudo systemctl enable --now gamemoded.service
     fi
     
     if [ "$NVIDIA_INSTALLED" = true ]; then
@@ -461,22 +461,22 @@ main() {
     # Detection phase
     detect_system
     
-    # Installation phases
-    install_base_system
-    install_tkg_kernel
-    install_extra_package_managers
-    install_firmware
+	# Installation phases
+	install_base_system
+	install_tkg_kernel
+	install_extra_package_managers
+	install_firmware
 	install_audio
-    install_multimedia
+	install_multimedia
 	install_bluetooth
-    install_compressions
-    install_fonts
-    install_graphics_stack
-    install_wayland
-    #install_xorg
-    install_gaming
-    install_apps
-    configure_system
+	install_compressions
+	install_fonts
+	install_graphics_stack
+	install_wayland
+	#install_xorg
+	install_gaming
+	install_apps
+	configure_system
     
     echo -e "\n${GREEN}✅ Installation completed successfully!${NC}"
     echo -e "${YELLOW}Please reboot your system to apply all changes.${NC}"
