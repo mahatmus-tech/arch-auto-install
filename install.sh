@@ -84,7 +84,7 @@ detect_system() {
 
 show_menu() {
     dialog --clear \
-        --title "Arch Installation" \
+        --title "Arch Auto Installation" \
         --checklist "Select components to install:" 20 60 15 \
         "${MENU_OPTIONS[@]}" 2>selected
 }
@@ -129,13 +129,18 @@ clone_and_build() {
 }
 
 ask_user() {
-	while true; do
-	    read -rp "$1 [y/n]: " yn
-	    case "$yn" in
-	        [Yy]*) info "Continuing..."; break ;;
-	        [Nn]*) info "Aborting."; exit 1 ;;
-	        *) info "Please answer y or n." ;;
-	    esac
+	while [true]
+    do
+		read -rp "$1 [y/n]: " choice
+		if [ "${choice,,}" in YES|yes|y|Y ]; then
+			info "Continuing..."
+			return 0
+		elif [ "${choice,,}" in No|no|n|N ]; then
+			info "Skipping..."
+			return 1
+		else
+		info "Please answer y or n."
+		fi
 	done
 }
 
@@ -467,8 +472,7 @@ configure_system() {
 	    sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID \/ ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab
 	    # remount the root partition
 		if ! sudo mount -o remount /; then
-		    echo "Failed to remount root partition. Exiting."
-		    exit 1
+		    error "Failed to remount root partition."
 		fi
     fi
 
@@ -482,7 +486,7 @@ configure_system() {
 # MAIN INSTALLATION FLOW
 # ======================
 main() {
-	echo -e "\n${GREEN}🚀 Starting Arch-Hyprland Automated Installation${NC}"
+	echo -e "\n${GREEN}🚀 Starting Arch Automated Installation${NC}"
 	
 	# Detection phase
 	detect_system
