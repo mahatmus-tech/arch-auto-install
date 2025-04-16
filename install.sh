@@ -166,7 +166,10 @@ install_firmware() {
         "intel") install_packages intel-ucode;;
         "amd") install_packages amd-ucode;;
     esac
-    
+
+    install_packages \
+        sof-firmware alsa-firmware
+	
     clone_and_build "https://aur.archlinux.org/mkinitcpio-firmware.git" "mkinitcpio-firmware"
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
 }
@@ -174,10 +177,11 @@ install_firmware() {
 install_multimedia() {
     status "Installing multimedia support..."
     install_packages \
-        ffmpeg gstreamer gst-libav gst-plugins-bad \
-        gst-plugins-good gst-plugins-ugly \
+        ffmpeg gstreamer gstreamer-vaapi gst-libav \
+	gst-plugins-bad gst-plugins-good gst-plugins-ugly \
+        gst-plugins-pipewire libmpeg2 libmad \
         lame flac wavpack opus faac faad2 \
-        x264 x265 libvpx dav1d aom libmpeg2 libmad
+        x264 x265 libvpx dav1d aom
 
 }
 
@@ -187,6 +191,15 @@ install_compressions() {
         zip unzip p7zip gzip bzip2 xz \
         unrar lrzip zstd lzip lzop arj \
         cabextract cpio unace tar
+}
+
+install_fonts() {
+    status "Installing fonts support..."
+    install_packages \
+        ttf-droid ttf-fantasque-nerd ttf-fira-code \
+	ttf-jetbrains-mono ttf-jetbrains-mono-nerd ttf-victor-mono \
+	adobe-source-code-pro-fonts noto-fonts \
+        noto-fonts-emoji otf-font-awesome 
 }
 
 install_graphics_stack() {
@@ -267,13 +280,16 @@ install_apps() {
     status "Installing optional packages..."
     install_packages \
         # terminal & editor
-        emacs-wayland micro kitty man-db fastfetch jq \
+        micro kitty man-db man-pages fastfetch jq \
+	# coding
+        bash-completion
 	# Linux resource monitors
         htop nvtop btop inxi \
 	# RDP client
         rdesktop \
 	# audio
         pipewire pipewire-alsa pipewire-jack pipewire-pulse \
+	lib32-pipewire alsa-utils alsa-plugins alsa-ucm-conf \
 	gst-plugin-pipewire wireplumber pavucontrol pamixer \
         # media controller & player
 	playerctl mpv mpv-mpris\
@@ -290,13 +306,12 @@ install_apps() {
         # docker
         docker docker-compose  
  
-	# Wayland apps
-        if [ "$WAYLAND_INSTALLED" = true ]; then
-	install_packages \
-	grim slurp waybar wl-clipboard cliphist \
-        nwg-displays swappy swww wlogout
-          	
-
+    # Wayland apps
+    if [ "$WAYLAND_INSTALLED" = true ]; then
+        install_packages \
+	    grim slurp waybar wl-clipboard cliphist \
+	    nwg-displays swappy swww wlogout emacs-wayland
+    fi
 	
     if [ "$YAY_INSTALLED" = true ]; then
 	install_aur \
@@ -370,6 +385,7 @@ main() {
     install_firmware
     install_multimedia
     install_compressions
+    install_fonts
     install_graphics_stack
     install_wayland
     #install_xorg
