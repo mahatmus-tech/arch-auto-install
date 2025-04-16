@@ -6,53 +6,43 @@ set -euo pipefail
 # ======================
 # GLOBAL VARIABLES
 # ======================
-# Variables like these need to be initialized before use:
-declare -g $YAY_INSTALLED=false
-declare -g $FLATPAK_INSTALLED=false
-declare -g $SNAP_INSTALLED=false
-declare -g $NVIDIA_INSTALLED=false
-declare -g $WAYLAND_INSTALLED=false
-declare -g $GAMING_INSTALLED=false
-
-# ======================
-# CONFIGURATION
-# ======================
+# Default install dir
 INSTALL_DIR="$HOME/Apps"
-# Set log file path
+# Initialization
+YAY_INSTALLED=false
+FLATPAK_INSTALLED=false
+SNAP_INSTALLED=false
+NVIDIA_INSTALLED=false
+WAYLAND_INSTALLED=false
+GAMING_INSTALLED=false
+# Log file
 export LOG_FILE="/var/log/arch_auto_install_$(date "+%Y%m%d-%H%M%S").log"
 
-# Menu configuration
-MENU_OPTIONS=(
-    1  "Base System"          on
-    2  "TKG Zen3 Kernel"      off
-    3  "Extra Package Mgrs"   on
-    4  "Firmware"             on
-    5  "Audio"                on
-    6  "Multimedia"           on
-    7  "Bluetooth"            on
-    8  "Compression Tools"    on
-    9  "Fonts"                on
-    10 "Graphics Stack"       on
-    11 "Wayland"              on
-    12 "Xorg"                 off
-    13 "Gaming"               on
-    14 "Apps"                 on
-    15 "System Configuration" on
-)
-
-# ======================
-# COLOR OUTPUT FUNCTIONS
-# ======================
+# Color output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-status() { echo -e "${GREEN}[+]${NC} $1"; }
-warning() { echo -e "${YELLOW}[!]${NC} $1"; }
-error() { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
-info() { echo -e "${BLUE}[i]${NC} $1"; }
+# Menu configuration
+MENU_OPTIONS=(
+	1  "Base System"          on
+	2  "TKG Zen3 Kernel"      off
+	3  "Extra Package Mgrs"   on
+	4  "Firmware"             on
+	5  "Audio"                on
+	6  "Multimedia"           on
+	7  "Bluetooth"            on
+	8  "Compression Tools"    on
+	9  "Fonts"                on
+	10 "Graphics Stack"       on
+	11 "Wayland"              on
+	12 "Xorg"                 off
+	13 "Gaming"               on
+	14 "Apps"                 on
+	15 "System Configuration" on
+)
 
 # ======================
 # SYSTEM DETECTION
@@ -91,6 +81,10 @@ detect_system() {
 # ======================
 # INSTALLATION FUNCTIONS
 # ======================
+status() { echo -e "${GREEN}[+]${NC} $1"; }
+warning() { echo -e "${YELLOW}[!]${NC} $1"; }
+error() { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
+info() { echo -e "${BLUE}[i]${NC} $1"; }
 
 show_menu() {
     dialog --clear \
@@ -139,19 +133,15 @@ clone_and_build() {
 }
 
 ask_user() {
-	while [true]
-	do
-		read -rp "$1 [y/n]: " choice
-		if [ "${choice,,}" in YES|yes|y|Y ]; then
-			info "Continuing..."
-			return 0
-		elif [ "${choice,,}" in No|no|n|N ]; then
-			info "Skipping..."
-			return 1
-		else
-			info "Please answer y or n."
-		fi
-	done
+    local prompt="${1:-Are you sure?}"
+    while true; do
+        read -rp "$prompt [y/n]: " yn
+        case "${yn,,}" in  # lowercase input for consistency
+            y|yes) info "Continuing..."; return 0 ;;
+            n|no)  info "Skiping..."; return 1 ;;
+            *)     info "Please answer y or n." ;;
+        esac
+    done
 }
 
 # ======================
