@@ -275,24 +275,24 @@ install_graphics_stack() {
     # GPU-specific packages
     case $GPU in
         "nvidia")
-	    $NVIDIA_INSTALLED=true
-	    clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all"
+			$NVIDIA_INSTALLED=true
+			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all"
             # Old cards 
             # install_packages nvidia-dkms 
             # Turing or newer hardware only
             # install_packages nvidia-open-dkms
             #install_packages \
             #   nvidia-utils nvidia-settings nvidia-prime \
-	    #	lib32-nvidia-utils opencl-nvidia libva-nvidia-driver
+	        # lib32-nvidia-utils opencl-nvidia libva-nvidia-driver
             ;;
         "amd")
-	install_packages \
-		xf86-video-amdgpu vulkan-radeon lib32-vulkan-radeon
+			install_packages \
+				xf86-video-amdgpu vulkan-radeon lib32-vulkan-radeon
             ;;
         "intel")
-            install_packages \
-                vulkan-intel lib32-vulkan-intel libva-intel-driver
-		intel-media-sdk intel-media-driver intel-gmmlib
+			install_packages \
+			vulkan-intel lib32-vulkan-intel libva-intel-driver
+			intel-media-sdk intel-media-driver intel-gmmlib
             ;;
     esac
 }
