@@ -142,7 +142,7 @@ install_base_system() {
 	mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config,Apps,Scrips}
 }
 
-install_tkg_kernel() {
+install_tkg_zen3_kernel() {
     # clone linux-tkg kernel
     status "Cloning linux-tkg kernel..."
     clone_and_build "git clone https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
@@ -383,6 +383,8 @@ configure_system() {
 	
 	# Download scx using LAVD
 	sudo wget -P /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
+	# Download optimal kernel.conf
+	sudo wget -P /usr/lib/sysctl.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf
         
     if [ "$GAMING_INSTALLED" = true ]; then
 		# Download gamemode.ini
@@ -391,9 +393,6 @@ configure_system() {
 		# Cooler Master MM720 mouse fix
 		sudo rm -f /etc/udev/rules.d/99-mm720-power.rules
 		sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/99-mm720-power.rules
-		# nvidia rules
-		sudo rm -f /etc/udev/rules.d/89-nvidia-pm.rules
-		sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules
 		# start
 		sudo systemctl enable --now gamemoded.service
     fi
@@ -402,6 +401,9 @@ configure_system() {
 	    # nvidia.conf 
 		sudo rm -f /etc/modprobe.d/nvidia.conf
 	    sudo wget -P /etc/modprobe.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/nvidia.conf
+		# nvidia.rules
+		sudo rm -f /etc/udev/rules.d/89-nvidia-pm.rules
+		sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules	 
 		# mkinitcpio.conf
 	    sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
     fi
@@ -447,23 +449,23 @@ configure_system() {
 		fi
 
     # services    
-    sudo systemctl enable --now scx.service
+	sudo systemctl enable --now scx.service
 	sudo systemctl enable --now paccache.timer
-    sudo systemctl enable --now ufw.service && sudo ufw enable	
+	sudo systemctl enable --now ufw.service && sudo ufw enable	
 }
 
 # ======================
 # MAIN INSTALLATION FLOW
 # ======================
 main() {
-    echo -e "\n${GREEN}🚀 Starting Arch-Hyprland Automated Installation${NC}"
-    
-    # Detection phase
-    detect_system
-    
+	echo -e "\n${GREEN}🚀 Starting Arch-Hyprland Automated Installation${NC}"
+	
+	# Detection phase
+	detect_system
+	
 	# Installation phases
 	install_base_system
-	install_tkg_kernel
+	install_tkg_zen3_kernel
 	install_extra_package_managers
 	install_firmware
 	install_audio
@@ -477,10 +479,10 @@ main() {
 	install_gaming
 	install_apps
 	configure_system
-    
-    echo -e "\n${GREEN}✅ Installation completed successfully!${NC}"
-    echo -e "${YELLOW}Please reboot your system to apply all changes.${NC}"
-    echo -e "Consider copying your dotfiles to ~/.config"
+	
+	echo -e "\n${GREEN}✅ Installation completed successfully!${NC}"
+	echo -e "${YELLOW}Please reboot your system to apply all changes.${NC}"
+	echo -e "Consider copying your dotfiles to ~/.config"
 }
 
 # Execute
