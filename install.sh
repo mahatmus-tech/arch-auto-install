@@ -122,14 +122,16 @@ ask_user() {
 install_base_system() {
     status "Updating system and installing base packages..."
 
-    # change pacman parallel downloads
+    status "Changing pacman settings..."
     sudo sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
+    sudo sed -i 's/^#VerbosePkgLists$/VerbosePkgLists/' /etc/pacman.conf
+    sudo sed -i 's/^#ILoveCandy$/ILoveCandy/' /etc/pacman.conf
 
     # Update packages
     sudo pacman -Syu --needed --noconfirm
     install_packages \
         git base-devel curl python wget ufw \
-	meson systemd dbus libinih scx-scheds
+	meson systemd dbus libinih scx-scheds pacman-contrib
     
     # Create user directories
     mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config,Apps,Scrips}
@@ -232,6 +234,12 @@ install_fonts() {
 
 install_graphics_stack() {
     status "Installing graphics stack for $GPU..."
+
+    # Input & GPU Acceleration - generic
+    install_packages \
+		libglvnd mesa lib32-mesa libva lib32-libva \
+		libvdpau lib32-libvdpau libvdpau-va-gl \
+		vulkan-icd-loader lib32-vulkan-icd-loader vulkan-mesa-layers    
     
     # GPU-specific packages
     case $GPU in
@@ -252,15 +260,10 @@ install_graphics_stack() {
             ;;
         "intel")
             install_packages \
-                vulkan-intel lib32-vulkan-intel intel-media-sdk libva-intel-driver
+                vulkan-intel lib32-vulkan-intel libva-intel-driver
+		intel-media-sdk intel-media-driver intel-gmmlib
             ;;
     esac
-
-    # Input & GPU Acceleration
-    install_packages \
-		libglvnd mesa lib32-mesa libva lib32-libva \
-		libvdpau lib32-libvdpau libvdpau-va-gl \
-		vulkan-icd-loader lib32-vulkan-icd-loader 
 }
 
 install_wayland() {
@@ -365,8 +368,8 @@ install_apps() {
 configure_system() {
     status "Configuring system..."
 	
-    # Update and Synchronize package database
-    sudo pacman -Syu --noconfirm
+    # Upgrade and Synchronize package database
+    sudo pacman -Syyu --noconfirm
 
 	# Detect actual user even if script is run with sudo
 	local target_user="${SUDO_USER:-$USER}"
@@ -440,7 +443,8 @@ configure_system() {
 
     # services    
     sudo systemctl enable --now scx.service
-    sudo systemctl enable --now ufw.service && sudo ufw enable
+	sudo systemctl enable --now paccache.timer
+    sudo systemctl enable --now ufw.service && sudo ufw enable	
 }
 
 # ======================
