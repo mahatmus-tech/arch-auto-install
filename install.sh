@@ -129,9 +129,14 @@ install_base_system() {
 
     # Update packages
     sudo pacman -Syu --needed --noconfirm
-    install_packages \
-        git base-devel curl python wget ufw \
-	meson systemd dbus libinih scx-scheds pacman-contrib
+    # Base packages
+    install_packages git base-devel curl python wget meson systemd dbus libinih
+    # firmware
+    install_packages ufw
+    # scheaduler
+    install_packages scx-scheds
+    # pacman tool
+    install_packages pacman-contrib
     
     # Create user directories
     mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config,Apps,Scrips}
