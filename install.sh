@@ -202,9 +202,15 @@ install_multimedia() {
     status "Installing multimedia support..."
     install_packages \
         ffmpeg gstreamer gstreamer-vaapi gst-libav \
-	gst-plugins-bad gst-plugins-good gst-plugins-ugly \
+		gst-plugins-bad gst-plugins-good gst-plugins-ugly \
         libmpeg2 libmad lame flac wavpack opus faac faad2 \
         x264 x265 libvpx dav1d aom ffmpegthumbs
+}
+
+install_bluetooth() {
+    status "Installing bluetooth support..."
+    install_packages \
+		bluez bluez-plugins	bluez-utils	bluez-hid2hci bluez-libs
 }
 
 install_compressions() {
@@ -453,6 +459,7 @@ main() {
     install_firmware
 	install_audio
     install_multimedia
+	install_bluetooth
     install_compressions
     install_fonts
     install_graphics_stack
