@@ -6,7 +6,6 @@ set -euo pipefail
 # CONFIGURATION
 # ======================
 INSTALL_DIR="~/Apps"
-YAY_URL="https://aur.archlinux.org/yay-bin.git"
 COLORS_ENABLED=true
 
 # ======================
@@ -144,7 +143,7 @@ install_tkg_kernel() {
 
 install_extra_package_managers() {
     status "Installing yay (AUR helper)..."
-    clone_and_build "$YAY_URL" "yay-bin"
+    clone_and_build "https://aur.archlinux.org/yay-bin.git" "yay-bin"
 
     status "Installing flatpak..."
     install_packages flatpak
@@ -164,9 +163,7 @@ install_firmware() {
         "amd") install_packages amd-ucode;;
     esac
     
-    install_aur \
-	ast-firmware mkinitcpio-firmware
-    
+    clone_and_build "https://aur.archlinux.org/mkinitcpio-firmware.git" "mkinitcpio-firmware"
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
 }
 
