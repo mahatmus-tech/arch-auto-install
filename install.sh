@@ -6,7 +6,6 @@ set -euo pipefail
 # CONFIGURATION
 # ======================
 INSTALL_DIR="~/Apps"
-COLORS_ENABLED=true
 
 # ======================
 # COLOR OUTPUT FUNCTIONS
@@ -17,8 +16,6 @@ if [ "$COLORS_ENABLED" = true ]; then
     YELLOW='\033[1;33m'
     BLUE='\033[0;34m'
     NC='\033[0m'
-else
-    RED=''; GREEN=''; YELLOW=''; BLUE=''; NC=''
 fi
 
 status() { echo -e "${GREEN}[+]${NC} $1"; }
@@ -181,10 +178,8 @@ install_multimedia() {
     install_packages \
         ffmpeg gstreamer gstreamer-vaapi gst-libav \
 	gst-plugins-bad gst-plugins-good gst-plugins-ugly \
-        gst-plugins-pipewire libmpeg2 libmad \
-        lame flac wavpack opus faac faad2 \
+        libmpeg2 libmad lame flac wavpack opus faac faad2 \
         x264 x265 libvpx dav1d aom
-
 }
 
 install_compressions() {
@@ -199,9 +194,9 @@ install_fonts() {
     status "Installing fonts support..."
     install_packages \
         ttf-droid ttf-fantasque-nerd ttf-fira-code \
-	ttf-jetbrains-mono ttf-jetbrains-mono-nerd ttf-victor-mono \
+	ttf-jetbrains-mono ttf-jetbrains-mono-nerd \
 	adobe-source-code-pro-fonts noto-fonts \
-        noto-fonts-emoji otf-font-awesome 
+        noto-fonts-emoji otf-font-awesome
 }
 
 install_graphics_stack() {
@@ -217,30 +212,24 @@ install_graphics_stack() {
             # Turing or newer hardware only
             # install_packages nvidia-open-dkms
             #install_packages \
-            #    nvidia-utils nvidia-settings nvidia-prime \
-	    # 	lib32-nvidia-utils  opencl-nvidia \
-  	    #	libva-nvidia-driver lib32-libva-nvidia-driver
+            #   nvidia-utils nvidia-settings nvidia-prime \
+	    #	lib32-nvidia-utils opencl-nvidia libva-nvidia-driver
             ;;
         "amd")
 	install_packages \
-		xf86-video-amdgpu \
-		vulkan-radeon lib32-vulkan-radeon \
-		libva-mesa-driver lib32-libva-mesa-driver \
-		mesa-vdpau lib32-mesa-vdpau
+		xf86-video-amdgpu vulkan-radeon lib32-vulkan-radeon
             ;;
         "intel")
             install_packages \
-                vulkan-intel lib32-vulkan-intel \
-                intel-media-sdk libva-intel-driver
+                vulkan-intel lib32-vulkan-intel intel-media-sdk libva-intel-driver
             ;;
     esac
 
     # Input & GPU Acceleration
     install_packages \
-	libinput libglvnd mesa lib32-mesa \
-	libvdpau lib32-libvdpau libvdpau-va-gl libva lib32-libva \
-	vulkan-icd-loader lib32-vulkan-icd-loader 
-    # - instalar input para touchpad
+		libglvnd mesa lib32-mesa libva lib32-libva \
+		libvdpau lib32-libvdpau libvdpau-va-gl \
+		vulkan-icd-loader lib32-vulkan-icd-loader 
 }
 
 install_wayland() {
@@ -248,14 +237,14 @@ install_wayland() {
     $WAYLAND_INSTALLED=true
     install_packages \
         wayland wayland-protocols wayland-utils \
-	lib32-wayland xorg-xwayland \
-	egl-wayland qt5-wayland qt6-wayland
+		lib32-wayland xorg-xwayland libinput \
+		egl-wayland qt5-wayland qt6-wayland
 }
 
 install_xorg() {
     status "Installing Xorg..."
     install_packages \
-        xorg-server xorg-xinit xorg-xinput egl-x11
+        xf86-input-libinput xorg-server xorg-xinit xorg-xinput egl-x11
 }
 
 install_gaming() {
@@ -263,7 +252,7 @@ install_gaming() {
     $GAMING_INSTALLED=true
     install_packages \
         steam goverlay gamescope gamemode \
-	lib32-gamemode mangohud lib32-mangohud
+	    lib32-gamemode mangohud lib32-mangohud
          
     # installl proton-ge-custom
     sudo wget -P ~/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
@@ -283,33 +272,32 @@ install_gaming() {
 
 install_apps() {
     status "Installing optional packages..."
-    install_packages \
-        # terminal & editor
-        micro kitty man-db man-pages fastfetch jq \
+	# terminal & editor
+	install_packages micro kitty man-db man-pages fastfetch jq
 	# coding
-        bash-completion
+    install_packages bash-completion
 	# Linux resource monitors
-        htop nvtop btop inxi \
+    install_packages htop nvtop btop inxi
 	# RDP client
-        rdesktop \
+    install_packages rdesktop
+    # media controller & player
+	install_packages playerctl mpv mpv-mpris
+    # brightness control
+	install_packages brightnessctl
+    # image viewer
+	install_packages loupe imagemagick libspng
+    # calculator
+	install_packages qalculate-gtk
+    # Desktop Theme
+	install_packages kvantum qt5ct qt6ct qt6-svg
+    # notifications
+	install_packages swaync
+	# docker
+	install_packages docker docker-compose
 	# audio
-        pipewire pipewire-alsa pipewire-jack pipewire-pulse \
-	lib32-pipewire alsa-utils alsa-plugins alsa-ucm-conf \
-	gst-plugin-pipewire wireplumber pavucontrol pamixer \
-        # media controller & player
-	playerctl mpv mpv-mpris\
-        # brightness control
-	brightnessctl \
-        # image viewer
-	loupe imagemagick libspng \
-        # calculator
-	qalculate-gtk \
-        # Desktop Theme
-	kvantum qt5ct qt6ct qt6-svg \
-        # notifications
-	swaync \
-        # docker
-        docker docker-compose  
+    install_packages pipewire pipewire-alsa pipewire-jack pipewire-pulse \
+					 lib32-pipewire alsa-utils alsa-plugins alsa-ucm-conf \
+					 gst-plugin-pipewire wireplumber pavucontrol pamixer \ 
  
     # Wayland apps
     if [ "$WAYLAND_INSTALLED" = true ]; then
@@ -330,8 +318,7 @@ install_apps() {
 
     if [ "$SNAP_INSTALLED" = true ]; then
         sudo snap install spotify
-    fi	
-
+    fi
 }
 
 # ======================
@@ -364,11 +351,11 @@ configure_system() {
     fi
     
     if [ "$NVIDIA_INSTALLED" = true ]; then
-        # nvidia.conf 
-	sudo rm -f /etc/modprobe.d/nvidia.conf
-        sudo wget -P /etc/modprobe.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/nvidia.conf
-	# mkinitcpio.conf
-        sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
+	    # nvidia.conf 
+		sudo rm -f /etc/modprobe.d/nvidia.conf
+	    sudo wget -P /etc/modprobe.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/nvidia.conf
+		# mkinitcpio.conf
+	    sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
     fi
 
     status "Setting fstrim ..."
@@ -437,11 +424,6 @@ main() {
     install_gaming
     install_apps
     configure_system
-    improve_performance_ext4_nvme
-    
-    # Cleanup
-    status "Cleaning up..."
-    sudo rm -rf "$INSTALL_DIR"
     
     echo -e "\n${GREEN}✅ Installation completed successfully!${NC}"
     echo -e "${YELLOW}Please reboot your system to apply all changes.${NC}"
