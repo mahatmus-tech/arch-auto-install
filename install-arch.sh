@@ -476,7 +476,9 @@ configure_system() {
 		fi
     fi
 
-    # services    
+    # services
+    sudo systemctl enable --now pipewire.service
+	sudo systemctl enable --now wireplumber.service
 	sudo systemctl enable --now scx.service
 	sudo systemctl enable --now paccache.timer
 	sudo systemctl enable --now ufw.service && sudo ufw enable
