@@ -6,10 +6,8 @@ set -euo pipefail
 # CONFIGURATION
 # ======================
 INSTALL_DIR="~/Apps"
-LOG_FILE="/var/log/arch_auto_install.log"
-mkdir -p "$(dirname "$LOG_FILE")"
-exec > >(tee -i "$LOG_FILE")
-exec 2>&1
+# Set log file path
+export LOG_FILE="/var/log/arch_auto_install_$(date "+%Y%m%d-%H%M%S").log"
 
 # Menu configuration
 MENU_OPTIONS=(
@@ -139,7 +137,7 @@ ask_user() {
 			info "Skipping..."
 			return 1
 		else
-		info "Please answer y or n."
+			info "Please answer y or n."
 		fi
 	done
 }
@@ -171,11 +169,11 @@ install_base_system() {
 }
 
 install_tkg_zen3_kernel() {
-    # clone linux-tkg kernel
-    status "Cloning linux-tkg kernel..."
-    clone_and_build "git clone https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
-		    "echo Repository Linux TKG has been cloned!"
-
+	# clone linux-tkg kernel
+	status "Cloning linux-tkg kernel..."
+	clone_and_build "git clone https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
+					"echo Repository Linux TKG has been cloned!"
+	
 	#Download linux-tkg kernel
 	sudo wget -P /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/vmlinuz-linux614-tkg-eevdf
 	sudo wget -P /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf.img
