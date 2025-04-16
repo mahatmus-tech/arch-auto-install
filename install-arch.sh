@@ -486,8 +486,6 @@ configure_system() {
 # MAIN INSTALLATION FLOW
 # ======================
 main() {
-	exec > >(tee -a "$LOG_FILE") 2>&1
- 
 	echo -e "\n${GREEN}🚀 Starting Arch Auto Install ${NC}"
 	
 	# Detection phase
