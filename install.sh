@@ -11,6 +11,25 @@ mkdir -p "$(dirname "$LOG_FILE")"
 exec > >(tee -i "$LOG_FILE")
 exec 2>&1
 
+# Menu configuration
+MENU_OPTIONS=(
+    1  "Base System"          on
+    2  "TKG Zen3 Kernel"      off
+    3  "Extra Package Mgrs"   on
+    4  "Firmware"             on
+    5  "Audio"                on
+    6  "Multimedia"           on
+    7  "Bluetooth"            on
+    8  "Compression Tools"    on
+    9  "Fonts"                on
+    10 "Graphics Stack"       on
+    11 "Wayland"              on
+    12 "Xorg"                 off
+    13 "Gaming"               on
+    14 "Apps"                 on
+    15 "System Configuration" on
+)
+
 # ======================
 # COLOR OUTPUT FUNCTIONS
 # ======================
@@ -64,6 +83,14 @@ detect_system() {
 # ======================
 # INSTALLATION FUNCTIONS
 # ======================
+
+show_menu() {
+    dialog --clear \
+        --title "Arch Installation" \
+        --checklist "Select components to install:" 20 60 15 \
+        "${MENU_OPTIONS[@]}" 2>selected
+}
+
 install_packages() {
     status "Installing packages: $*"
     sudo pacman -S --needed --noconfirm "$@" || {
@@ -462,23 +489,41 @@ main() {
 	
 	# Detection phase
 	detect_system
-	
-	# Installation phases
-	install_base_system
-	install_tkg_zen3_kernel
-	install_extra_package_managers
-	install_firmware
-	install_audio
-	install_multimedia
-	install_bluetooth
-	install_compressions
-	install_fonts
-	install_graphics_stack
-	install_wayland
-	#install_xorg
-	install_gaming
-	install_apps
-	configure_system
+
+    if ! command -v dialog &> /dev/null; then
+        echo -e "${YELLOW}Installing dialog for menu interface...${NC}"
+        install_packages dialog
+    fi
+
+    # Show Menu Checker
+    show_menu
+    
+    if [ ! -s selected ]; then
+        error "No components selected. Exiting"
+    fi
+
+    mapfile -t SELECTIONS < selected
+    rm -f selected
+    
+    for selection in "${SELECTIONS[@]}"; do
+        case $selection in
+            1)  install_base_system ;;
+            2)  install_tkg_zen3_kernel ;;
+            3)  install_extra_package_managers ;;
+            4)  install_firmware ;;
+            5)  install_audio ;;
+            6)  install_multimedia ;;
+            7)  install_bluetooth ;;
+            8)  install_compressions ;;
+            9)  install_fonts ;;
+            10) install_graphics_stack ;;
+            11) install_wayland ;;
+            12) install_xorg ;;
+            13) install_gaming ;;
+            14) install_apps ;;
+            15) configure_system ;;
+        esac
+    done
 	
 	echo -e "\n${GREEN}✅ Installation completed successfully!${NC}"
 	echo -e "${YELLOW}Please reboot your system to apply all changes.${NC}"
