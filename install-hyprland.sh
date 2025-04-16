@@ -173,6 +173,9 @@ configure_hyprland() {
 		echo "exec-once = waybar" >> "$CONFIG"
 		echo "exec-once = swaync" >> "$CONFIG"
 		echo "exec-once = blueman-applet" >> "$CONFIG"
+  		echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
+		echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
+		echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG" 
 		#clipboard manager
 		echo "exec-once = wl-paste --type text --watch cliphist store" >> "$CONFIG"
 		echo "exec-once = wl-paste --type image --watch cliphist store" >> "$CONFIG"		
