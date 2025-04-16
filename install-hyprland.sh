@@ -27,21 +27,9 @@ NC='\033[0m'
 
 # Menu configuration
 MENU_OPTIONS=(
-	1  "Base System"          on
-	2  "TKG Zen3 Kernel"      off
-	3  "Extra Package Mgrs"   on
-	4  "Firmware"             on
-	5  "Audio"                on
-	6  "Multimedia"           on
-	7  "Bluetooth"            on
-	8  "Compression Tools"    on
-	9  "Fonts"                on
-	10 "Graphics Stack"       on
-	11 "Wayland"              on
-	12 "Xorg"                 off
-	13 "Gaming"               on
-	14 "Apps"                 on
-	15 "System Configuration" on
+	1  "Install Hyprland"          on
+	2  "Install JaKooLit DotFiles" off
+	3  "Extra Package Mgrs"        on
 )
 
 # ======================
@@ -148,7 +136,19 @@ ask_user() {
 # INSTALLATION SECTIONS
 # ======================
 install_base_system() {
-	status "Updating system and installing base packages..."
+	status "Installing Hyprland Dependecies..."
+    install_aur \
+		ninja gcc cmake meson libxcb xcb-proto xcb-util xcb-util-keysyms
+  		libxfixes libx11 libxcomposite libxrender libxcursor pixman wayland-protocols
+		cairo pango libxkbcommon xcb-util-wm xorg-xwayland libinput libliftoff libdisplay-info
+  		cpio tomlplusplus hyprlang-git hyprcursor-git hyprwayland-scanner-git xcb-util-errors
+		hyprutils-git glaze hyprgraphics-git aquamarine-git re2 hyprland-qtutils
+
+    status "Building Hyprland..."
+	clone_and_build "--recursive https://github.com/hyprwm/Hyprland" "Hyprland" \
+					"make all && sudo make install"
+
+    install_aur xdg-desktop-portal-hyprland-git
 	
 	status "Changing pacman settings..."
 	sudo sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
