@@ -173,7 +173,7 @@ install_base_system() {
 install_tkg_zen3_kernel() {
 	# clone linux-tkg kernel
 	status "Cloning linux-tkg kernel..."
-	clone_and_build "git clone https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
+	clone_and_build "https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
 					"echo Repository Linux TKG has been cloned!"
 	
 	#Download linux-tkg kernel
