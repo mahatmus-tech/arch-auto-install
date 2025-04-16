@@ -116,7 +116,7 @@ install_base_system() {
     install_packages git base-devel curl python meson systemd dbus libinih wget
     
     # Create user directories
-    mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config,Apps}
+    mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config,Apps,Scrips}
 }
 
 install_tkg_kernel() {
@@ -133,9 +133,9 @@ install_tkg_kernel() {
     sudo wget -P /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg-fallback.conf
 
     #Edit the linux-tkg.conf
-    UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))    
+    UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
     sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg.conf
-    sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg-fallback.conf    
+    sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg-fallback.conf
     sudo bootctl update
     # set linux-tkg as default
     sudo bootctl set-default linux-tkg.conf
@@ -144,13 +144,15 @@ install_tkg_kernel() {
 install_extra_package_managers() {
     status "Installing yay (AUR helper)..."
     clone_and_build "https://aur.archlinux.org/yay-bin.git" "yay-bin"
+    $YAY_INSTALLED=true
 
     status "Installing flatpak..."
     install_packages flatpak
+    $FLATPAK_INSTALLED=true
 
     status "Installing snap..."
     clone_and_build "https://aur.archlinux.org/snapd.git" "snapd"
-
+    $SNAP_INSTALLED=true
     sudo systemctl enable --now snapd.socket
     sudo ln -s /var/lib/snapd/snap /snap
 }
@@ -167,6 +169,24 @@ install_firmware() {
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
 }
 
+install_multimedia() {
+    status "Installing multimedia support..."
+    install_packages \
+        ffmpeg gstreamer gst-libav gst-plugins-bad \
+        gst-plugins-good gst-plugins-ugly \
+        lame flac wavpack opus faac faad2 \
+        x264 x265 libvpx dav1d aom libmpeg2 libmad
+
+}
+
+install_compressions() {
+    status "Installing compressions support..."
+    install_packages \
+        zip unzip p7zip gzip bzip2 xz \
+        unrar lrzip zstd lzip lzop arj \
+        cabextract cpio unace tar
+}
+
 install_graphics_stack() {
     status "Installing graphics stack for $GPU..."
     
@@ -179,8 +199,8 @@ install_graphics_stack() {
             # Turing or newer hardware only
             # install_packages nvidia-open-dkms
             #install_packages \
-            #   nvidia-utils nvidia-settings nvidia-prime \
-	    #	lib32-nvidia-utils  opencl-nvidia \
+            #    nvidia-utils nvidia-settings nvidia-prime \
+	    # 	lib32-nvidia-utils  opencl-nvidia \
   	    #	libva-nvidia-driver lib32-libva-nvidia-driver
             ;;
         "amd")
@@ -202,6 +222,7 @@ install_graphics_stack() {
 	libinput libglvnd mesa lib32-mesa \
 	libvdpau lib32-libvdpau libva lib32-libva \
 	vulkan-icd-loader lib32-vulkan-icd-loader
+    # - instalar input para touchpad
  
     # QT Support
     install_packages \
@@ -222,50 +243,18 @@ install_xorg() {
         xorg-server xorg-xinit xorg-xinput egl-x11
 }
 
-install_hyprland_stack() {
-    status "Installing Hyprland and components..."
-    
-    # Installing Dendencies of Hyprland
-    install_aur \
-    	ninja gcc cmake meson libxcb xcb-proto xcb-util xcb-util-keysyms libxfixes 
-        libx11 libxcomposite libxrender libxcursor pixman wayland-protocols cairo 
-	pango libxkbcommon xcb-util-wm xorg-xwayland libinput libliftoff libdisplay-info 
-        cpio tomlplusplus hyprlang-git hyprcursor-git hyprwayland-scanner-git xcb-util-errors 
-        hyprutils-git glaze hyprgraphics-git aquamarine-git re2 hyprland-qtutils
-	
-    # Builing and installing Hyprland 
-    clone_and_build "--recursive https://github.com/hyprwm/Hyprland" "Hyprland" \
-		    "make all && sudo make install"      
-    
-    # Required dependencies
-    install_packages \
-        hyprpolkitagent
-	
-    install_aur \
-      xdg-desktop-portal-hyprland-git
- 
-}
-
-install_multimedia() {
-    status "Installing multimedia support..."
-    install_packages \
-        ffmpeg gstreamer gst-libav gst-plugins-bad \
-        gst-plugins-good gst-plugins-ugly \
-        lame flac wavpack opus faac faad2 \
-        x264 x265 libvpx dav1d aom libmpeg2 libmad
-
-}
-
 install_gaming() {
     status "Installing gaming support..."
     install_packages \
-        steam lutris wine-staging goverlay \
-	gamescope gamemode lib32-gamemode mangohud lib32-mangohud        
+        steam goverlay gamescope gamemode \
+	lib32-gamemode mangohud lib32-mangohud
          
-    install_aur \
-      proton-ge-custom-bin
+    # installl proton-ge-custom
+    sudo wget -P ~/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
+    ./proton-ge-custom-install.sh
     
-    # Wine dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
+    # Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
+    install_packages wine-staging
     install_packages_asdeps \
         giflib lib32-giflib gnutls lib32-gnutls v4l-utils \
         lib32-v4l-utils libpulse lib32-libpulse alsa-plugins \
@@ -276,27 +265,26 @@ install_gaming() {
         lib32-vulkan-icd-loader sdl2-compat lib32-sdl2-compat
 }
 
-install_compressions() {
-    status "Installing compressions support..."
-    install_packages \
-        zip unzip p7zip gzip bzip2 xz \
-        unrar lrzip zstd lzip lzop arj \
-        cabextract cpio unace tar
-}
-
 install_apps() {
     status "Installing optional packages..."
     install_packages \
-        emacs micro kitty man-db sysfsutils \
-        htop nvtop btop fastfetch \
-        docker docker-compose wlr-randr
+        emacs-wayland micro kitty man-db \
+        htop nvtop btop fastfetch rdesktop \
+        docker docker-compose
+	
+    if [ "$YAY_INSTALLED" = true ]; then
+	install_aur \
+	    brave-bin teams-for-linux
+    fi
 
-    install_aur \
-	brave-bin teams-for-linux
+    if [ "$FLATPAK_INSTALLED" = true ]; then
+    	flatpak install -y flathub dev.vencord.Vesktop
+    	flatpak install -y com.freerdp.FreeRDP
+    fi
 
-    flatpak install -y flathub dev.vencord.Vesktop
-    flatpak install -y com.freerdp.FreeRDP
-    sudo snap install spotify
+    if [ "$SNAP_INSTALLED" = true ]; then
+        sudo snap install spotify
+    fi	
 
 }
 
@@ -307,18 +295,21 @@ configure_system() {
     status "Configuring system..."
 
     # Synchronize package database
-    sudo pacman -Sy --noconfirm
+    sudo pacman -Syu --noconfirm
     
     # Add user to required groups
     sudo usermod -aG docker,video,input,gamemode $USER
+}
 
+improve_performance_ext4_nvme() {
+    status "Optimizing Ext4..."
     # Add ftrim to ssd
     sudo systemctl enable --now fstrim.timer
-
+    
     # set async journal
     sudo tune2fs -E mount_opts=journal_async_commit $(findmnt -n -o SOURCE /)
     sudo tune2fs -o journal_data_writeback $(findmnt -n -o SOURCE /)
-    # Define the UUID of the partition
+    # Define the UUID of the partition (adaptar para escolhera  partição)
     UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
     # Define the new mount options
     NEW_MOUNT_OPTIONS="defaults,noatime"
@@ -326,18 +317,6 @@ configure_system() {
     sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID \/ ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab    
     # remount the root partition
     sudo mount -o remount /
-    
-
-    # Get the dot files
-
-    # monitor profile
-    sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/dotfiles/gamemode.ini
-
-    # get blstrobe script	
-    mkdir -p ~/Documents/scripts
-    cd ~/Documents/scripts
-    sudo wget -P https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/dotfiles/blstrobe-start.sh
-    sudo chmod +x blstrobe-start.sh
 }
 
 # ======================
@@ -358,11 +337,11 @@ main() {
     install_compressions
     install_graphics_stack
     install_wayland
-    #install_worg
+    #install_xorg
     install_gaming
-    install_hyprland_stack
-    configure_system
     install_apps
+    configure_system
+    improve_performance_ext4_nvme
     
     # Cleanup
     status "Cleaning up..."
