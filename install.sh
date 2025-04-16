@@ -2,10 +2,22 @@
 
 set -euo pipefail
 
+
+# ======================
+# GLOBAL VARIABLES
+# ======================
+# Variables like these need to be initialized before use:
+declare -g $YAY_INSTALLED=false
+declare -g $FLATPAK_INSTALLED=false
+declare -g $SNAP_INSTALLED=false
+declare -g $NVIDIA_INSTALLED=false
+declare -g $WAYLAND_INSTALLED=false
+declare -g $GAMING_INSTALLED=false
+
 # ======================
 # CONFIGURATION
 # ======================
-INSTALL_DIR="~/Apps"
+INSTALL_DIR="$HOME/Apps"
 # Set log file path
 export LOG_FILE="/var/log/arch_auto_install_$(date "+%Y%m%d-%H%M%S").log"
 
@@ -165,7 +177,7 @@ install_base_system() {
 	install_packages pacman-contrib
 	
 	# Create user directories
-	mkdir -p ~/{Downloads,Documents,Pictures,Projects,.config,Apps,Scrips}
+	mkdir -p $HOME/{Downloads,Documents,Pictures,Projects,.config,Apps,Scrips}
 }
 
 install_tkg_zen3_kernel() {
@@ -320,7 +332,7 @@ install_gaming() {
 		lib32-gamemode mangohud lib32-mangohud
 		 
 	# installl proton-ge-custom
-	sudo wget -P ~/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
+	sudo wget -P $HOME/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
 	./proton-ge-custom-install.sh
 	
 	# Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
@@ -484,7 +496,9 @@ configure_system() {
 # MAIN INSTALLATION FLOW
 # ======================
 main() {
-	echo -e "\n${GREEN}🚀 Starting Arch Automated Installation${NC}"
+	exec > >(tee -a "$LOG_FILE") 2>&1
+ 
+	echo -e "\n${GREEN}🚀 Starting Arch Auto Install ${NC}"
 	
 	# Detection phase
 	detect_system
