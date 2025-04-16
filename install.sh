@@ -389,30 +389,29 @@ configure_system() {
 	# Filesystems known to support TRIM
 	if [[ "$is_ssd_or_nvme" == "true" && \
 	      "$root_fs_type" =~ ^(ext3|ext4|btrfs|f2fs|xfs|vfat|exfat|jfs|nilfs2|ntfs-3g)$ ]]; then
-	    echo "Filesystem '$root_fs_type' supports TRIM. Enabling fstrim.timer..."
+	    status "Filesystem '$root_fs_type' supports TRIM. Enabling fstrim.timer..."
 	    systemctl enable fstrim.timer
 	    sudo systemctl enable --now fstrim.timer    
 	fi
 
+ 	if [[ "$is_ssd_or_nvme" == "true" ]]; then
+	    status "Setting ext4 root partition performance..."    
+	    # set async journal
+	    sudo tune2fs -E mount_opts=journal_async_commit $(findmnt -n -o SOURCE /)
+	    sudo tune2fs -o journal_data_writeback $(findmnt -n -o SOURCE /)
+	    # Define the UUID of the partition (adaptar para escolhera  partição)
+	    UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
+	    # Define the new mount options
+	    NEW_MOUNT_OPTIONS="defaults,noatime"
+	    # Edit the fstab file to change the mount options
+	    sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID \/ ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab
+	    # remount the root partition
+	    sudo mount -o remount /
+	 fi
+
     # services    
     sudo systemctl enable --now scx.service
     sudo systemctl enable --now ufw.service && sudo ufw enable
-}
-
-improve_performance_ext4_nvme() {
-    status "Setting ext4 performance..."
-    
-    # set async journal
-    sudo tune2fs -E mount_opts=journal_async_commit $(findmnt -n -o SOURCE /)
-    sudo tune2fs -o journal_data_writeback $(findmnt -n -o SOURCE /)
-    # Define the UUID of the partition (adaptar para escolhera  partição)
-    UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
-    # Define the new mount options
-    NEW_MOUNT_OPTIONS="defaults,noatime"
-    # Edit the fstab file to change the mount options
-    sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID \/ ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab
-    # remount the root partition
-    sudo mount -o remount /
 }
 
 # ======================
