@@ -33,13 +33,11 @@ MENU_OPTIONS=(
 # ======================
 # COLOR OUTPUT FUNCTIONS
 # ======================
-if [ "$COLORS_ENABLED" = true ]; then
-    RED='\033[0;31m'
-    GREEN='\033[0;32m'
-    YELLOW='\033[1;33m'
-    BLUE='\033[0;34m'
-    NC='\033[0m'
-fi
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
 
 status() { echo -e "${GREEN}[+]${NC} $1"; }
 warning() { echo -e "${YELLOW}[!]${NC} $1"; }
@@ -139,8 +137,6 @@ ask_user() {
 	        *) info "Please answer y or n." ;;
 	    esac
 	done
-}
-
 }
 
 # ======================
@@ -474,11 +470,12 @@ configure_system() {
 		    echo "Failed to remount root partition. Exiting."
 		    exit 1
 		fi
+    fi
 
     # services    
 	sudo systemctl enable --now scx.service
 	sudo systemctl enable --now paccache.timer
-	sudo systemctl enable --now ufw.service && sudo ufw enable	
+	sudo systemctl enable --now ufw.service && sudo ufw enable
 }
 
 # ======================
