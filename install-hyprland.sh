@@ -152,13 +152,17 @@ configure_hyprland() {
 		sudo sed -i -E "s|^#accel_profile =.*|#accel_profile = flat|" $CONFIG
 		sudo sed -i -E "s|^direct_scanout = 0.*|direct_scanout = 2|" $CONFIG
 		sudo sed -i -E "s|^#opengl {.*|opengl {|" $CONFIG
-		sudo sed -i -E "s|^#  nvidia_anti_flicker = true.*|  nvidia_anti_flicker = true|" $CONFIG	
+		sudo sed -i -E "s|^#  nvidia_anti_flicker = true.*|  nvidia_anti_flicker = true|" $CONFIG
 		sudo sed -i -E "s|^#}.*|}|" $CONFIG
 		
 		local CONFIG="$HOME/.config/hypr/UserConfigs/ENVariables.conf"
 		echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
-			echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
+		echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
 		echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG" 
+  		echo "env = WLR_DRM_DEVICES=/dev/dri/card0" >> "$CONFIG"  			
+
+		local CONFIG="$HOME/.zprofile"
+  		sudo sed -i -E "s/#/ /g" $CONFIG
  	else
 		# Path to Hyprland config file
 		local CONFIG="$HOME/.config/hypr/hyprland.conf"
