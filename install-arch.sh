@@ -422,7 +422,7 @@ configure_system() {
 		sudo rm -f /etc/udev/rules.d/99-mm720-power.rules
 		sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/99-mm720-power.rules
 		# start
-		sudo systemctl enable --now gamemoded.service
+		systemctl --user stop gamemoded.service
     fi
     
     if [ "$NVIDIA_INSTALLED" = true ]; then
@@ -477,8 +477,6 @@ configure_system() {
     fi
 
     # services
-    sudo systemctl enable --now pipewire.service
-	sudo systemctl enable --now wireplumber.service
 	sudo systemctl enable --now scx.service
 	sudo systemctl enable --now paccache.timer
 	sudo systemctl enable --now ufw.service && sudo ufw enable
