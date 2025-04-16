@@ -6,6 +6,10 @@ set -euo pipefail
 # CONFIGURATION
 # ======================
 INSTALL_DIR="~/Apps"
+LOG_FILE="/var/log/arch_auto_install.log"
+mkdir -p "$(dirname "$LOG_FILE")"
+exec > >(tee -i "$LOG_FILE")
+exec 2>&1
 
 # ======================
 # COLOR OUTPUT FUNCTIONS
@@ -99,6 +103,17 @@ clone_and_build() {
     cd - >/dev/null || error "Failed to return to previous directory"
 }
 
+ask_user() {
+	while true; do
+	    read -rp "$1 [y/n]: " yn
+	    case "$yn" in
+	        [Yy]*) info "Continuing..."; break ;;
+	        [Nn]*) info "Aborting."; exit 1 ;;
+	        *) info "Please answer y or n." ;;
+	    esac
+	done
+}
+
 }
 
 # ======================
@@ -166,11 +181,21 @@ install_firmware() {
         "amd") install_packages amd-ucode;;
     esac
 
-    install_packages \
-        sof-firmware alsa-firmware
+    install_packages sof-firmware alsa-firmware
 	
     clone_and_build "https://aur.archlinux.org/mkinitcpio-firmware.git" "mkinitcpio-firmware"
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
+}
+
+install_audio() {
+    status "Installing audio packages..."
+	# remove conflicting packages
+	sudo pacman -R --noconfirm jack2
+    # install audio packages
+    install_packages \
+		pipewire pipewire-alsa pipewire-jack pipewire-pulse \
+		lib32-pipewire alsa-utils alsa-plugins alsa-ucm-conf \
+		gst-plugin-pipewire wireplumber pavucontrol pamixer
 }
 
 install_multimedia() {
@@ -179,7 +204,7 @@ install_multimedia() {
         ffmpeg gstreamer gstreamer-vaapi gst-libav \
 	gst-plugins-bad gst-plugins-good gst-plugins-ugly \
         libmpeg2 libmad lame flac wavpack opus faac faad2 \
-        x264 x265 libvpx dav1d aom
+        x264 x265 libvpx dav1d aom ffmpegthumbs
 }
 
 install_compressions() {
@@ -268,6 +293,19 @@ install_gaming() {
         lib32-libva gtk3 lib32-gtk3 gst-plugins-base-libs \
         lib32-gst-plugins-base-libs vulkan-icd-loader \
         lib32-vulkan-icd-loader sdl2-compat lib32-sdl2-compat
+
+	status "Installing controller support..."
+    if ask_user "Do you want to install xpadneo? - It Improves Xbox gamepad support:"; then
+        install_packages xpadneo-dkms-git
+    fi
+
+    if ask_user "Do you want to install xone? - It improves Xbox gamepad support with a USB wireless dongle:"; then
+    	install_packages xone-dkms-git xone-dongle-firmware
+    fi
+
+    if ask_user "Do you want to install PS5 controller support?:"; then
+        install_packages dualsensectl-git
+    fi
 }
 
 install_apps() {
@@ -277,7 +315,7 @@ install_apps() {
 	# coding
     install_packages bash-completion
 	# Linux resource monitors
-    install_packages htop nvtop btop inxi
+    install_packages htop nvtop btop inxi duf
 	# RDP client
     install_packages rdesktop
     # media controller & player
@@ -293,22 +331,16 @@ install_apps() {
     # notifications
 	install_packages swaync
 	# docker
-	install_packages docker docker-compose
-	# audio
-    install_packages pipewire pipewire-alsa pipewire-jack pipewire-pulse \
-					 lib32-pipewire alsa-utils alsa-plugins alsa-ucm-conf \
-					 gst-plugin-pipewire wireplumber pavucontrol pamixer \ 
- 
+	install_packages docker docker-compose 
     # Wayland apps
     if [ "$WAYLAND_INSTALLED" = true ]; then
         install_packages \
-	    grim slurp waybar wl-clipboard cliphist \
-	    nwg-displays swappy swww wlogout emacs-wayland
+		    grim slurp waybar wl-clipboard cliphist \
+		    nwg-displays swappy swww wlogout emacs-wayland
     fi
 	
     if [ "$YAY_INSTALLED" = true ]; then
-	install_aur \
-	    brave-bin teams-for-linux
+		install_aur brave-bin teams-for-linux
     fi
 
     if [ "$FLATPAK_INSTALLED" = true ]; then
@@ -329,9 +361,11 @@ configure_system() {
 	
     # Update and Synchronize package database
     sudo pacman -Syu --noconfirm
-    
-    # Add user to required groups
-    sudo usermod -aG docker,video,input,gamemode $USER
+
+	# Detect actual user even if script is run with sudo
+	local target_user="${SUDO_USER:-$USER}"
+	# Add user to all required groups in one go (remove duplicates)
+	sudo usermod -aG wheel,docker,video,input,gamemode,audio,network,lp,storage,users,rfkill,sys "$target_user"	 	
 
     # Download scx using LAVD
     sudo wget -P /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
@@ -393,8 +427,10 @@ configure_system() {
 	    # Edit the fstab file to change the mount options
 	    sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID \/ ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab
 	    # remount the root partition
-	    sudo mount -o remount /
-	 fi
+		if ! sudo mount -o remount /; then
+		    echo "Failed to remount root partition. Exiting."
+		    exit 1
+		fi
 
     # services    
     sudo systemctl enable --now scx.service
@@ -415,6 +451,7 @@ main() {
     install_tkg_kernel
     install_extra_package_managers
     install_firmware
+	install_audio
     install_multimedia
     install_compressions
     install_fonts
