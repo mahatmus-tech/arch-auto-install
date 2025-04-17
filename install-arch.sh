@@ -88,11 +88,15 @@ info() { echo -e "${BLUE}[i]${NC} $1"; }
 
 show_menu() {
     install_packages dialog
-
+    
     dialog --clear \
         --title "Arch Auto Installation" \
         --checklist "Select components to install:" 20 60 15 \
         "${MENU_OPTIONS[@]}" 2>selected
+    
+    if [ ! -s selected ]; then
+        error "No components selected. Exiting"
+    fi  
 }
 
 install_packages() {
@@ -150,59 +154,59 @@ ask_user() {
 # INSTALLATION SECTIONS
 # ======================
 install_base_system() {
-	status "Updating system and installing base packages..."
-	
-	status "Changing pacman settings..."
-	sudo sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
-	sudo sed -i 's/^#VerbosePkgLists$/VerbosePkgLists/' /etc/pacman.conf
-	sudo sed -i 's/^#ILoveCandy$/ILoveCandy/' /etc/pacman.conf
-	
-	# Update packages
-	sudo pacman -Syu --needed --noconfirm
-	# Base packages
-	install_packages git base-devel curl python wget meson systemd dbus libinih
-	# firmware
-	install_packages ufw
-	# scheaduler
-	install_packages scx-scheds
-	# pacman tool
-	install_packages pacman-contrib
-	
-	# Create user directories
-	mkdir -p $HOME/{Downloads,Documents,Pictures,Projects,.config,Apps,Scrips}
+    status "Updating system and installing base packages..."
+    
+    status "Changing pacman settings..."
+    sudo sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
+    sudo sed -i 's/^#VerbosePkgLists$/VerbosePkgLists/' /etc/pacman.conf
+    sudo sed -i 's/^#ILoveCandy$/ILoveCandy/' /etc/pacman.conf
+    
+    # Update packages
+    sudo pacman -Syu --needed --noconfirm
+    # Base packages
+    install_packages git base-devel curl python wget meson systemd dbus libinih
+    # firmware
+    install_packages ufw
+    # scheaduler
+    install_packages scx-scheds
+    # pacman tool
+    install_packages pacman-contrib
+    
+    # Create user directories
+    mkdir -p $HOME/{Downloads,Documents,Pictures,Projects,.config,Apps,Scrips}
 }
 
 install_tkg_zen3_kernel() {
-	# clone linux-tkg kernel
-	status "Cloning linux-tkg kernel..."
-	clone_and_build "https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
-					"echo Repository Linux TKG has been cloned!"
-	
-	#Download linux-tkg kernel
-	sudo wget -P /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/vmlinuz-linux614-tkg-eevdf
-	sudo wget -P /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf.img
-	sudo wget -P /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf-fallback.img
-	sudo wget -P /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg.conf
-	sudo wget -P /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg-fallback.conf
-	
-	#Edit the linux-tkg.conf
-	UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
-	sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg.conf
-	sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg-fallback.conf
-	sudo bootctl update
-	# set linux-tkg as default
-	sudo bootctl set-default linux-tkg.conf
+    # clone linux-tkg kernel
+    status "Cloning linux-tkg kernel..."
+    clone_and_build "https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
+                    "echo Repository Linux TKG has been cloned!"
+    
+    #Download linux-tkg kernel
+    sudo wget -P /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/vmlinuz-linux614-tkg-eevdf
+    sudo wget -P /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf.img
+    sudo wget -P /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf-fallback.img
+    sudo wget -P /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg.conf
+    sudo wget -P /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg-fallback.conf
+    
+    #Edit the linux-tkg.conf
+    UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
+    sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg.conf
+    sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg-fallback.conf
+    sudo bootctl update
+    # set linux-tkg as default
+    sudo bootctl set-default linux-tkg.conf
 }
 
 install_extra_package_managers() {
     status "Installing yay (AUR helper)..."
     clone_and_build "https://aur.archlinux.org/yay-bin.git" "yay-bin"
     $YAY_INSTALLED=true
-
+    
     status "Installing flatpak..."
     install_packages flatpak
     $FLATPAK_INSTALLED=true
-
+    
     status "Installing snap..."
     clone_and_build "https://aur.archlinux.org/snapd.git" "snapd"
     $SNAP_INSTALLED=true
@@ -217,9 +221,9 @@ install_firmware() {
         "intel") install_packages intel-ucode;;
         "amd") install_packages amd-ucode;;
     esac
-
+    
     install_packages sof-firmware alsa-firmware
-	
+    
     clone_and_build "https://aur.archlinux.org/mkinitcpio-firmware.git" "mkinitcpio-firmware"
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
 }
@@ -317,84 +321,84 @@ install_xorg() {
 }
 
 install_gaming() {
-	status "Installing gaming support..."
-	$GAMING_INSTALLED=true
-	install_packages \
-		steam goverlay gamescope gamemode \
-		lib32-gamemode mangohud lib32-mangohud
-		 
-	# installl proton-ge-custom
-	sudo wget -P $HOME/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
-	./proton-ge-custom-install.sh
-	
-	# Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
-	install_packages wine-staging
-	install_packages_asdeps \
-		giflib lib32-giflib gnutls lib32-gnutls v4l-utils \
-		lib32-v4l-utils libpulse lib32-libpulse alsa-plugins \
-		lib32-alsa-plugins alsa-lib lib32-alsa-lib sqlite lib32-sqlite \
-		libxcomposite lib32-libxcomposite ocl-icd lib32-ocl-icd libva \
-		lib32-libva gtk3 lib32-gtk3 gst-plugins-base-libs \
-		lib32-gst-plugins-base-libs vulkan-icd-loader \
-		lib32-vulkan-icd-loader sdl2-compat lib32-sdl2-compat
-	
-	status "Installing controller support..."
-	if ask_user "Do you want to install xpadneo? - It Improves Xbox gamepad support:"; then
-		install_packages xpadneo-dkms-git
-	fi
-	
-	if ask_user "Do you want to install xone? - It improves Xbox gamepad support with a USB wireless dongle:"; then
-		install_packages xone-dkms-git xone-dongle-firmware
-	fi
-	
-	if ask_user "Do you want to install PS5 controller support?:"; then
-		install_packages dualsensectl-git
-	fi
+    status "Installing gaming support..."
+    $GAMING_INSTALLED=true
+    install_packages \
+        steam goverlay gamescope gamemode \
+        lib32-gamemode mangohud lib32-mangohud
+         
+    # installl proton-ge-custom
+    sudo wget -P $HOME/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
+    ./proton-ge-custom-install.sh
+    
+    # Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
+    install_packages wine-staging
+    install_packages_asdeps \
+        giflib lib32-giflib gnutls lib32-gnutls v4l-utils \
+        lib32-v4l-utils libpulse lib32-libpulse alsa-plugins \
+        lib32-alsa-plugins alsa-lib lib32-alsa-lib sqlite lib32-sqlite \
+        libxcomposite lib32-libxcomposite ocl-icd lib32-ocl-icd libva \
+        lib32-libva gtk3 lib32-gtk3 gst-plugins-base-libs \
+        lib32-gst-plugins-base-libs vulkan-icd-loader \
+        lib32-vulkan-icd-loader sdl2-compat lib32-sdl2-compat
+    
+    status "Installing controller support..."
+    if ask_user "Do you want to install xpadneo? - It Improves Xbox gamepad support:"; then
+        install_packages xpadneo-dkms-git
+    fi
+    
+    if ask_user "Do you want to install xone? - It improves Xbox gamepad support with a USB wireless dongle:"; then
+        install_packages xone-dkms-git xone-dongle-firmware
+    fi
+    
+    if ask_user "Do you want to install PS5 controller support?:"; then
+        install_packages dualsensectl-git
+    fi
 }
 
 install_apps() {
-	status "Installing optional packages..."
-	# terminal & editor
-	install_packages micro kitty man-db man-pages fastfetch jq
-	# coding
-	install_packages bash-completion
-	# Linux resource monitors
-	install_packages htop nvtop btop inxi duf
-	# RDP client
-	install_packages rdesktop
-	# media controller & player
-	install_packages playerctl mpv mpv-mpris
-	# brightness control
-	install_packages brightnessctl
-	# image viewer
-	install_packages loupe imagemagick libspng
-	# calculator
-	install_packages qalculate-gtk
-	# Desktop Theme
-	install_packages kvantum qt5ct qt6ct qt6-svg
-	# notifications
-	install_packages swaync
-	# docker
-	install_packages docker docker-compose 
-	# Wayland apps
-	if [ "$WAYLAND_INSTALLED" = true ]; then
-		install_packages \
-			grim slurp waybar wl-clipboard cliphist \
-			nwg-displays swappy swww wlogout emacs-wayland
-	fi
-	
-	if [ "$YAY_INSTALLED" = true ]; then
-		install_aur brave-bin teams-for-linux
-	fi
-	
-	if [ "$FLATPAK_INSTALLED" = true ]; then
-		flatpak install -y flathub dev.vencord.Vesktop
-		flatpak install -y com.freerdp.FreeRDP
-	fi
-	
-	if [ "$SNAP_INSTALLED" = true ]; then
-		sudo snap install spotify
-	fi
+    status "Installing optional packages..."
+    # terminal & editor
+    install_packages micro kitty man-db man-pages fastfetch jq
+    # coding
+    install_packages bash-completion
+    # Linux resource monitors
+    install_packages htop nvtop btop inxi duf
+    # RDP client
+    install_packages rdesktop
+    # media controller & player
+    install_packages playerctl mpv mpv-mpris
+    # brightness control
+    install_packages brightnessctl
+    # image viewer
+    install_packages loupe imagemagick libspng
+    # calculator
+    install_packages qalculate-gtk
+    # Desktop Theme
+    install_packages kvantum qt5ct qt6ct qt6-svg
+    # notifications
+    install_packages swaync
+    # docker
+    install_packages docker docker-compose 
+    # Wayland apps
+    if [ "$WAYLAND_INSTALLED" = true ]; then
+        install_packages \
+            grim slurp waybar wl-clipboard cliphist \
+            nwg-displays swappy swww wlogout emacs-wayland
+    fi
+    
+    if [ "$YAY_INSTALLED" = true ]; then
+        install_aur brave-bin teams-for-linux
+    fi
+    
+    if [ "$FLATPAK_INSTALLED" = true ]; then
+        flatpak install -y flathub dev.vencord.Vesktop
+        flatpak install -y com.freerdp.FreeRDP
+    fi
+    
+    if [ "$SNAP_INSTALLED" = true ]; then
+        sudo snap install spotify
+    fi
 }
 
 # ======================
@@ -402,102 +406,102 @@ install_apps() {
 # ======================
 configure_system() {
     status "Configuring system..."
-	
-	# Upgrade and Synchronize package database
-	sudo pacman -Syyu --noconfirm
-	
-	# Detect actual user even if script is run with sudo
-	local target_user="${SUDO_USER:-$USER}"
-	# Add user to all required groups in one go (remove duplicates)
-	sudo usermod -aG wheel,docker,video,input,gamemode,audio,network,lp,storage,users,rfkill,sys "$target_user"	 	
-	
-	# Download scx using LAVD
-	sudo wget -P /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
-	# Download optimal kernel.conf
-	sudo wget -P /usr/lib/sysctl.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf
+    
+    # Upgrade and Synchronize package database
+    sudo pacman -Syyu --noconfirm
+    
+    # Detect actual user even if script is run with sudo
+    local target_user="${SUDO_USER:-$USER}"
+    # Add user to all required groups in one go (remove duplicates)
+    sudo usermod -aG wheel,docker,video,input,gamemode,audio,network,lp,storage,users,rfkill,sys "$target_user"	 	
+    
+    # Download scx using LAVD
+    sudo wget -P /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
+    # Download optimal kernel.conf
+    sudo wget -P /usr/lib/sysctl.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf
         
     if [ "$GAMING_INSTALLED" = true ]; then
-		# Download gamemode.ini
-		sudo rm -f /etc/gamemode.ini
-		sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
-		# Cooler Master MM720 mouse fix
-		sudo rm -f /etc/udev/rules.d/99-mm720-power.rules
-		sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/99-mm720-power.rules
-		# start
-		systemctl --user stop gamemoded.service
+        # Download gamemode.ini
+        sudo rm -f /etc/gamemode.ini
+        sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
+        # Cooler Master MM720 mouse fix
+        sudo rm -f /etc/udev/rules.d/99-mm720-power.rules
+        sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/99-mm720-power.rules
+        # start
+        systemctl --user stop gamemoded.service
     fi
     
     if [ "$NVIDIA_INSTALLED" = true ]; then
-	    # nvidia.conf 
-		sudo rm -f /etc/modprobe.d/nvidia.conf
-	    sudo wget -P /etc/modprobe.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/nvidia.conf
-		# nvidia.rules
-		sudo rm -f /etc/udev/rules.d/89-nvidia-pm.rules
-		sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules	 
-		# mkinitcpio.conf
-	    sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
+        # nvidia.conf 
+        sudo rm -f /etc/modprobe.d/nvidia.conf
+        sudo wget -P /etc/modprobe.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/nvidia.conf
+        # nvidia.rules
+        sudo rm -f /etc/udev/rules.d/89-nvidia-pm.rules
+        sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules	 
+        # mkinitcpio.conf
+        sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
     fi
 
     status "Setting fstrim ..."
-	# Get root filesystem type
-	local root_fs_type=$(findmnt -n -o FSTYPE /)
-	# Get the base device name (strip /dev/ and partition suffix)
-	local root_source=$(findmnt -n -o SOURCE /)
-	local root_device=$(basename "$root_source" | sed -E 's/p?[0-9]+$//')
-	
-	# Check for SSD or NVMe (rotational = 0)
-	local is_ssd_or_nvme="false"
-	if [[ -e /sys/block/$root_device/queue/rotational ]]; then
-	    if [[ "$(cat /sys/block/$root_device/queue/rotational)" == "0" ]]; then
-		is_ssd_or_nvme="true"
-	    fi
-	fi
-	
-	# Filesystems known to support TRIM
-	if [[ "$is_ssd_or_nvme" == "true" && \
-	      "$root_fs_type" =~ ^(ext3|ext4|btrfs|f2fs|xfs|vfat|exfat|jfs|nilfs2|ntfs-3g)$ ]]; then
-	    status "Filesystem '$root_fs_type' supports TRIM. Enabling fstrim.timer..."
-	    systemctl enable fstrim.timer
-	    sudo systemctl enable --now fstrim.timer    
-	fi
-
- 	if [[ "$is_ssd_or_nvme" == "true" ]]; then
-	    status "Setting ext4 root partition performance..."    
-	    # set async journal
-	    sudo tune2fs -E mount_opts=journal_async_commit $(findmnt -n -o SOURCE /)
-	    sudo tune2fs -o journal_data_writeback $(findmnt -n -o SOURCE /)
-	    # Define the UUID of the partition (adaptar para escolhera  partição)
-	    UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
-	    # Define the new mount options
-	    NEW_MOUNT_OPTIONS="defaults,noatime"
-	    # Edit the fstab file to change the mount options
-	    sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID \/ ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab
-	    # remount the root partition
-		if ! sudo mount -o remount /; then
-		    error "Failed to remount root partition."
-		fi
+    # Get root filesystem type
+    local root_fs_type=$(findmnt -n -o FSTYPE /)
+    # Get the base device name (strip /dev/ and partition suffix)
+    local root_source=$(findmnt -n -o SOURCE /)
+    local root_device=$(basename "$root_source" | sed -E 's/p?[0-9]+$//')
+    
+    # Check for SSD or NVMe (rotational = 0)
+    local is_ssd_or_nvme="false"
+    if [[ -e /sys/block/$root_device/queue/rotational ]]; then
+        if [[ "$(cat /sys/block/$root_device/queue/rotational)" == "0" ]]; then
+        is_ssd_or_nvme="true"
+        fi
     fi
-
+    
+    # Filesystems known to support TRIM
+    if [[ "$is_ssd_or_nvme" == "true" && \
+          "$root_fs_type" =~ ^(ext3|ext4|btrfs|f2fs|xfs|vfat|exfat|jfs|nilfs2|ntfs-3g)$ ]]; then
+        status "Filesystem '$root_fs_type' supports TRIM. Enabling fstrim.timer..."
+        systemctl enable fstrim.timer
+        sudo systemctl enable --now fstrim.timer    
+    fi
+    
+    if [[ "$is_ssd_or_nvme" == "true" ]]; then
+        status "Setting ext4 root partition performance..."    
+        # set async journal
+        sudo tune2fs -E mount_opts=journal_async_commit $(findmnt -n -o SOURCE /)
+        sudo tune2fs -o journal_data_writeback $(findmnt -n -o SOURCE /)
+        # Define the UUID of the partition (adaptar para escolhera  partição)
+        UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
+        # Define the new mount options
+        NEW_MOUNT_OPTIONS="defaults,noatime"
+        # Edit the fstab file to change the mount options
+        sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID \/ ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab
+        # remount the root partition
+        if ! sudo mount -o remount /; then
+            error "Failed to remount root partition."
+        fi
+    fi
+    
     # services
-	sudo systemctl enable --now scx.service
-	sudo systemctl enable --now paccache.timer
-	sudo systemctl enable --now ufw.service && sudo ufw enable
+    sudo systemctl enable --now scx.service
+    sudo systemctl enable --now paccache.timer
+    sudo systemctl enable --now ufw.service && sudo ufw enable
 }
 
 # ======================
 # MAIN INSTALLATION FLOW
 # ======================
 main() {
-	echo -e "\n${GREEN}🚀 Starting Arch Auto Install ${NC}"
+    echo -e "\n${GREEN}🚀 Starting Arch Auto Install ${NC}"
 	
-	# Show Menu Checker
-	show_menu
-	
-	# Detection phase
-	detect_system
-	
-	mapfile -t SELECTIONS < selected
-	rm -f selected
+    # Show Menu Checker
+    show_menu
+    
+    # Detection phase
+    detect_system
+    
+    mapfile -t SELECTIONS < selected
+    rm -f selected
     
     for selection in "${SELECTIONS[@]}"; do
         case $selection in
@@ -519,8 +523,8 @@ main() {
         esac
     done
 	
-	echo -e "\n${GREEN} Installation completed successfully! ${NC}"
-	echo -e "${YELLOW} Please reboot your system to apply all changes. ${NC}"
+    echo -e "\n${GREEN} Installation completed successfully! ${NC}"
+    echo -e "${YELLOW} Please reboot your system to apply all changes. ${NC}"
 }
 
 # Execute
