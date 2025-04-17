@@ -427,7 +427,7 @@ configure_system() {
         sudo rm -f /etc/udev/rules.d/99-mm720-power.rules
         sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/99-mm720-power.rules
         # start
-        systemctl --user stop gamemoded.service
+        systemctl --user enable --now gamemoded.service
     fi
     
     if [ "$NVIDIA_INSTALLED" = true ]; then
