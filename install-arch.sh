@@ -7,13 +7,13 @@ set -euo pipefail
 # ======================
 # Default install dir
 INSTALL_DIR="$HOME/Apps"
-# Initialization
-YAY_INSTALLED=false
-FLATPAK_INSTALLED=false
-SNAP_INSTALLED=false
-NVIDIA_INSTALLED=false
-WAYLAND_INSTALLED=false
-GAMING_INSTALLED=false
+INSTALL_UFW_FIREWALL=false
+INSTALL_PIPEWIRE=false
+INSTALL_ZEN3_TKG=false
+INSTALL_BLUETOOTH=false
+INSTALL_GAMING=false
+INSTALL_REC_APPS=false
+
 # Log file
 export LOG_FILE="/var/log/arch_auto_install_$(date "+%Y%m%d-%H%M%S").log"
 
@@ -26,56 +26,12 @@ NC='\033[0m'
 
 # Menu configuration
 MENU_OPTIONS=(
-    1  "Base System"          on
-    2  "TKG Zen3 Kernel"      off
-    3  "Extra Package Mgrs"   on
-    4  "Firmware"             on
-    5  "Audio"                on
-    6  "Multimedia"           on
-    7  "Bluetooth"            on
-    8  "Compression Tools"    on
-    9  "Fonts"                on
-    10 "Graphics Stack"       on
-    11 "Wayland"              on
-    12 "Xorg"                 off
-    13 "Gaming"               on
-    14 "Apps"                 on
-    15 "System Configuration" on
+    1  "Firewall UFW"      on
+    2  "Bluetooth"         on
+    3  "Gaming"            on
+    4  "Recommended Apps"  on
+    5  "TKG Zen3 Kernel"   off
 )
-
-# ======================
-# SYSTEM DETECTION
-# ======================
-detect_system() {
-    status "Detecting system hardware..."
-    
-    # GPU Detection
-    if lspci | grep -iq "nvidia"; then
-        export GPU="nvidia"
-        info "Found NVIDIA GPU"
-    elif lspci | grep -iq "amd"; then
-        export GPU="amd"
-        info "Found AMD GPU"
-    elif lspci | grep -iq "intel"; then
-        export GPU="intel"
-        info "Found Intel GPU"
-    else
-        export GPU="unknown"
-        warning "Unknown GPU - installing basic drivers"
-    fi
-
-    # CPU Detection
-    if grep -iq "intel" /proc/cpuinfo; then
-        export CPU="intel"
-        info "Found Intel CPU"
-    elif grep -iq "amd" /proc/cpuinfo; then
-        export CPU="amd"
-        info "Found AMD CPU"
-    else
-        export CPU="unknown"
-        warning "Unknown CPU type"
-    fi
-}
 
 # ======================
 # INSTALLATION FUNCTIONS
@@ -90,7 +46,7 @@ show_menu() {
     
     dialog --clear \
         --title "Arch Auto Installation" \
-        --checklist "Select components to install:" 20 60 15 \
+        --checklist "Select optional options to install:" 20 60 15 \
         "${MENU_OPTIONS[@]}" 2>selected
     
     if [ ! -s selected ]; then
@@ -110,14 +66,6 @@ install_packages_asdeps() {
     status "Installing packages: $*"
     sudo pacman -S --needed --noconfirm --asdeps "$@" || {
         warning "Failed to install some packages. Continuing..."
-        return 1
-    }
-}
-
-install_aur() {
-    status "Installing AUR packages: $*"
-    yay -S --needed --noconfirm "$@" || {
-        warning "Failed to install some AUR packages. Continuing..."
         return 1
     }
 }
@@ -149,6 +97,53 @@ ask_user() {
     done
 }
 
+safe_download() {
+    local dest=$1 url=$2
+    if ! sudo wget -P "$dest" -q --show-progress "$url"; then
+        error "Failed to download $url"
+    fi
+}
+
+# ======================
+# SYSTEM DETECTION
+# ======================
+detect_system() {
+    status "Detecting system hardware..."
+    
+    if [ -d /run/systemd/system ]; then
+        info "System is using systemd"
+    else
+        error "This script is only compatible with Systemd-Boot!"
+    fi
+
+    # GPU Detection
+    if lspci | grep -iq "nvidia"; then
+        export GPU="nvidia"
+        info "Found NVIDIA GPU"
+    elif lspci | grep -iq "amd"; then
+        export GPU="amd"
+        info "Found AMD GPU"
+    elif lspci | grep -iq "intel"; then
+        export GPU="intel"
+        info "Found Intel GPU"
+    else
+        export GPU="unknown"
+        warning "Unknown GPU - installing basic drivers"
+    fi
+
+    # CPU Detection
+    if grep -iq "intel" /proc/cpuinfo; then
+        export CPU="intel"
+        info "Found Intel CPU"
+    elif grep -iq "amd" /proc/cpuinfo; then
+        export CPU="amd"
+        info "Found AMD CPU"
+    else
+        export CPU="unknown"
+        warning "Unknown CPU type"
+    fi
+}
+
 # ======================
 # INSTALLATION SECTIONS
 # ======================
@@ -163,16 +158,16 @@ install_base_system() {
     # Update packages
     sudo pacman -Syu --needed --noconfirm
     # Base packages
-    install_packages git base-devel curl python wget meson systemd dbus libinih
-    # firmware
-    install_packages ufw
+    install_packages git base-devel curl python wget meson systemd dbus libinih    
     # scheaduler
     install_packages scx-scheds
+    sudo systemctl enable --now scx.service
     # pacman tool
     install_packages pacman-contrib
+    sudo systemctl enable --now paccache.timer
     
     # Create user directories
-    mkdir -p $HOME/{Downloads,Documents,Pictures,Projects,.config,Apps,Scrips}
+    mkdir -p $HOME/{Downloads,Documents,Pictures,Projects,.config,Apps,Scripts}
 }
 
 install_tkg_zen3_kernel() {
@@ -182,11 +177,11 @@ install_tkg_zen3_kernel() {
                     "echo Repository Linux TKG has been cloned!"
     
     #Download linux-tkg kernel
-    sudo wget -P /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/vmlinuz-linux614-tkg-eevdf
-    sudo wget -P /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf.img
-    sudo wget -P /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf-fallback.img
-    sudo wget -P /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg.conf
-    sudo wget -P /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg-fallback.conf
+    safe_download /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/vmlinuz-linux614-tkg-eevdf
+    safe_download /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf.img
+    safe_download /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf-fallback.img
+    safe_download /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg.conf
+    safe_download /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg-fallback.conf
     
     #Edit the linux-tkg.conf
     UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
@@ -195,22 +190,6 @@ install_tkg_zen3_kernel() {
     sudo bootctl update
     # set linux-tkg as default
     sudo bootctl set-default linux-tkg.conf
-}
-
-install_extra_package_managers() {
-    status "Installing yay (AUR helper)..."
-    clone_and_build "https://aur.archlinux.org/yay-bin.git" "yay-bin"
-    $YAY_INSTALLED=true
-    
-    status "Installing flatpak..."
-    install_packages flatpak
-    $FLATPAK_INSTALLED=true
-    
-    status "Installing snap..."
-    clone_and_build "https://aur.archlinux.org/snapd.git" "snapd"
-    $SNAP_INSTALLED=true
-    sudo systemctl enable --now snapd.socket
-    sudo ln -s /var/lib/snapd/snap /snap
 }
 
 install_firmware() {
@@ -227,15 +206,11 @@ install_firmware() {
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
 }
 
-install_audio() {
-    status "Installing audio packages..."
-	# remove conflicting packages
-	sudo pacman -R --noconfirm jack2
-    # install audio packages
-    install_packages \
-		pipewire pipewire-alsa pipewire-jack pipewire-pulse \
-		lib32-pipewire alsa-utils alsa-plugins alsa-ucm-conf \
-		gst-plugin-pipewire wireplumber pavucontrol pamixer
+install_ufw_firewall() {
+    status "Installing firewall..."
+    install_packages ufw
+    sudo systemctl enable --now ufw.service
+    sudo ufw enable
 }
 
 install_multimedia() {
@@ -270,8 +245,8 @@ install_fonts() {
 		noto-fonts-emoji otf-font-awesome
 }
 
-install_graphics_stack() {
-    status "Installing graphics stack for $GPU..."
+install_graphics() {
+    status "Installing graphics support..."
 
     # Input & GPU Acceleration - generic
     install_packages \
@@ -282,8 +257,17 @@ install_graphics_stack() {
     # GPU-specific packages
     case $GPU in
         "nvidia")
-			$NVIDIA_INSTALLED=true
 			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all"
+
+            # nvidia.conf
+            sudo rm -f /etc/modprobe.d/nvidia.conf
+            safe_download /etc/modprobe.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/nvidia.conf
+            # nvidia.rules
+            sudo rm -f /etc/udev/rules.d/89-nvidia-pm.rules
+            safe_download /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules	 
+            # mkinitcpio.conf
+            sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
+
             # Old cards 
             # install_packages nvidia-dkms 
             # Turing or newer hardware only
@@ -302,33 +286,29 @@ install_graphics_stack() {
 			intel-media-sdk intel-media-driver intel-gmmlib
             ;;
     esac
-}
 
-install_wayland() {
     status "Installing Wayland..."
-    $WAYLAND_INSTALLED=true
     install_packages \
         wayland wayland-protocols wayland-utils \
 		lib32-wayland xorg-xwayland libinput \
-		egl-wayland qt5-wayland qt6-wayland
-}
-
-install_xorg() {
-    status "Installing Xorg..."
-    install_packages \
-        xf86-input-libinput xorg-server xorg-xinit xorg-xinput egl-x11
+		egl-wayland qt5-wayland qt6-wayland    
 }
 
 install_gaming() {
     status "Installing gaming support..."
-    $GAMING_INSTALLED=true
     install_packages \
         steam goverlay gamescope gamemode \
         lib32-gamemode mangohud lib32-mangohud
+
+    # Download gamemode.ini
+    sudo rm -f /etc/gamemode.ini
+    safe_download /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
+    systemctl --user enable --now gamemoded.service
+    sudo usermod -aG gamemode $USER
          
     # installl proton-ge-custom
-    sudo wget -P $HOME/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
-    ./proton-ge-custom-install.sh
+    safe_download $HOME/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
+    bash "$HOME/Scripts/proton-ge-custom-install.sh"
     
     # Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
     install_packages wine-staging
@@ -355,18 +335,16 @@ install_gaming() {
     fi
 }
 
-install_apps() {
-    status "Installing optional packages..."
+install_recomended_apps() {
+    status "Installing recomended packages..."
     # terminal & editor
-    install_packages micro kitty man-db man-pages fastfetch jq
-    # coding
-    install_packages bash-completion
+    install_packages kitty man-db man-pages fastfetch jq micro
     # Linux resource monitors
     install_packages htop nvtop btop inxi duf
-    # RDP client
-    install_packages rdesktop
     # media controller & player
     install_packages playerctl mpv mpv-mpris
+    # Audio Controller
+    install_packages pavucontrol pamixer
     # brightness control
     install_packages brightnessctl
     # image viewer
@@ -374,30 +352,19 @@ install_apps() {
     # calculator
     install_packages qalculate-gtk
     # Desktop Theme
-    install_packages kvantum qt5ct qt6ct qt6-svg
+    install_packages kvantum qt5ct qt6ct qt6-svg nwg-look
     # notifications
     install_packages swaync
-    # docker
-    install_packages docker docker-compose 
-    # Wayland apps
-    if [ "$WAYLAND_INSTALLED" = true ]; then
-        install_packages \
-            grim slurp waybar wl-clipboard cliphist \
-            nwg-displays swappy swww wlogout emacs-wayland
-    fi
-    
-    if [ "$YAY_INSTALLED" = true ]; then
-        install_aur brave-bin teams-for-linux
-    fi
-    
-    if [ "$FLATPAK_INSTALLED" = true ]; then
-        flatpak install -y flathub dev.vencord.Vesktop
-        flatpak install -y com.freerdp.FreeRDP
-    fi
-    
-    if [ "$SNAP_INSTALLED" = true ]; then
-        sudo snap install spotify
-    fi
+    # Menu Apps/Bar/Logout
+    install_packages rofi-wayland waybar wlogout
+    # printscreen
+    install_packages slurp grim swappy
+    # Copy/Paste utilities
+    install_packages wl-clipboard cliphist
+    # Monitor utilities
+    install_packages nwg-displays
+    # Wallpaper utilities
+    install_packages swww
 }
 
 # ======================
@@ -409,37 +376,14 @@ configure_system() {
     # Upgrade and Synchronize package database
     sudo pacman -Syyu --noconfirm
     
-    # Detect actual user even if script is run with sudo
-    local target_user="${SUDO_USER:-$USER}"
-    # Add user to all required groups in one go (remove duplicates)
-    sudo usermod -aG wheel,docker,video,input,gamemode,audio,network,lp,storage,users,rfkill,sys "$target_user"	 	
+    # Add user to all required groups
+    sudo usermod -aG wheel,video,input,audio,network,lp,storage,users,rfkill,sys $USER
     
     # Download scx using LAVD
-    sudo wget -P /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
+    safe_download /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
     # Download optimal kernel.conf
-    sudo wget -P /usr/lib/sysctl.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf
-        
-    if [ "$GAMING_INSTALLED" = true ]; then
-        # Download gamemode.ini
-        sudo rm -f /etc/gamemode.ini
-        sudo wget -P /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
-        # Cooler Master MM720 mouse fix
-        sudo rm -f /etc/udev/rules.d/99-mm720-power.rules
-        sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/99-mm720-power.rules
-        # start
-        systemctl --user enable --now gamemoded.service
-    fi
-    
-    if [ "$NVIDIA_INSTALLED" = true ]; then
-        # nvidia.conf 
-        sudo rm -f /etc/modprobe.d/nvidia.conf
-        sudo wget -P /etc/modprobe.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/nvidia.conf
-        # nvidia.rules
-        sudo rm -f /etc/udev/rules.d/89-nvidia-pm.rules
-        sudo wget -P /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules	 
-        # mkinitcpio.conf
-        sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
-    fi
+    safe_download /usr/lib/sysctl.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf
+    sudo sysctl --system
 
     status "Setting fstrim ..."
     # Get root filesystem type
@@ -460,10 +404,10 @@ configure_system() {
     if [[ "$is_ssd_or_nvme" == "true" && \
           "$root_fs_type" =~ ^(ext3|ext4|btrfs|f2fs|xfs|vfat|exfat|jfs|nilfs2|ntfs-3g)$ ]]; then
         status "Filesystem '$root_fs_type' supports TRIM. Enabling fstrim.timer..."
-        systemctl enable fstrim.timer
-        sudo systemctl enable --now fstrim.timer    
+        sudo systemctl enable --now fstrim.timer
     fi
     
+    status "Improving SSD journal performance..."
     if [[ "$is_ssd_or_nvme" == "true" ]]; then
         status "Setting ext4 root partition performance..."    
         # set async journal
@@ -481,10 +425,10 @@ configure_system() {
         fi
     fi
     
-    # services
-    sudo systemctl enable --now scx.service
-    sudo systemctl enable --now paccache.timer
-    sudo systemctl enable --now ufw.service && sudo ufw enable
+    # Reloads the systemd manager configuration
+    sudo systemctl daemon-reload
+    # Regenerate Initramfs
+    sudo mkinitcpio -P
 }
 
 # ======================
@@ -496,31 +440,49 @@ main() {
     # Show Menu Checker
     show_menu
     
-    # Detection phase
-    detect_system
-    
     mapfile -t SELECTIONS < selected
     rm -f selected
     
     for selection in "${SELECTIONS[@]}"; do
         case $selection in
-            1)  install_base_system ;;
-            2)  install_tkg_zen3_kernel ;;
-            3)  install_extra_package_managers ;;
-            4)  install_firmware ;;
-            5)  install_audio ;;
-            6)  install_multimedia ;;
-            7)  install_bluetooth ;;
-            8)  install_compressions ;;
-            9)  install_fonts ;;
-            10) install_graphics_stack ;;
-            11) install_wayland ;;
-            12) install_xorg ;;
-            13) install_gaming ;;
-            14) install_apps ;;
-            15) configure_system ;;
+            1) INSTALL_UFW_FIREWALL=true ;;
+            2) INSTALL_BLUETOOTH=true ;;
+            3) INSTALL_GAMING=true ;;
+            4) INSTALL_REC_APPS=true ;;
+            5) INSTALL_ZEN3_TKG=true ;;
         esac
     done
+
+    # Detection phase
+    detect_system
+    install_base_system
+    install_firmware
+    install_graphics
+    install_multimedia
+    install_compressions
+    install_fonts
+
+    if [ "$INSTALL_UFW_FIREWALL" = true ]; then
+      install_ufw_firewall
+    fi
+
+    if [ "$INSTALL_BLUETOOTH" = true ]; then
+      install_bluetooth
+    fi
+
+    if [ "$INSTALL_GAMING" = true ]; then
+      install_gaming
+    fi
+
+    if [ "$INSTALL_REC_APPS" = true ]; then
+      install_recomended_apps
+    fi
+
+    if [ "$INSTALL_ZEN3_TKG" = true ]; then
+      install_tkg_zen3_kernel
+    fi
+
+    configure_system
 	
     echo -e "\n${GREEN} Installation completed successfully! ${NC}"
     echo -e "${YELLOW} Please reboot your system to apply all changes. ${NC}"
