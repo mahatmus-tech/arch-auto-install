@@ -490,11 +490,11 @@ configure_system() {
 main() {
 	echo -e "\n${GREEN}🚀 Starting Arch Auto Install ${NC}"
 	
-    # Show Menu Checker
-    show_menu
+	# Show Menu Checker
+	show_menu
     
-    # Detection phase
-   	detect_system
+	# Detection phase
+	detect_system
 
     mapfile -t SELECTIONS < selected
     rm -f selected
@@ -519,9 +519,8 @@ main() {
         esac
     done
 	
-	echo -e "\n${GREEN}✅ Installation completed successfully!${NC}"
-	echo -e "${YELLOW}Please reboot your system to apply all changes.${NC}"
-	echo -e "Consider copying your dotfiles to ~/.config"
+	echo -e "\n${GREEN} Installation completed successfully! ${NC}"
+	echo -e "${YELLOW} Please reboot your system to apply all changes. ${NC}"
 }
 
 # Execute
