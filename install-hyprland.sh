@@ -103,7 +103,7 @@ clone_and_build() {
     
     status "Building $dir_name from source..."
     sudo rm -rf "$INSTALL_DIR/$dir_name"
-    sudo git clone "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
+    git clone "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
     cd "$INSTALL_DIR/$dir_name" || error "Failed to enter $dir_name directory"
     sudo chown -R $USER:$USER . || error "Failed to change ownership"
     sudo chmod -R 755 . || error "Failed to change permissions"
@@ -121,7 +121,7 @@ install_hyprland() {
 
 	status "Checking YAY..."
 	# Check if the package is installed
-	if $(pacman -Qi yay &>/dev/null); then
+	if pacman -Qi yay &>/dev/null; then
 	    info "yay is installed"
 	else
 	    clone_and_build "https://aur.archlinux.org/yay-bin.git" "yay-bin"
@@ -168,15 +168,16 @@ install_jakoolit() {
 # ======================
 configure_hyprland() {
     status "Configuring Hyprland..."
+	local CONFIG=""
 	
 	# Upgrade and Synchronize package database
 	sudo pacman -Syu --noconfirm
 	
 	if [ "$JAYKOOLIT_INSTALLED" = true ]; then
-		local CONFIG="$HOME/.config/hypr/UserConfigs/Startup_Apps.conf"
+		CONFIG="$HOME/.config/hypr/UserConfigs/Startup_Apps.conf"
 		echo "exec-once = systemctl --user start gamemoded.service" >> "$CONFIG"
 		
-		local CONFIG="$HOME/.config/hypr/UserConfigs/WindowRules.conf"
+		CONFIG="$HOME/.config/hypr/UserConfigs/WindowRules.conf"
 		echo "windowrulev2 = content game, tag:games*" >> "$CONFIG"
 		echo "windowrulev2 = nodim, tag:games*" >> "$CONFIG"
 		echo "windowrulev2 = noanim, tag:games*" >> "$CONFIG"
@@ -186,11 +187,11 @@ configure_hyprland() {
 		echo "windowrulev2 = allowsinput, tag:games*" >> "$CONFIG"
 		echo "windowrulev2 = immediate, tag:games*" >> "$CONFIG"
 		
-		local CONFIG="$HOME/.config/hypr/UserConfigs/UserSettings.conf"
+		CONFIG="$HOME/.config/hypr/UserConfigs/UserSettings.conf"
 		sudo sed -i -E "s|^#accel_profile =.*|#accel_profile = flat|" $CONFIG
 		sudo sed -i -E "s|^direct_scanout = 0.*|direct_scanout = 2|" $CONFIG
 		
-		local CONFIG="$HOME/.config/hypr/UserConfigs/ENVariables.conf"
+		CONFIG="$HOME/.config/hypr/UserConfigs/ENVariables.conf"
 		if [ "$GPU" = "nvidia" ]; then
 		    # Force GBM as a backend
 			echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
@@ -210,11 +211,11 @@ configure_hyprland() {
 			sudo sed -i -E "s|^#}.*|}|" $CONFIG			
 		fi
 
-		local CONFIG="$HOME/.zprofile"
+		CONFIG="$HOME/.zprofile"
   		sudo sed -i -E "s/#/ /g" $CONFIG
  	else
 		# Path to Hyprland config file
-		local CONFIG="$HOME/.config/hypr/hyprland.conf"
+		CONFIG="$HOME/.config/hypr/hyprland.conf"
 		
 		# Startup - wayland
 		echo "exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP" >> "$CONFIG"
