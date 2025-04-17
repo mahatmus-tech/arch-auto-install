@@ -2,7 +2,6 @@
 
 set -euo pipefail
 
-
 # ======================
 # GLOBAL VARIABLES
 # ======================
@@ -27,21 +26,21 @@ NC='\033[0m'
 
 # Menu configuration
 MENU_OPTIONS=(
-	1  "Base System"          on
-	2  "TKG Zen3 Kernel"      off
-	3  "Extra Package Mgrs"   on
-	4  "Firmware"             on
-	5  "Audio"                on
-	6  "Multimedia"           on
-	7  "Bluetooth"            on
-	8  "Compression Tools"    on
-	9  "Fonts"                on
-	10 "Graphics Stack"       on
-	11 "Wayland"              on
-	12 "Xorg"                 off
-	13 "Gaming"               on
-	14 "Apps"                 on
-	15 "System Configuration" on
+    1  "Base System"          on
+    2  "TKG Zen3 Kernel"      off
+    3  "Extra Package Mgrs"   on
+    4  "Firmware"             on
+    5  "Audio"                on
+    6  "Multimedia"           on
+    7  "Bluetooth"            on
+    8  "Compression Tools"    on
+    9  "Fonts"                on
+    10 "Graphics Stack"       on
+    11 "Wayland"              on
+    12 "Xorg"                 off
+    13 "Gaming"               on
+    14 "Apps"                 on
+    15 "System Configuration" on
 )
 
 # ======================
