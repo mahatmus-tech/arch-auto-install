@@ -87,6 +87,8 @@ error() { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
 info() { echo -e "${BLUE}[i]${NC} $1"; }
 
 show_menu() {
+    install_packages dialog
+
     dialog --clear \
         --title "Arch Auto Installation" \
         --checklist "Select components to install:" 20 60 15 \
@@ -490,11 +492,6 @@ main() {
 	
 	# Detection phase
 	detect_system
-
-    if ! command -v dialog &> /dev/null; then
-        echo -e "${YELLOW}Installing dialog for menu interface...${NC}"
-        install_packages dialog
-    fi
 
     # Show Menu Checker
     show_menu
