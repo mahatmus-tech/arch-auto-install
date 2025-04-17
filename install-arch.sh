@@ -492,12 +492,12 @@ main() {
 	
 	# Show Menu Checker
 	show_menu
-    
+	
 	# Detection phase
 	detect_system
-
-    mapfile -t SELECTIONS < selected
-    rm -f selected
+	
+	mapfile -t SELECTIONS < selected
+	rm -f selected
     
     for selection in "${SELECTIONS[@]}"; do
         case $selection in
