@@ -101,6 +101,7 @@ safe_download() {
     local dest=$1 url=$2
     if ! sudo wget -P "$dest" -q --show-progress "$url"; then
         error "Failed to download $url"
+        return 1
     fi
 }
 
