@@ -24,11 +24,11 @@ This project automates the installation of Arch Linux with a customized configur
 3. Reboot your system
 4. Run the following command:
 5. ```bash
-    bash <(curl -L https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/install-arch.sh)\
+    bash <(curl -L https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/install-arch.sh)
 6. Reboot your system
 7. Run the following command:
 8. ```bash
-    bash <(curl -L https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/install-hyprland.sh)\
+    bash <(curl -L https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/install-hyprland.sh)
 9. Reboot your system
    
    
