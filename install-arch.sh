@@ -490,15 +490,11 @@ configure_system() {
 main() {
 	echo -e "\n${GREEN}🚀 Starting Arch Auto Install ${NC}"
 	
-	# Detection phase
-	detect_system
-
     # Show Menu Checker
     show_menu
     
-    if [ ! -s selected ]; then
-        error "No components selected. Exiting"
-    fi
+    # Detection phase
+   	detect_system
 
     mapfile -t SELECTIONS < selected
     rm -f selected
