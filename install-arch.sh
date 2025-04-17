@@ -46,7 +46,7 @@ show_menu() {
     
     dialog --clear \
         --title "Arch Auto Installation" \
-        --checklist "Select optional options to install:" 20 60 15 \
+        --checklist "Select extra options to install:" 20 60 15 \
         "${MENU_OPTIONS[@]}" 2>selected
     
     if [ ! -s selected ]; then
@@ -157,7 +157,7 @@ install_base_system() {
     sudo sed -i 's/^#ILoveCandy$/ILoveCandy/' /etc/pacman.conf
     
     # Update packages
-    sudo pacman -Syu --needed --noconfirm
+    sudo pacman -Syu --noconfirm
     # Base packages
     install_packages git base-devel curl python wget meson systemd dbus libinih    
     # scheaduler
@@ -374,8 +374,8 @@ install_recomended_apps() {
 configure_system() {
     status "Configuring system..."
     
-    # Upgrade and Synchronize package database
-    sudo pacman -Syyu --noconfirm
+    # Upgrade and Synchronize packages
+    sudo pacman -Syu --noconfirm
     
     # Add user to all required groups
     sudo usermod -aG wheel,video,input,audio,network,lp,storage,users,rfkill,sys $USER

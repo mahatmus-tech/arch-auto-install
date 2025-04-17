@@ -7,7 +7,7 @@ set -euo pipefail
 # GLOBAL VARIABLES
 # ======================
 # Default install dir
-INSTALL_DIR="$HOME"
+INSTALL_DIR="$HOME/Apps"
 # Initialization
 JAYKOOLIT_INSTALLED=false
 # Log file
@@ -22,11 +22,48 @@ NC='\033[0m'
 
 # Menu configuration
 MENU_OPTIONS=(
-	1  "Install Hyprland"          on
-	2  "Install JaKooLit DotFiles" off
-	3  "Configure Hyprpland"       on
+	1  "Install JaKooLit DotFiles" on
 )
 
+# ======================
+# SYSTEM DETECTION
+# ======================
+detect_system() {
+    status "Detecting system hardware..."
+    
+    if [ -d /run/systemd/system ]; then
+        info "System is using systemd"
+    else
+        error "This script is only compatible with Systemd-Boot!"
+    fi
+
+    # GPU Detection
+    if lspci | grep -iq "nvidia"; then
+        export GPU="nvidia"
+        info "Found NVIDIA GPU"
+    elif lspci | grep -iq "amd"; then
+        export GPU="amd"
+        info "Found AMD GPU"
+    elif lspci | grep -iq "intel"; then
+        export GPU="intel"
+        info "Found Intel GPU"
+    else
+        export GPU="unknown"
+        warning "Unknown GPU - installing basic drivers"
+    fi
+
+    # CPU Detection
+    if grep -iq "intel" /proc/cpuinfo; then
+        export CPU="intel"
+        info "Found Intel CPU"
+    elif grep -iq "amd" /proc/cpuinfo; then
+        export CPU="amd"
+        info "Found AMD CPU"
+    else
+        export CPU="unknown"
+        warning "Unknown CPU type"
+    fi
+}
 
 # ======================
 # INSTALLATION FUNCTIONS
@@ -38,7 +75,7 @@ info() { echo -e "${BLUE}[i]${NC} $1"; }
 
 show_menu() {
     dialog --clear \
-        --title "Arch Auto Installation" \
+        --title "Arch Hyprland Installation" \
         --checklist "Select components to install:" 20 60 15 \
         "${MENU_OPTIONS[@]}" 2>selected
 }
@@ -104,7 +141,7 @@ install_hyprland() {
 	status "Installing must have packages..."
 	# Notification/idle daemon
 	install_packages swaync hypridle
-	# correct xdg-desktop-portal-hyprland for screensharing
+	# Correct xdg-desktop-portal-hyprland for screensharing
 	install_aur xdg-desktop-portal-hyprland-git
 	# QT Support
 	install_packages hyprland-qt-support hyprland-qtutils
@@ -121,6 +158,7 @@ install_hyprland() {
 install_jakoolit() {
 	JAYKOOLIT_INSTALLED=true
 	status "Installing JaKooLit DotFiles..."
+	INSTALL_DIR=$HOME
 	clone_and_build "--depth=1 https://github.com/JaKooLit/Arch-Hyprland.git" "Arch-Hyprland" \
 					"sudo chmod +x install.sh && ./install.sh"
 }	 
@@ -129,10 +167,10 @@ install_jakoolit() {
 # POST-INSTALL
 # ======================
 configure_hyprland() {
-    status "Configuring hyprland..."
+    status "Configuring Hyprland..."
 	
 	# Upgrade and Synchronize package database
-	sudo pacman -Syyu --noconfirm
+	sudo pacman -Syu --noconfirm
 	
 	if [ "$JAYKOOLIT_INSTALLED" = true ]; then
 		local CONFIG="$HOME/.config/hypr/UserConfigs/Startup_Apps.conf"
@@ -151,15 +189,26 @@ configure_hyprland() {
 		local CONFIG="$HOME/.config/hypr/UserConfigs/UserSettings.conf"
 		sudo sed -i -E "s|^#accel_profile =.*|#accel_profile = flat|" $CONFIG
 		sudo sed -i -E "s|^direct_scanout = 0.*|direct_scanout = 2|" $CONFIG
-		sudo sed -i -E "s|^#opengl {.*|opengl {|" $CONFIG
-		sudo sed -i -E "s|^#  nvidia_anti_flicker = true.*|  nvidia_anti_flicker = true|" $CONFIG
-		sudo sed -i -E "s|^#}.*|}|" $CONFIG
 		
 		local CONFIG="$HOME/.config/hypr/UserConfigs/ENVariables.conf"
-		echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
-		echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
-		echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG" 
-  		echo "env = WLR_DRM_DEVICES=/dev/dri/card0" >> "$CONFIG"  			
+		if [ "$GPU" = "nvidia" ]; then
+		    # Force GBM as a backend
+			echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
+			echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
+
+			# Hardware acceleration on NVIDIA GPUs
+			echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG" 
+
+			# Correct SDDM login stuck bug 
+			local card_code=$(lspci -nn | grep -E "RTX|GTX" | awk '{print $1}')
+			local gpu_card=$(readlink /dev/dri/by-path/pci-0000:${card_code}-card | xargs basename)
+			echo "env = WLR_DRM_DEVICES=/dev/dri/$gpu_card" >> "$CONFIG"
+
+			# Enable Anti Flicker
+			sudo sed -i -E "s|^#opengl {.*|opengl {|" $CONFIG
+			sudo sed -i -E "s|^#  nvidia_anti_flicker = true.*|  nvidia_anti_flicker = true|" $CONFIG
+			sudo sed -i -E "s|^#}.*|}|" $CONFIG			
+		fi
 
 		local CONFIG="$HOME/.zprofile"
   		sudo sed -i -E "s/#/ /g" $CONFIG
@@ -167,22 +216,39 @@ configure_hyprland() {
 		# Path to Hyprland config file
 		local CONFIG="$HOME/.config/hypr/hyprland.conf"
 		
-		# Startup
-		exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
-		exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP  
+		# Startup - wayland
+		echo "exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP" >> "$CONFIG"
+		echo "exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP" >> "$CONFIG"
+
+        # Startup - Apss
 		echo "exec-once = waybar" >> "$CONFIG"
 		echo "exec-once = swaync" >> "$CONFIG"
 		echo "exec-once = blueman-applet" >> "$CONFIG"
-  		echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
-		echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
-		echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG" 
-		#clipboard manager
 		echo "exec-once = wl-paste --type text --watch cliphist store" >> "$CONFIG"
 		echo "exec-once = wl-paste --type image --watch cliphist store" >> "$CONFIG"		
-		# Starting hypridle to start hyprlock
 		echo "exec-once = hypridle" >> "$CONFIG"
-		# gamemoded
 		echo "exec-once = systemctl --user start gamemoded.service" >> "$CONFIG"
+
+		# Environment variables
+		if [ "$GPU" = "nvidia" ]; then
+		    # Force GBM as a backend
+			echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
+			echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
+			# Hardware acceleration on NVIDIA GPUs
+			echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG"		
+		fi
+
+		# game tags
+		echo "windowrulev2 = tag +games, class:^(gamescope)$" >> "$CONFIG"
+		echo "windowrulev2 = tag +games, class:^(steam_app_\d+)$" >> "$CONFIG"
+		echo "windowrulev2 = content game, tag:games*" >> "$CONFIG"
+		echo "windowrulev2 = nodim, tag:games*" >> "$CONFIG"
+		echo "windowrulev2 = noanim, tag:games*" >> "$CONFIG"
+		echo "windowrulev2 = noborder, tag:games*" >> "$CONFIG"
+		echo "windowrulev2 = noshadow, tag:games*" >> "$CONFIG"
+		echo "windowrulev2 = norounding, tag:games*" >> "$CONFIG"
+		echo "windowrulev2 = allowsinput, tag:games*" >> "$CONFIG"
+		echo "windowrulev2 = immediate, tag:games*" >> "$CONFIG"		
  	fi 
 }
 
@@ -190,8 +256,6 @@ configure_hyprland() {
 # MAIN INSTALLATION FLOW
 # ======================
 main() {
-	exec > >(tee -a "$LOG_FILE") 2>&1
- 
 	echo -e "\n${GREEN}🚀 Starting Hyprland Install ${NC}"
 	
     if ! command -v dialog &> /dev/null; then
@@ -201,24 +265,22 @@ main() {
 
     # Show Menu Checker
     show_menu
-    
-    if [ ! -s selected ]; then
-        error "No components selected. Exiting"
-    fi
 
     mapfile -t SELECTIONS < selected
     rm -f selected
     
+	install_hyprland
+
     for selection in "${SELECTIONS[@]}"; do
         case $selection in
-            1)  install_hyprland ;;
-            2)  install_jakoolit ;;
-            3)  configure_hyprland ;;
+            1)  install_jakoolit ;;
         esac
     done
+
+	configure_hyprland
 	
-	echo -e "\n${GREEN}✅ Installation completed successfully!${NC}"
-	echo -e "${YELLOW}Please reboot your system to apply all changes.${NC}"
+	echo -e "\n${GREEN} Installation completed successfully! ${NC}"
+	echo -e "${YELLOW} Please reboot your system to apply all changes. ${NC}"
 }
 
 # Execute
