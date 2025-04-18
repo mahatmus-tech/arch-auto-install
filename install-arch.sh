@@ -56,6 +56,14 @@ install_packages() {
     }
 }
 
+install_aur() {
+    status "Installing packages: $*"
+    yay -S --needed --noconfirm "$@" || {
+        warning "Failed to install some packages. Continuing..."
+        return 1
+    }
+}
+
 install_packages_asdeps() {
     status "Installing packages: $*"
     sudo pacman -S --needed --noconfirm --asdeps "$@" || {
@@ -161,6 +169,8 @@ install_base_system() {
     install_packages pacman-contrib
     sudo systemctl enable --now paccache.timer
     
+    clone_and_build "https://aur.archlinux.org/yay.git" "yay"
+
     # Create user directories
     mkdir -p "$HOME"/{Downloads,Documents,Pictures,Projects,.config,Apps,Scripts}
 }
@@ -176,8 +186,9 @@ install_firmware() {
         "intel") install_packages intel-ucode;;
         "amd") install_packages amd-ucode;;
     esac
-    
-    clone_and_build "https://aur.archlinux.org/mkinitcpio-firmware.git" "mkinitcpio-firmware"
+
+    install_aur mkinitcpio-firmware
+
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
 }
 
