@@ -349,7 +349,7 @@ install_recomended_apps() {
     # notifications
     install_packages swaync
     # Menu Apps/Bar/Logout
-    install_packages rofi-wayland waybar wlogout
+    install_packages rofi-wayland waybar
     # printscreen
     install_packages slurp grim swappy
     # Copy/Paste utilities
