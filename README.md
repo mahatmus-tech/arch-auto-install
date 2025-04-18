@@ -16,7 +16,7 @@ This project automates the installation of Arch Linux with a customized configur
 - Internet connection
 - Install arch using archinstall with: kernel linux, systemd-boot, minimal, pipewire, one partition
 - For JaKooLit : do not select nvidia options
-- At the END of JakooLit DO NOT REBOOT! Post configs will be made.
+- At the END of JakooLit DO NOT REBOOT! Post configs will be made. If you did, just execute install-hyprland.sh again an uncheck the Jakoolit option
 
 ## Installation
 
