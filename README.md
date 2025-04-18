@@ -14,8 +14,7 @@ This project automates the installation of Arch Linux with a customized configur
 ## Requirements
 
 - Internet connection
-- Install arch using archinstall(systemd-boot, minimal, one partition)
-- Pipewire(Hyprland need)
+- Install arch using archinstall with: kernel linux, systemd-boot, minimal, pipewire, one partition
 
 
 ## Installation
