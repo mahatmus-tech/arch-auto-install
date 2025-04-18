@@ -316,16 +316,15 @@ install_gaming() {
     
     status "Installing controller support..."
     if ask_user "Do you want to install xpadneo? - It Improves Xbox gamepad support:"; then
-        clone_and_build "https://aur.archlinux.org/xpadneo-dkms-git.git" "xpadneo-dkms-git"
+        install_aur xpadneo-dkms-git
     fi
     
     if ask_user "Do you want to install xone? - It improves Xbox gamepad support with a USB wireless dongle:"; then
-        clone_and_build "https://aur.archlinux.org/xone-dkms-git.git" "xone-dkms-git" 
-        clone_and_build "https://aur.archlinux.org/xone-dongle-firmware.git" "xone-dongle-firmware"
+        install_aur xone-dkms-git xone-dongle-firmware
     fi
     
     if ask_user "Do you want to install PS5 controller support?:"; then
-        clone_and_build "https://aur.archlinux.org/dualsensectl-git.git" "dualsensectl-git"
+        install_aur dualsensectl-git
     fi
 }
 
