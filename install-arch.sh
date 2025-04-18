@@ -300,8 +300,10 @@ install_gaming() {
     sudo usermod -aG gamemode "$USER"
          
     # installl proton-ge-custom
-    safe_download "$HOME"/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
-    bash "$HOME/Scripts/proton-ge-custom-install.sh"
+    #safe_download "$HOME"/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
+    #sudo chmod +x "$HOME/Scripts/proton-ge-custom-install.sh"
+    #bash "$HOME/Scripts/proton-ge-custom-install.sh"
+    install_aur proton-ge-custom-bin
     
     # Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
     install_packages wine-staging
