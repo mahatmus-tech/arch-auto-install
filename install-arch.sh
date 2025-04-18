@@ -459,7 +459,7 @@ main() {
     install_bluetooth
     install_gaming
     install_recomended_apps
-    install_tkg_kernel
+    #install_tkg_kernel
     configure_system
 	
     echo -e "\n${GREEN} Installation completed successfully! ${NC}"
