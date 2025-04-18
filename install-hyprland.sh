@@ -99,10 +99,11 @@ clone_and_build() {
     local repo_url=$1
     local dir_name=$2
     local build_cmd=${3:-"makepkg -si --noconfirm"}
-    
+    local clone_flags=$4  # No default
+
     status "Building $dir_name from source..."
     sudo rm -rf "$INSTALL_DIR/$dir_name"
-    git clone "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
+    git clone $clone_flags "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
     cd "$INSTALL_DIR/$dir_name" || error "Failed to enter $dir_name directory"
     sudo chown -R "$USER":"$USER" . || error "Failed to change ownership"
     sudo chmod -R 755 . || error "Failed to change permissions"
@@ -135,7 +136,8 @@ install_hyprland() {
 
     status "Building Hyprland..."
 	clone_and_build "https://github.com/hyprwm/Hyprland" "Hyprland" \
-                    "git submodule update --init --recursive && make all && sudo make install"
+					"make all && sudo make install" "--recursive"
+
 				
 
 	status "Installing must have packages..."
@@ -144,23 +146,20 @@ install_hyprland() {
 	# Correct xdg-desktop-portal-hyprland for screensharing
 	install_aur xdg-desktop-portal-hyprland-git
 	# QT Support
-	install_packages hyprland-qt-support hyprland-qtutils
+	install_packages hyprland-qt-support
 	# Authentication
 	install_packages hyprpolkitagent
 	# Screen lock
 	install_packages hyprlock
-	# Graphics Resources
-	install_packages hyprgraphics
-	# Cursor library
-	install_packages hyprcursor
 }
 
 install_jakoolit() {
 	JAYKOOLIT_INSTALLED=true
 	status "Installing JaKooLit DotFiles..."
 	INSTALL_DIR=$HOME
-	clone_and_build "--depth=1 https://github.com/JaKooLit/Arch-Hyprland.git" "Arch-Hyprland" \
-					"sudo chmod +x install.sh && ./install.sh"
+	clone_and_build "https://github.com/JaKooLit/Arch-Hyprland.git" "Arch-Hyprland" \
+					"sudo chmod +x install.sh && ./install.sh" "--depth=1"
+
 }	 
 
 # ======================
