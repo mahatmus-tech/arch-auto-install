@@ -119,28 +119,12 @@ install_hyprland() {
  	# Update packages
 	sudo pacman -Syu --needed --noconfirm
 
-	status "Checking YAY..."
-	# Check if the package is installed
-	if pacman -Qi yay &>/dev/null; then
-	    info "yay is installed"
-	else
-	    clone_and_build "https://aur.archlinux.org/yay-bin.git" "yay-bin"
-	fi 
-
     status "Building Hyprland..."
 	install_packages hyprland				
 
 	status "Installing must have packages..."
-	# Notification/idle daemon
-	install_packages swaync hypridle
-	# Correct xdg-desktop-portal-hyprland for screensharing
-	install_aur xdg-desktop-portal-hyprland-git
-	# QT Support
-	install_packages hyprland-qt-support
-	# Authentication
-	install_packages hyprpolkitagent
-	# Screen lock
-	install_packages hyprlock
+	# Correct xdg-desktop-portal-hyprland for screensharing11
+	#install_aur xdg-desktop-portal-hyprland-git
 }
 
 install_jakoolit() {
