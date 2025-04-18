@@ -126,19 +126,9 @@ install_hyprland() {
 	else
 	    clone_and_build "https://aur.archlinux.org/yay-bin.git" "yay-bin"
 	fi 
- 
-    install_aur \
-		ninja gcc cmake meson libxcb xcb-proto xcb-util xcb-util-keysyms \
-  		libxfixes libx11 libxcomposite libxrender libxcursor pixman wayland-protocols \
-		cairo pango libxkbcommon xcb-util-wm xorg-xwayland libinput libliftoff libdisplay-info \
-  		cpio tomlplusplus hyprlang-git hyprcursor-git hyprwayland-scanner-git xcb-util-errors \
-		hyprutils-git glaze hyprgraphics-git aquamarine-git re2 hyprland-qtutils
 
     status "Building Hyprland..."
-	clone_and_build "https://github.com/hyprwm/Hyprland" "Hyprland" \
-					"make all && sudo make install" "--recursive"
-
-				
+	install_packages hyprland				
 
 	status "Installing must have packages..."
 	# Notification/idle daemon

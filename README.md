@@ -15,7 +15,7 @@ This project automates the installation of Arch Linux with a customized configur
 
 - Internet connection
 - Install arch using archinstall with: kernel linux, systemd-boot, minimal, pipewire, one partition
-
+- For JaKooLit : do not select nvidia options
 
 ## Installation
 
