@@ -433,7 +433,20 @@ main() {
 	
     # Show Menu Checker
     show_menu
+
+    #mapfile -t SELECTIONS < selected
+    #rm -f selected
     
+    #for selection in "${SELECTIONS[@]}"; do
+    #    case $selection in
+    #        1) install_ufw_firewall ;;
+    #        2) install_bluetooth ;;
+    #        3) install_gaming ;;
+    #        4) install_recomended_apps ;;
+    #        5) install_tkg_kernel ;;
+    #    esac
+    #done
+
    # Detection phase
     detect_system
     install_base_system
@@ -442,20 +455,11 @@ main() {
     install_multimedia
     install_compressions
     install_fonts
-
-    mapfile -t SELECTIONS < selected
-    rm -f selected
-    
-    for selection in "${SELECTIONS[@]}"; do
-        case $selection in
-            1) install_ufw_firewall ;;
-            2) install_bluetooth ;;
-            3) install_gaming ;;
-            4) install_recomended_apps ;;
-            5) install_tkg_kernel ;;
-        esac
-    done
-
+    install_ufw_firewall
+    install_bluetooth
+    install_gaming
+    install_recomended_apps
+    install_tkg_kernel
     configure_system
 	
     echo -e "\n${GREEN} Installation completed successfully! ${NC}"
