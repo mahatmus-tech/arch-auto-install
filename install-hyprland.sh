@@ -134,8 +134,9 @@ install_hyprland() {
 		hyprutils-git glaze hyprgraphics-git aquamarine-git re2 hyprland-qtutils
 
     status "Building Hyprland..."
-	clone_and_build "--recursive https://github.com/hyprwm/Hyprland" "Hyprland" \
-					"make all && sudo make install"
+	clone_and_build "https://github.com/hyprwm/Hyprland" "Hyprland" \
+                    "git submodule update --init --recursive && make all && sudo make install"
+				
 
 	status "Installing must have packages..."
 	# Notification/idle daemon
