@@ -298,6 +298,10 @@ install_gaming() {
     fi
     systemctl --user enable --now gamemoded.service
     sudo usermod -aG gamemode "$USER"
+
+    # Download Mangohud.conf
+    sudo rm -f "$HOME/.config/MangoHud/MangoHud.conf"
+    safe_download "$HOME"/.config/MangoHud https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/MangoHud.conf
          
     # installl proton-ge-custom
     #safe_download "$HOME"/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
