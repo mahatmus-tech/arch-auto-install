@@ -120,7 +120,7 @@ install_hyprland() {
 	sudo pacman -Syu --needed --noconfirm
 
     status "Building Hyprland..."
-	install_packages hyprland				
+	install_aur hyprland-git
 
 	status "Installing must have packages..."
 	# Correct xdg-desktop-portal-hyprland for screensharing11
@@ -145,11 +145,6 @@ configure_hyprland() {
 	
 	# Upgrade and Synchronize package database
 	sudo pacman -Syu --noconfirm
-
-    # install the correct xdg-desktop-portal-hyprland which provides additional functionality such as window sharing.
-	pacman -Q | grep -E '^xdg-desktop-portal-' | grep -v gtk | awk '{print $1}' | xargs sudo pacman -Rns --noconfirm
-	install_aur xdg-desktop-portal-hyprland-git
-
 	
 	if [ "$JAYKOOLIT_INSTALLED" = true ]; then
 		CONFIG="$HOME/.config/hypr/UserConfigs/Startup_Apps.conf"
