@@ -52,11 +52,11 @@ This project automates the installation of Arch Linux with a customized configur
 
 1. **Go to Settings**
 - In Downloads:
-  - Enable: ` Shader Pre-Caching` 
+  - Enable: `Enable Shader Pre-Caching` 
   - Enable: `Allow background processing of Vulkan shaders`
 - In Compatibility:
-  - Enable: `Steam Play of all other titles`
-  - Run other titles with: `Proton-GE` 
+  - Enable: `Enable Steam Play for all other titles`
+  - Run other titles with: `Proton-GE`
 2. **Restart your Steam.**
 3. **Set Launch settings for your games**
 4. **Go to General**
