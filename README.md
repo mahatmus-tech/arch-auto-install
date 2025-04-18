@@ -47,6 +47,25 @@ This project automates the installation of Arch Linux with a customized configur
    ```
 7. **Reboot your system to complete the installation.**
 
+
+## Steam Configuration
+
+1. **Go to Settings**
+- In Downloads:
+  - Enable: ` Shader Pre-Caching` 
+  - Enable: `Allow background processing of Vulkan shaders`
+- In Compatibility:
+  - Enable: `Steam Play of all other titles`
+  - Run other titles with: `Proton-GE` 
+2. **Restart your Steam.**
+3. **Set Launch settings for your games**
+4. **Go to General**
+- In Launcher Options:
+   ```bash
+   MANGOHUD=1 SteamDeck=1 gamemoderun %command%
+   ```
+5. **Run your game**
+
 ---
 
 Feel free to further customize this README based on your project's specific requirements or any additional information you'd like to include. 
