@@ -7,11 +7,6 @@ set -euo pipefail
 # ======================
 # Default install dir
 INSTALL_DIR="$HOME/Apps"
-INSTALL_UFW_FIREWALL=false
-INSTALL_BLUETOOTH=false
-INSTALL_GAMING=false
-INSTALL_REC_APPS=false
-INSTALL_TKG_KERNEL=false
 
 # Log file
 export LOG_FILE="/var/log/arch_auto_install_$(date "+%Y%m%d-%H%M%S").log"
@@ -171,10 +166,7 @@ install_base_system() {
 }
 
 install_tkg_kernel() {
-    # clone linux-tkg kernel
     status "Cloning linux-tkg kernel..."
-   # clone_and_build "https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
-   #                 "echo Repository Linux TKG has been cloned!"
 }
 
 install_firmware() {
@@ -185,7 +177,7 @@ install_firmware() {
         "amd") install_packages amd-ucode;;
     esac
     
-    #clone_and_build "https://aur.archlinux.org/mkinitcpio-firmware.git" "mkinitcpio-firmware"
+    clone_and_build "https://aur.archlinux.org/mkinitcpio-firmware.git" "mkinitcpio-firmware"
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
 }
 
@@ -434,20 +426,7 @@ main() {
     # Show Menu Checker
     show_menu
     
-    mapfile -t SELECTIONS < selected
-    rm -f selected
-    
-    for selection in "${SELECTIONS[@]}"; do
-        case $selection in
-            1) INSTALL_UFW_FIREWALL=true ;;
-            2) INSTALL_BLUETOOTH=true ;;
-            3) INSTALL_GAMING=true ;;
-            4) INSTALL_REC_APPS=true ;;
-            5) INSTALL_TKG_KERNEL=true ;;
-        esac
-    done
-
-    # Detection phase
+   # Detection phase
     detect_system
     install_base_system
     install_firmware
@@ -456,25 +435,18 @@ main() {
     install_compressions
     install_fonts
 
-    if [ "$INSTALL_UFW_FIREWALL" = true ]; then
-      install_ufw_firewall
-    fi
-
-    if [ "$INSTALL_BLUETOOTH" = true ]; then
-      install_bluetooth
-    fi
-
-    if [ "$INSTALL_GAMING" = true ]; then
-      install_gaming
-    fi
-
-    if [ "$INSTALL_REC_APPS" = true ]; then
-      install_recomended_apps
-    fi
-
-    if [ "$INSTALL_TKG_KERNEL" = true ]; then
-      install_tkg_kernel
-    fi
+    mapfile -t SELECTIONS < selected
+    rm -f selected
+    
+    for selection in "${SELECTIONS[@]}"; do
+        case $selection in
+            1) install_ufw_firewall ;;
+            2) install_bluetooth ;;
+            3) install_gaming ;;
+            4) install_recomended_apps ;;
+            5) install_tkg_kernel ;;
+        esac
+    done
 
     configure_system
 	
