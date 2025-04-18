@@ -188,6 +188,7 @@ configure_hyprland() {
 		CONFIG="$HOME/.config/hypr/hyprland.conf"
 		
 		# Startup - wayland
+		echo "# my settings" >> "$CONFIG"
 		echo "exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP" >> "$CONFIG"
 		echo "exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP" >> "$CONFIG"
 
