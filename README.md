@@ -12,9 +12,10 @@ This project automates the installation of Arch Linux with a customized configur
 - User applications and configuration
 
 ## Requirements
+
 - Internet connection
-- Install arch using archinstall
-- Only one root partition compatible
+- Install arch using archinstall(systemd-boot, minimal, one partition)
+- Pipewire(Hyprland need)
 
 
 ## Installation
