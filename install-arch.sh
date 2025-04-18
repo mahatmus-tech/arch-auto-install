@@ -379,6 +379,7 @@ configure_system() {
     sudo usermod -aG wheel,video,input,audio,network,lp,storage,users,rfkill,sys "$USER"
     
     # Download scx using LAVD
+    sudo rm -f /etc/default/scx
     safe_download /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
     # Download optimal kernel.conf
     safe_download /usr/lib/sysctl.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf
