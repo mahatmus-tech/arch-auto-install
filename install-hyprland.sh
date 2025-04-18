@@ -151,6 +151,7 @@ configure_hyprland() {
 		echo "exec-once = systemctl --user start gamemoded.service" >> "$CONFIG"
 		
 		CONFIG="$HOME/.config/hypr/UserConfigs/WindowRules.conf"
+		echo "# my settings" >> "$CONFIG"
 		echo "windowrulev2 = content game, tag:games*" >> "$CONFIG"
 		echo "windowrulev2 = nodim, tag:games*" >> "$CONFIG"
 		echo "windowrulev2 = noanim, tag:games*" >> "$CONFIG"
@@ -161,31 +162,29 @@ configure_hyprland() {
 		echo "windowrulev2 = immediate, tag:games*" >> "$CONFIG"
 		
 		CONFIG="$HOME/.config/hypr/UserConfigs/UserSettings.conf"
-		sudo sed -i -E "s|^#accel_profile =.*|#accel_profile = flat|" "$CONFIG"
-		sudo sed -i -E "s|^direct_scanout = 0.*|direct_scanout = 2|" "$CONFIG"
+		sudo sed -i -E "s|#accel_profile =|accel_profile = flat|" "$CONFIG"
+		sudo sed -i -E "s|direct_scanout = 0|direct_scanout = 2|" "$CONFIG"
+		# Enable Anti Flicker
+		#sudo sed -i -E "s|#opengl {|opengl {|" "$CONFIG"
+		#sudo sed -i -E "s|#  nvidia_anti_flicker = true|  nvidia_anti_flicker = true|" "$CONFIG"
+		#sudo sed -i -E "s|#}|}|" "$CONFIG" 
 
 		CONFIG="$HOME/.zprofile"
   		sudo sed -i -E "s/#/ /g" "$CONFIG"
 		
 		CONFIG="$HOME/.config/hypr/UserConfigs/ENVariables.conf"
-		if [ "$GPU" = "nvidia" ]; then
-		    # Force GBM as a backend
-			echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
-			echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
+		# Force GBM as a backend
+		echo "# my settings" >> "$CONFIG"
+		echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
+		echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
 
-			# Hardware acceleration on NVIDIA GPUs
-			echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG" 
+		# Hardware acceleration on NVIDIA GPUs
+		echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG" 
 
-			# Correct SDDM login stuck bug 
-			local card_code=$(lspci -nn | grep -E "RTX|GTX" | awk '{print $1}')
-			local gpu_card=$(readlink /dev/dri/by-path/pci-0000:"${card_code}"-card | xargs basename)
-			echo "env = WLR_DRM_DEVICES=/dev/dri/$gpu_card" >> "$CONFIG"
-
-			# Enable Anti Flicker
-			sudo sed -i -E "s|^#opengl {.*|opengl {|" "$CONFIG"
-			sudo sed -i -E "s|^#  nvidia_anti_flicker = true.*|  nvidia_anti_flicker = true|" "$CONFIG"
-			sudo sed -i -E "s|^#}.*|}|" "$CONFIG"
-		fi
+		# Correct SDDM login stuck bug 
+		#local card_code=$(lspci -nn | grep -E "RTX|GTX" | awk '{print $1}')
+		#local gpu_card=$(readlink /dev/dri/by-path/pci-0000:"${card_code}"-card | xargs basename)
+		#echo "env = WLR_DRM_DEVICES=/dev/dri/$gpu_card" >> "$CONFIG"
  	else
 		# Path to Hyprland config file
 		CONFIG="$HOME/.config/hypr/hyprland.conf"
