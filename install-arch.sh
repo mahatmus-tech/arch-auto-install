@@ -181,11 +181,8 @@ install_tkg_kernel() {
 
 install_firmware() {
     status "Installing firmware packages..."
-    
-    case $CPU in
-        "intel") install_packages intel-ucode;;
-        "amd") install_packages amd-ucode;;
-    esac
+
+    install_packages linux-headers
 
     install_aur mkinitcpio-firmware
 
