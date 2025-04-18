@@ -1,6 +1,10 @@
+Certainly! Here's an improved version of your project's README, incorporating clearer instructions, enhanced formatting, and additional details for better clarity and usability:
+
+---
+
 # Arch Linux Automated Installation
 
-This project automates the installation of Arch Linux with a customized configuration including Hyprland, Nvidia drivers, and gaming optimizations.
+This project automates the installation of Arch Linux with a customized configuration, including Hyprland, Nvidia drivers, and gaming optimizations.
 
 ## Features
 
@@ -13,25 +17,36 @@ This project automates the installation of Arch Linux with a customized configur
 
 ## Requirements
 
-- Install arch using archinstall with: kernel linux, systemd-boot, minimal, pipewire, one partition and network
-- For JaKooLit : do not select nvidia options
-- At the END of JakooLit DO NOT REBOOT! Post configs will be made. If you did, just execute install-hyprland.sh again an uncheck the Jakoolit option
+- Install Arch using `archinstall` with the following options:
+  - Kernel: `linux`
+  - Bootloader: `systemd-boot`
+  - Installation type: `minimal`
+  - Audio: `pipewire`
+  - Partitioning: `one partition`
+  - Network: `network`
+- For JaKooLit:
+  - Do not select Nvidia options during installation.
+  - **Important**: Do not reboot at the end of the JaKooLit installation process. Post-installation configurations will be applied afterward. If you have already rebooted, simply execute `install-hyprland.sh` again and uncheck the JaKooLit option.
 
-## Installation
+## Installation Steps
 
-1. Boot into the Arch Linux live environment
-2. Run the following command: archinstall
-3. Reboot your system
-4. Run the following command:
-5. ```bash
-    bash <(curl -L https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/install-arch.sh)
-6. Reboot your system
-7. Run the following command:
-8. ```bash
-    bash <(curl -L https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/install-hyprland.sh)
-9. Reboot your system
-   
-   
+1. **Boot into the Arch Linux live environment.**
+2. **Run the following command to start the Arch installation process:**
+   ```bash
+   archinstall
+   ```
+3. **Reboot your system.**
+4. **Run the following command to begin the automated installation:**
+   ```bash
+   bash <(curl -L https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/main/install-arch.sh)
+   ```
+5. **Reboot your system again.**
+6. **Run the following command to install Hyprland and related configurations:**
+   ```bash
+   bash <(curl -L https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/main/install-hyprland.sh)
+   ```
+7. **Reboot your system to complete the installation.**
 
+---
 
-
+Feel free to further customize this README based on your project's specific requirements or any additional information you'd like to include. 
