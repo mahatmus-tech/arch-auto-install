@@ -379,7 +379,7 @@ configure_system() {
     safe_download /usr/lib/sysctl.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf
     sudo sysctl --system
 
-    status "Setting fstrim ..."
+    #status "Setting fstrim ..."
     # Get root filesystem type
     local root_fs_type=$(findmnt -n -o FSTYPE /)
     # Get the base device name (strip /dev/ and partition suffix)
@@ -395,11 +395,11 @@ configure_system() {
     fi
     
     # Filesystems known to support TRIM
-    if [[ "$is_ssd_or_nvme" == "true" && \
-          "$root_fs_type" =~ ^(ext3|ext4|btrfs|f2fs|xfs|vfat|exfat|jfs|nilfs2|ntfs-3g)$ ]]; then
-        status "Filesystem '$root_fs_type' supports TRIM. Enabling fstrim.timer..."
-        sudo systemctl enable --now fstrim.timer
-    fi
+    #if [[ "$is_ssd_or_nvme" == "true" && \
+    #      "$root_fs_type" =~ ^(ext3|ext4|btrfs|f2fs|xfs|vfat|exfat|jfs|nilfs2|ntfs-3g)$ ]]; then
+    #    status "Filesystem '$root_fs_type' supports TRIM. Enabling fstrim.timer..."
+    #    sudo systemctl enable --now fstrim.timer
+    #fi
     
     status "Improving SSD journal performance..."
     if [[ "$is_ssd_or_nvme" == "true" ]]; then
@@ -420,7 +420,7 @@ configure_system() {
     fi
     
     # Reloads the systemd manager configuration
-    sudo systemctl daemon-reload
+    # sudo systemctl daemon-reload
     # Regenerate Initramfs
     sudo mkinitcpio -P
 }
