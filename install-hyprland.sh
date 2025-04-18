@@ -121,10 +121,6 @@ install_hyprland() {
 
     status "Building Hyprland..."
 	install_aur hyprland-git
-
-	status "Installing must have packages..."
-	# Correct xdg-desktop-portal-hyprland for screensharing11
-	#install_aur xdg-desktop-portal-hyprland-git
 }
 
 install_jakoolit() {
@@ -171,15 +167,17 @@ configure_hyprland() {
 
 		CONFIG="$HOME/.zprofile"
   		sudo sed -i -E "s/#/ /g" "$CONFIG"
-		
-		CONFIG="$HOME/.config/hypr/UserConfigs/ENVariables.conf"
-		# Force GBM as a backend
-		echo "# my settings" >> "$CONFIG"
-		echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
-		echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
 
-		# Hardware acceleration on NVIDIA GPUs
-		echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG" 
+		if [ "$GPU" = "nvidia" ]; then
+			CONFIG="$HOME/.config/hypr/UserConfigs/ENVariables.conf"
+			# Force GBM as a backend
+			echo "# my settings" >> "$CONFIG"
+			echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
+			echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
+
+			# Hardware acceleration on NVIDIA GPUs
+			echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG" 
+		fi
 
 		# Correct SDDM login stuck bug 
 		#local card_code=$(lspci -nn | grep -E "RTX|GTX" | awk '{print $1}')
@@ -241,7 +239,8 @@ main() {
 
     mapfile -t SELECTIONS < selected
     rm -f selected
-    
+
+    detect_system    
 	install_hyprland
 
     for selection in "${SELECTIONS[@]}"; do
