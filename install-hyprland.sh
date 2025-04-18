@@ -2,7 +2,6 @@
 
 set -euo pipefail
 
-
 # ======================
 # GLOBAL VARIABLES
 # ======================
@@ -105,7 +104,7 @@ clone_and_build() {
     sudo rm -rf "$INSTALL_DIR/$dir_name"
     git clone "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
     cd "$INSTALL_DIR/$dir_name" || error "Failed to enter $dir_name directory"
-    sudo chown -R $USER:$USER . || error "Failed to change ownership"
+    sudo chown -R "$USER":"$USER" . || error "Failed to change ownership"
     sudo chmod -R 755 . || error "Failed to change permissions"
     eval "$build_cmd" || warning "Failed to build/install $dir_name"
     cd - >/dev/null || error "Failed to return to previous directory"
@@ -188,8 +187,11 @@ configure_hyprland() {
 		echo "windowrulev2 = immediate, tag:games*" >> "$CONFIG"
 		
 		CONFIG="$HOME/.config/hypr/UserConfigs/UserSettings.conf"
-		sudo sed -i -E "s|^#accel_profile =.*|#accel_profile = flat|" $CONFIG
-		sudo sed -i -E "s|^direct_scanout = 0.*|direct_scanout = 2|" $CONFIG
+		sudo sed -i -E "s|^#accel_profile =.*|#accel_profile = flat|" "$CONFIG"
+		sudo sed -i -E "s|^direct_scanout = 0.*|direct_scanout = 2|" "$CONFIG"
+
+		CONFIG="$HOME/.zprofile"
+  		sudo sed -i -E "s/#/ /g" "$CONFIG"
 		
 		CONFIG="$HOME/.config/hypr/UserConfigs/ENVariables.conf"
 		if [ "$GPU" = "nvidia" ]; then
@@ -202,17 +204,14 @@ configure_hyprland() {
 
 			# Correct SDDM login stuck bug 
 			local card_code=$(lspci -nn | grep -E "RTX|GTX" | awk '{print $1}')
-			local gpu_card=$(readlink /dev/dri/by-path/pci-0000:${card_code}-card | xargs basename)
+			local gpu_card=$(readlink /dev/dri/by-path/pci-0000:"${card_code}"-card | xargs basename)
 			echo "env = WLR_DRM_DEVICES=/dev/dri/$gpu_card" >> "$CONFIG"
 
 			# Enable Anti Flicker
-			sudo sed -i -E "s|^#opengl {.*|opengl {|" $CONFIG
-			sudo sed -i -E "s|^#  nvidia_anti_flicker = true.*|  nvidia_anti_flicker = true|" $CONFIG
-			sudo sed -i -E "s|^#}.*|}|" $CONFIG			
+			sudo sed -i -E "s|^#opengl {.*|opengl {|" "$CONFIG"
+			sudo sed -i -E "s|^#  nvidia_anti_flicker = true.*|  nvidia_anti_flicker = true|" "$CONFIG"
+			sudo sed -i -E "s|^#}.*|}|" "$CONFIG"
 		fi
-
-		CONFIG="$HOME/.zprofile"
-  		sudo sed -i -E "s/#/ /g" $CONFIG
  	else
 		# Path to Hyprland config file
 		CONFIG="$HOME/.config/hypr/hyprland.conf"

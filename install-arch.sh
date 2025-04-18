@@ -8,11 +8,10 @@ set -euo pipefail
 # Default install dir
 INSTALL_DIR="$HOME/Apps"
 INSTALL_UFW_FIREWALL=false
-INSTALL_PIPEWIRE=false
-INSTALL_ZEN3_TKG=false
 INSTALL_BLUETOOTH=false
 INSTALL_GAMING=false
 INSTALL_REC_APPS=false
+INSTALL_TKG_KERNEL=false
 
 # Log file
 export LOG_FILE="/var/log/arch_auto_install_$(date "+%Y%m%d-%H%M%S").log"
@@ -26,11 +25,11 @@ NC='\033[0m'
 
 # Menu configuration
 MENU_OPTIONS=(
-    1  "Firewall UFW"      on
-    2  "Bluetooth"         on
-    3  "Gaming"            on
-    4  "Recommended Apps"  on
-    5  "TKG Zen3 Kernel"   off
+    1  "Firewall UFW"                 on
+    2  "Bluetooth"                    on
+    3  "Gaming"                       on
+    4  "Recommended Apps"             on
+    5  "Build Your Linux TKG Kernel"  off
 )
 
 # ======================
@@ -79,7 +78,7 @@ clone_and_build() {
     sudo rm -rf "$INSTALL_DIR/$dir_name"
     git clone "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
     cd "$INSTALL_DIR/$dir_name" || error "Failed to enter $dir_name directory"
-    sudo chown -R $USER:$USER . || error "Failed to change ownership"
+    sudo chown -R "$USER" . || error "Failed to change ownership"
     sudo chmod -R 755 . || error "Failed to change permissions"
     eval "$build_cmd" || warning "Failed to build/install $dir_name"
     cd - >/dev/null || error "Failed to return to previous directory"
@@ -153,13 +152,13 @@ install_base_system() {
     
     status "Changing pacman settings..."
     sudo sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
-    sudo sed -i 's/^#VerbosePkgLists$/VerbosePkgLists/' /etc/pacman.conf
-    sudo sed -i 's/^#ILoveCandy$/ILoveCandy/' /etc/pacman.conf
+    sudo sed -i 's/^#VerbosePkgLists/VerbosePkgLists/' /etc/pacman.conf
+    sudo sed -i 's/^#ILoveCandy/ILoveCandy/' /etc/pacman.conf
     
     # Update packages
     sudo pacman -Syu --noconfirm
     # Base packages
-    install_packages git base-devel curl python wget meson systemd dbus libinih    
+    install_packages git base-devel curl python wget meson systemd dbus libinih
     # scheaduler
     install_packages scx-scheds
     sudo systemctl enable --now scx.service
@@ -168,29 +167,14 @@ install_base_system() {
     sudo systemctl enable --now paccache.timer
     
     # Create user directories
-    mkdir -p $HOME/{Downloads,Documents,Pictures,Projects,.config,Apps,Scripts}
+    mkdir -p "$HOME"/{Downloads,Documents,Pictures,Projects,.config,Apps,Scripts}
 }
 
-install_tkg_zen3_kernel() {
+install_tkg_kernel() {
     # clone linux-tkg kernel
     status "Cloning linux-tkg kernel..."
-    clone_and_build "https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
-                    "echo Repository Linux TKG has been cloned!"
-    
-    #Download linux-tkg kernel
-    safe_download /boot https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/vmlinuz-linux614-tkg-eevdf
-    safe_download /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf.img
-    safe_download /boot https://github.com/mahatmus-tech/arch-auto-install/releases/download/1.0/initramfs-linux614-tkg-eevdf-fallback.img
-    safe_download /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg.conf
-    safe_download /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/tags/1.0/tkg-kernel/linux-tkg-fallback.conf
-    
-    #Edit the linux-tkg.conf
-    UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
-    sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg.conf
-    sudo sed -i -E "s/52cd2305-c1ca-4c5c-ba62-9b265a1cf699/$UUID/g" /boot/loader/entries/linux-tkg-fallback.conf
-    sudo bootctl update
-    # set linux-tkg as default
-    sudo bootctl set-default linux-tkg.conf
+   # clone_and_build "https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
+   #                 "echo Repository Linux TKG has been cloned!"
 }
 
 install_firmware() {
@@ -200,8 +184,6 @@ install_firmware() {
         "intel") install_packages intel-ucode;;
         "amd") install_packages amd-ucode;;
     esac
-    
-    install_packages sof-firmware alsa-firmware
     
     clone_and_build "https://aur.archlinux.org/mkinitcpio-firmware.git" "mkinitcpio-firmware"
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
@@ -283,8 +265,8 @@ install_graphics() {
             ;;
         "intel")
 			install_packages \
-			vulkan-intel lib32-vulkan-intel libva-intel-driver
-			intel-media-sdk intel-media-driver intel-gmmlib
+			    vulkan-intel lib32-vulkan-intel libva-intel-driver \
+			    intel-media-sdk intel-media-driver intel-gmmlib
             ;;
     esac
 
@@ -304,11 +286,21 @@ install_gaming() {
     # Download gamemode.ini
     sudo rm -f /etc/gamemode.ini
     safe_download /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
+
+    if [[ "$CPU" == "amd" ]]; then
+        # Enable EPP if supported
+        if [[ -f "/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference" ]]; then
+            sudo sed -i 's/;enable_amd_pstate_epp=1/enable_amd_pstate_epp=1/' /etc/gamemode.ini
+            sudo sed -i 's/;amd_epp_profile=performance/amd_epp_profile=performance/' /etc/gamemode.ini
+        else
+            sudo sed -i 's/;enable_amd_pstate=1/enable_amd_pstate=1/' /etc/gamemode.ini
+        fi
+    fi
     systemctl --user enable --now gamemoded.service
-    sudo usermod -aG gamemode $USER
+    sudo usermod -aG gamemode "$USER"
          
     # installl proton-ge-custom
-    safe_download $HOME/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
+    safe_download "$HOME"/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
     bash "$HOME/Scripts/proton-ge-custom-install.sh"
     
     # Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
@@ -340,7 +332,7 @@ install_gaming() {
 install_recomended_apps() {
     status "Installing recomended packages..."
     # terminal & editor
-    install_packages kitty man-db man-pages fastfetch jq micro
+    install_packages kitty man-db man-pages fastfetch jq 
     # Linux resource monitors
     install_packages htop nvtop btop inxi duf
     # media controller & player
@@ -379,7 +371,7 @@ configure_system() {
     sudo pacman -Syu --noconfirm
     
     # Add user to all required groups
-    sudo usermod -aG wheel,video,input,audio,network,lp,storage,users,rfkill,sys $USER
+    sudo usermod -aG wheel,video,input,audio,network,lp,storage,users,rfkill,sys "$USER"
     
     # Download scx using LAVD
     safe_download /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
@@ -397,8 +389,8 @@ configure_system() {
     # Check for SSD or NVMe (rotational = 0)
     local is_ssd_or_nvme="false"
     if [[ -e /sys/block/$root_device/queue/rotational ]]; then
-        if [[ "$(cat /sys/block/$root_device/queue/rotational)" == "0" ]]; then
-        is_ssd_or_nvme="true"
+        if [[ "$(cat /sys/block/"$root_device"/queue/rotational)" == "0" ]]; then
+            is_ssd_or_nvme="true"
         fi
     fi
     
@@ -451,7 +443,7 @@ main() {
             2) INSTALL_BLUETOOTH=true ;;
             3) INSTALL_GAMING=true ;;
             4) INSTALL_REC_APPS=true ;;
-            5) INSTALL_ZEN3_TKG=true ;;
+            5) INSTALL_TKG_KERNEL=true ;;
         esac
     done
 
@@ -480,8 +472,8 @@ main() {
       install_recomended_apps
     fi
 
-    if [ "$INSTALL_ZEN3_TKG" = true ]; then
-      install_tkg_zen3_kernel
+    if [ "$INSTALL_TKG_KERNEL" = true ]; then
+      install_tkg_kernel
     fi
 
     configure_system
