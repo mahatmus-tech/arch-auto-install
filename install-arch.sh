@@ -230,7 +230,7 @@ install_graphics() {
     install_packages \
 		libglvnd mesa lib32-mesa libva lib32-libva \
 		libvdpau lib32-libvdpau libvdpau-va-gl \
-		vulkan-icd-loader lib32-vulkan-icd-loader vulkan-mesa-layers    
+		vulkan-icd-loader lib32-vulkan-icd-loader vulkan-mesa-layers 
     
     # GPU-specific packages
     case $GPU in
