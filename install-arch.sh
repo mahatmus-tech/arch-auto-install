@@ -17,11 +17,12 @@ NC='\033[0m'
 
 # Menu configuration
 MENU_OPTIONS=(
-    1  "Firewall UFW"             on
-    2  "Bluetooth"                on
-    3  "Gaming"                   on
-    4  "Recommended Apps"         on
-    5  "Install Linux TKG Kernel" off
+    1  "GPU Drivers"            on
+    2  "Firewall UFW"           on
+    3  "Bluetooth Drivers"      on
+    4  "Gaming Apps"            on
+    5  "Recommended Apps"       on
+    6  "Build Linux TKG Kernel" off
 )
 
 # ======================
@@ -33,7 +34,7 @@ error() { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
 info() { echo -e "${BLUE}[i]${NC} $1"; }
 
 show_menu() {
-        install_packages dialog
+	install_packages dialog
     dialog --clear \
         --title "Arch Installation" \
         --checklist "Select components to install:" 20 60 15 \
@@ -234,7 +235,9 @@ install_graphics() {
     # GPU-specific packages
     case $GPU in
         "nvidia")
-			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all"
+			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
+                            ""
+            printf "1\1\N" | eval "makepkg -si --noconfirm" || warning "Failed to build/install nvidia-all
 
             # nvidia.conf
             sudo rm -f /etc/modprobe.d/nvidia.conf
@@ -427,32 +430,40 @@ configure_system() {
 main() {
     echo -e "\n${GREEN}🚀 Starting Arch Auto Install ${NC}"
 	
+    sudo -v || error "Failed to get sudo privileges"
+    
+    # Keep-alive: update existing sudo time stamp if set, otherwise do nothing
+    while true; do
+        sudo -n true
+        sleep 60
+        kill -0 "$$" 2>/dev/null || exit
+    done & 2>/dev/null
+
     show_menu
+
+    mapfile -t SELECTIONS < selected
+    rm -f selected
 
     detect_system
     install_base_system
     install_firmware
-    install_graphics
     install_multimedia
     install_compressions
-    install_fonts    
+    install_fonts
 
-    # Read selections and remove quotes
-    mapfile -t SELECTIONS < <(sed 's/"//g' selected)
-    rm -f selected
-    
     for selection in "${SELECTIONS[@]}"; do
         case $selection in
-            1) install_ufw_firewall ;;
-            2) install_bluetooth ;;
-            3) install_gaming ;;
-            4) install_recomended_apps ;;
-            5) install_tkg_kernel ;;
+            1) install_graphics ;;
+            2) install_ufw_firewall ;;
+            3) install_bluetooth ;;
+            4) install_gaming ;;
+            5) install_recomended_apps ;;
+            6) install_tkg_kernel ;;
         esac
     done
 
     configure_system
-	
+
     echo -e "\n${GREEN} Installation completed successfully! ${NC}"
     echo -e "${YELLOW} Please reboot your system to apply all changes. ${NC}"
 }

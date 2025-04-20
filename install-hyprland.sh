@@ -237,7 +237,6 @@ main() {
     rm -f selected
 
     detect_system
-	install_hyprland
 
     for selection in "${SELECTIONS[@]}"; do
         case $selection in
@@ -246,8 +245,6 @@ main() {
 			3)  configure_hyprland ;;
         esac
     done
-
-	configure_hyprland
 	
 	echo -e "\n${GREEN} Installation completed successfully! ${NC}"
 	echo -e "${YELLOW} Please reboot your system to apply all changes. ${NC}"
