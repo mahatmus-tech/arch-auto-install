@@ -442,7 +442,8 @@ main() {
     install_compressions
     install_fonts    
 
-    mapfile -t SELECTIONS < selected
+    # Read selections and remove quotes
+    mapfile -t SELECTIONS < <(sed 's/"//g' selected)
     rm -f selected
     
     for selection in "${SELECTIONS[@]}"; do
