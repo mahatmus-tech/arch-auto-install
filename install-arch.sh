@@ -283,6 +283,8 @@ install_gaming() {
         steam goverlay gamescope gamemode \
         lib32-gamemode mangohud lib32-mangohud
 
+    install_aur proton-ge-custom-bin    
+
     # Download gamemode.ini
     sudo rm -f /etc/gamemode.ini
     safe_download /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
@@ -302,12 +304,6 @@ install_gaming() {
     # Download Mangohud.conf
     sudo rm -f "$HOME/.config/MangoHud/MangoHud.conf"
     safe_download "$HOME"/.config/MangoHud https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/MangoHud.conf
-         
-    # installl proton-ge-custom
-    #safe_download "$HOME"/Scripts https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/proton-ge-custom-install.sh
-    #sudo chmod +x "$HOME/Scripts/proton-ge-custom-install.sh"
-    #bash "$HOME/Scripts/proton-ge-custom-install.sh"
-    install_aur proton-ge-custom-bin
     
     # Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
     install_packages wine-staging

@@ -73,6 +73,7 @@ error() { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
 info() { echo -e "${BLUE}[i]${NC} $1"; }
 
 show_menu() {
+	install_packages dialog
     dialog --clear \
         --title "Arch Hyprland Installation" \
         --checklist "Select components to install:" 20 60 15 \
@@ -160,10 +161,6 @@ configure_hyprland() {
 		CONFIG="$HOME/.config/hypr/UserConfigs/UserSettings.conf"
 		sudo sed -i -E "s|#accel_profile =|accel_profile = flat|" "$CONFIG"
 		sudo sed -i -E "s|direct_scanout = 0|direct_scanout = 2|" "$CONFIG"
-		# Enable Anti Flicker
-		#sudo sed -i -E "s|#opengl {|opengl {|" "$CONFIG"
-		#sudo sed -i -E "s|#  nvidia_anti_flicker = true|  nvidia_anti_flicker = true|" "$CONFIG"
-		#sudo sed -i -E "s|#}|}|" "$CONFIG" 
 
 		CONFIG="$HOME/.zprofile"
   		sudo sed -i -E "s/#/ /g" "$CONFIG"
@@ -229,13 +226,7 @@ configure_hyprland() {
 # ======================
 main() {
 	echo -e "\n${GREEN}🚀 Starting Hyprland Install ${NC}"
-	
-    if ! command -v dialog &> /dev/null; then
-        echo -e "${YELLOW}Installing dialog for menu interface...${NC}"
-        install_packages dialog
-    fi
 
-    # Show Menu Checker
     show_menu
 
     mapfile -t SELECTIONS < selected
