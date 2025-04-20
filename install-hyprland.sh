@@ -144,9 +144,6 @@ configure_hyprland() {
 	sudo pacman -Syu --noconfirm
 	
 	if [ "$JAYKOOLIT_INSTALLED" = true ]; then
-		CONFIG="$HOME/.config/hypr/UserConfigs/Startup_Apps.conf"
-		echo "exec-once = systemctl --user start gamemoded.service" >> "$CONFIG"
-		
 		CONFIG="$HOME/.config/hypr/UserConfigs/WindowRules.conf"
 		echo "# my settings" >> "$CONFIG"
 		echo "windowrulev2 = content game, tag:games*" >> "$CONFIG"
@@ -196,7 +193,6 @@ configure_hyprland() {
 		echo "exec-once = wl-paste --type text --watch cliphist store" >> "$CONFIG"
 		echo "exec-once = wl-paste --type image --watch cliphist store" >> "$CONFIG"		
 		echo "exec-once = hypridle" >> "$CONFIG"
-		echo "exec-once = systemctl --user start gamemoded.service" >> "$CONFIG"
 
 		# Environment variables
 		if [ "$GPU" = "nvidia" ]; then
