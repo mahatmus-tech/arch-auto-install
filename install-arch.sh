@@ -8,9 +8,6 @@ set -euo pipefail
 # Default install dir
 INSTALL_DIR="$HOME/Apps"
 
-# Log file
-export LOG_FILE="/var/log/arch_auto_install_$(date "+%Y%m%d-%H%M%S").log"
-
 # Color output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -20,11 +17,11 @@ NC='\033[0m'
 
 # Menu configuration
 MENU_OPTIONS=(
-    1  "Firewall UFW"                 on
-    2  "Bluetooth"                    on
-    3  "Gaming"                       on
-    4  "Recommended Apps"             on
-    5  "Build Your Linux TKG Kernel"  off
+    1  "Firewall UFW"             on
+    2  "Bluetooth"                on
+    3  "Gaming"                   on
+    4  "Recommended Apps"         on
+    5  "Install Linux TKG Kernel" off
 )
 
 # ======================
@@ -177,6 +174,8 @@ install_base_system() {
 
 install_tkg_kernel() {
     status "Cloning linux-tkg kernel..."
+    clone_and_build "https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
+                    "makepkg -si"
 }
 
 install_firmware() {
@@ -433,35 +432,29 @@ configure_system() {
 main() {
     echo -e "\n${GREEN}🚀 Starting Arch Auto Install ${NC}"
 	
-    # Show Menu Checker
     show_menu
 
-    #mapfile -t SELECTIONS < selected
-    #rm -f selected
-    
-    #for selection in "${SELECTIONS[@]}"; do
-    #    case $selection in
-    #        1) install_ufw_firewall ;;
-    #        2) install_bluetooth ;;
-    #        3) install_gaming ;;
-    #        4) install_recomended_apps ;;
-    #        5) install_tkg_kernel ;;
-    #    esac
-    #done
-
-   # Detection phase
     detect_system
     install_base_system
     install_firmware
     install_graphics
     install_multimedia
     install_compressions
-    install_fonts
-    install_ufw_firewall
-    install_bluetooth
-    install_gaming
-    install_recomended_apps
-    #install_tkg_kernel
+    install_fonts    
+
+    mapfile -t SELECTIONS < selected
+    rm -f selected
+    
+    for selection in "${SELECTIONS[@]}"; do
+        case $selection in
+            1) install_ufw_firewall ;;
+            2) install_bluetooth ;;
+            3) install_gaming ;;
+            4) install_recomended_apps ;;
+            5) install_tkg_kernel ;;
+        esac
+    done
+
     configure_system
 	
     echo -e "\n${GREEN} Installation completed successfully! ${NC}"

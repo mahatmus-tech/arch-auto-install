@@ -9,8 +9,6 @@ set -euo pipefail
 INSTALL_DIR="$HOME/Apps"
 # Initialization
 JAYKOOLIT_INSTALLED=false
-# Log file
-export LOG_FILE="/var/log/arch_auto_install_hyprland_$(date "+%Y%m%d-%H%M%S").log"
 
 # Color output
 RED='\033[0;31m'
@@ -21,7 +19,9 @@ NC='\033[0m'
 
 # Menu configuration
 MENU_OPTIONS=(
-	1  "Install JaKooLit DotFiles" on
+	1  "Install Hyprland"          on
+	2  "Install JaKooLit DotFiles" on
+	3  "Configure Hyrpland"        on
 )
 
 # ======================
@@ -133,7 +133,9 @@ install_jakoolit() {
 
     clone_and_build "https://github.com/JaKooLit/Arch-Hyprland.git" "Arch-Hyprland" \
 					"sudo chmod +x install.sh" "--depth=1"
-    
+
+    # remove conflictin execution in the script
+	
 	# remove nvidia execution
 	sudo sed -i -E "s|execute_script "nvidia.sh"|#execute_script "nvidia.sh"|" "install.sh"
 	sudo sed -i -E "s|execute_script "nvidia_nouveau.sh"|#execute_script "nvidia_nouveau.sh"|" "install.sh"
@@ -142,9 +144,6 @@ install_jakoolit() {
 	./install.sh
 }	 
 
-# ======================
-# POST-INSTALL
-# ======================
 configure_hyprland() {
     status "Configuring Hyprland..."
 	local CONFIG=""
@@ -237,12 +236,14 @@ main() {
     mapfile -t SELECTIONS < selected
     rm -f selected
 
-    detect_system    
+    detect_system
 	install_hyprland
 
     for selection in "${SELECTIONS[@]}"; do
         case $selection in
-            1)  install_jakoolit ;;
+            1)  install_hyprland ;;
+			2)  install_jakoolit ;;
+			3)  configure_hyprland ;;
         esac
     done
 
