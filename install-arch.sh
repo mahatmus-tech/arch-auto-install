@@ -33,16 +33,11 @@ error() { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
 info() { echo -e "${BLUE}[i]${NC} $1"; }
 
 show_menu() {
-    install_packages dialog
-    
+        install_packages dialog
     dialog --clear \
-        --title "Arch Auto Installation" \
-        --checklist "Select extra options to install:" 20 60 15 \
+        --title "Arch Installation" \
+        --checklist "Select components to install:" 20 60 15 \
         "${MENU_OPTIONS[@]}" 2>selected
-    
-    if [ ! -s selected ]; then
-        error "No components selected. Exiting"
-    fi  
 }
 
 install_packages() {
