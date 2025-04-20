@@ -128,9 +128,18 @@ install_jakoolit() {
 	JAYKOOLIT_INSTALLED=true
 	status "Installing JaKooLit DotFiles..."
 	INSTALL_DIR=$HOME
-	clone_and_build "https://github.com/JaKooLit/Arch-Hyprland.git" "Arch-Hyprland" \
-					"sudo chmod +x install.sh && ./install.sh" "--depth=1"
+	#clone_and_build "https://github.com/JaKooLit/Arch-Hyprland.git" "Arch-Hyprland" \
+	#				"sudo chmod +x install.sh && ./install.sh" "--depth=1"
 
+    clone_and_build "https://github.com/JaKooLit/Arch-Hyprland.git" "Arch-Hyprland" \
+					"sudo chmod +x install.sh" "--depth=1"
+    
+	# remove nvidia execution
+	sudo sed -i -E "s|execute_script "nvidia.sh"|#execute_script "nvidia.sh"|" "install.sh"
+	sudo sed -i -E "s|execute_script "nvidia_nouveau.sh"|#execute_script "nvidia_nouveau.sh"|" "install.sh"
+	# remove reboot execution
+	sudo sed -i -E "s|systemctl reboot|#systemctl reboot|" "install.sh"
+	./install.sh
 }	 
 
 # ======================
