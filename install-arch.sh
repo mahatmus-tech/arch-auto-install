@@ -236,7 +236,7 @@ install_graphics() {
     case $GPU in
         "nvidia")
 			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
-                            "printf "1\1\N" | eval "makepkg -si --noconfirm""
+                            "printf "1\n1\nN\n" | makepkg -si --noconfirm"
 
             # nvidia.conf
             sudo rm -f /etc/modprobe.d/nvidia.conf
