@@ -82,18 +82,28 @@ show_menu() {
 
 install_packages() {
     status "Installing packages: $*"
-    sudo pacman -S --needed --noconfirm "$@" || {
-        warning "Failed to install some packages. Continuing..."
-        return 1
-    }
+    local pkg
+    for pkg in "$@"; do
+        if ! pacman -Qi "$pkg" &>/dev/null; then
+            sudo pacman -S -qq --needed --noconfirm --noprogressbar "$pkg" 2>/dev/null || {
+                warning "Failed to install $pkg. Continuing..."
+                return 1
+            }
+        fi
+    done
 }
 
 install_aur() {
     status "Installing AUR packages: $*"
-    yay -S --needed --noconfirm "$@" || {
-        warning "Failed to install some AUR packages. Continuing..."
-        return 1
-    }
+    local pkg
+    for pkg in "$@"; do
+        if ! pacman -Qi "$pkg" &>/dev/null; then
+            yay -S -qq --needed --noconfirm --noprogressbar "$pkg" 2>/dev/null || {
+                warning "Failed to install $pkg. Continuing..."
+                return 1
+            }
+        fi
+    done
 }
 
 clone_and_build() {
@@ -118,7 +128,7 @@ clone_and_build() {
 install_hyprland() {
 	status "Installing Hyprland Dependecies..."
  	# Update packages
-	sudo pacman -Syu --needed --noconfirm
+	sudo pacman -Syuq --noconfirm --noprogressbar
 
     status "Building Hyprland..."
 	install_aur hyprland-git
@@ -149,7 +159,7 @@ configure_hyprland() {
 	local CONFIG=""
 	
 	# Upgrade and Synchronize package database
-	sudo pacman -Syu --noconfirm
+	sudo pacman -Syuq --noconfirm --noprogressbar
 	
 	if [ "$JAYKOOLIT_INSTALLED" = true ]; then
 		CONFIG="$HOME/.config/hypr/UserConfigs/WindowRules.conf"

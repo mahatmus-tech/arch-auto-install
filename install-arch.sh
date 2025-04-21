@@ -43,23 +43,33 @@ show_menu() {
 
 install_packages() {
     status "Installing packages: $*"
-    sudo pacman -S --needed --noconfirm "$@" || {
-        warning "Failed to install some packages. Continuing..."
-        return 1
-    }
+    local pkg
+    for pkg in "$@"; do
+        if ! pacman -Qi "$pkg" &>/dev/null; then
+            sudo pacman -S -qq --needed --noconfirm --noprogressbar "$pkg" 2>/dev/null || {
+                warning "Failed to install $pkg. Continuing..."
+                return 1
+            }
+        fi
+    done
 }
 
 install_aur() {
-    status "Installing packages: $*"
-    yay -S --needed --noconfirm "$@" || {
-        warning "Failed to install some packages. Continuing..."
-        return 1
-    }
+    status "Installing AUR packages: $*"
+    local pkg
+    for pkg in "$@"; do
+        if ! pacman -Qi "$pkg" &>/dev/null; then
+            yay -S -qq --needed --noconfirm --noprogressbar "$pkg" 2>/dev/null || {
+                warning "Failed to install $pkg. Continuing..."
+                return 1
+            }
+        fi
+    done
 }
 
 install_packages_asdeps() {
     status "Installing packages: $*"
-    sudo pacman -S --needed --noconfirm --asdeps "$@" || {
+    sudo pacman -S -q --needed --noconfirm --noprogressbar --asdeps "$@" || {
         warning "Failed to install some packages. Continuing..."
         return 1
     }
@@ -152,7 +162,7 @@ install_base_system() {
     sudo sed -i 's/^#ILoveCandy/ILoveCandy/' /etc/pacman.conf
     
     # Update packages
-    sudo pacman -Syu --noconfirm
+    sudo pacman -Syuq --noconfirm --noprogressbar
     # Base packages
     install_packages git base-devel curl python wget meson systemd dbus libinih
     # scheaduler
@@ -367,7 +377,7 @@ configure_system() {
     status "Configuring system..."
     
     # Upgrade and Synchronize packages
-    sudo pacman -Syu --noconfirm
+    sudo pacman -Syuq --noconfirm --noprogressbar
     
     # Add user to all required groups
     sudo usermod -aG wheel,video,input,audio,network,lp,storage,users,rfkill,sys "$USER"
