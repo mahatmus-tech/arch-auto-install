@@ -172,6 +172,8 @@ install_tkg_kernel() {
     status "Cloning linux-tkg kernel..."
     clone_and_build "https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
                     "makepkg -si"
+    # create a .conf in /boot/loader/entries
+    # sudo bootctl set-default linux-bore.conf
 }
 
 install_firmware() {
