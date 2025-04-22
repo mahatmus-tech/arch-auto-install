@@ -78,7 +78,7 @@ install_packages_asdeps() {
 clone_and_build() {
     local repo_url=$1
     local dir_name=$2
-    local build_cmd=${3:-"makepkg -si --noconfirm"}
+    local build_cmd=${3:-"makepkg -si --needed --noconfirm --noprogressbar"}
     
     status "Building $dir_name from source..."
     sudo rm -rf "$INSTALL_DIR/$dir_name"
@@ -248,7 +248,7 @@ install_graphics() {
     case $GPU in
         "nvidia")
 			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
-                            "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --noconfirm"
+                            "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm --noprogressbar"
 
             # nvidia.conf
             sudo rm -f /etc/modprobe.d/nvidia.conf

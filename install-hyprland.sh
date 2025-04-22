@@ -109,7 +109,7 @@ install_aur() {
 clone_and_build() {
     local repo_url=$1
     local dir_name=$2
-    local build_cmd=${3:-"makepkg -si --noconfirm"}
+    local build_cmd=${3:-"makepkg -si --needed --noconfirm --noprogressbar"}
     local clone_flags=$4  # No default
 
     status "Building $dir_name from source..."
