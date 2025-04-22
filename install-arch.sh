@@ -11,41 +11,56 @@ INSTALL_DIR="$HOME/Apps"
 # Color output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
+YELLOW='\033[0;33m'
+YELLOW_W='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Menu configuration
-MENU_OPTIONS=(
-    1  "GPU Drivers"            on
-    2  "Firewall UFW"           on
-    3  "Bluetooth Drivers"      on
-    4  "Gaming Apps"            on
-    5  "Recommended Apps"       on
-    6  "Build Linux TKG Kernel" off
+# Initialize the options array for whiptail checklist
+options_command=(
+    whiptail --title "Select Options" --checklist "Choose options to install or configure\nNOTE: 'SPACEBAR' to select & 'TAB' key to change selection" 14 68 6
+)
+
+# Add the remaining static options
+options_command+=(
+    "gpu"        "> Install GPU Drivers"              "ON"
+    "firewall"   "> Install UFW Firewall"             "ON"
+    "bluetooth"  "> Install Bluetooth Drivers"        "ON"
+    "gaming"     "> Install Gaming Apps & Settings"   "ON"
+    "apps"       "> Install Recommended Apps"         "ON"
+    "tkg"        "> Install TKG Kernel(! LONG TIME)"  "ON"
 )
 
 # ======================
 # INSTALLATION FUNCTIONS
 # ======================
-status() { echo -e "${GREEN}[+]${NC} $1"; }
-warning() { echo -e "${YELLOW}[!]${NC} $1"; }
+status() { echo -e "${GREEN}[+]${YELLOW} $1${NC}"; }
+status_step() { echo -e "${GREEN}    >${NC} $1"; }
+warning() { echo -e "${YELLOW_W}[!]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
 info() { echo -e "${BLUE}[i]${NC} $1"; }
 
-show_menu() {
-	install_packages dialog
-    dialog --clear \
-        --title "Arch Installation" \
-        --checklist "Select components to install:" 20 60 15 \
-        "${MENU_OPTIONS[@]}" 2>selected
+sudo_cache() {
+    status "Caching Sudo Password"
+    # Prompt once for sudo password
+    if sudo -v; then
+    # Keep the sudo session alive in the background
+    while true; do
+        sleep 60
+        sudo -n true
+        kill -0 "$$" || exit
+    done 2>/dev/null &
+    else
+    echo "Sudo authentication failed"
+    exit 1
+    fi    
 }
 
-install_packages() {
-    status "Installing packages: $*"
+install_packages() {    
     local pkg
     for pkg in "$@"; do
         if ! pacman -Qi "$pkg" &>/dev/null; then
+            status_step "$pkg"
             sudo pacman -S -qq --needed --noconfirm --noprogressbar "$pkg" 2>/dev/null || {
                 warning "Failed to install $pkg. Continuing..."
                 return 1
@@ -55,10 +70,10 @@ install_packages() {
 }
 
 install_aur() {
-    status "Installing AUR packages: $*"
     local pkg
     for pkg in "$@"; do
-        if ! pacman -Qi "$pkg" &>/dev/null; then
+        if ! yay -Qi "$pkg" &>/dev/null; then
+            status_step "$pkg"
             yay -S -qq --needed --noconfirm --noprogressbar "$pkg" 2>/dev/null || {
                 warning "Failed to install $pkg. Continuing..."
                 return 1
@@ -67,27 +82,62 @@ install_aur() {
     done
 }
 
-install_packages_asdeps() {
-    status "Installing packages: $*"
-    sudo pacman -S -q --needed --noconfirm --noprogressbar --asdeps "$@" || {
-        warning "Failed to install some packages. Continuing..."
-        return 1
-    }
+install_packages_asdeps() {    
+    local pkg
+    for pkg in "$@"; do
+        if ! pacman -Qi "$pkg" &>/dev/null; then
+            status_step "$pkg"
+            sudo pacman -S -qq --needed --noconfirm --noprogressbar --asdeps "$pkg" 2>/dev/null || {
+                warning "Failed to install $pkg. Continuing..."
+                return 1
+            }
+        fi
+    done
 }
 
 clone_and_build() {
     local repo_url=$1
     local dir_name=$2
     local build_cmd=${3:-"makepkg -si --needed --noconfirm --noprogressbar"}
-    
-    status "Building $dir_name from source..."
+
+    status_step "$dir_name"
     sudo rm -rf "$INSTALL_DIR/$dir_name"
-    git clone "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
+    git clone -q "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
     cd "$INSTALL_DIR/$dir_name" || error "Failed to enter $dir_name directory"
     sudo chown -R "$USER" . || error "Failed to change ownership"
     sudo chmod -R 755 . || error "Failed to change permissions"
     eval "$build_cmd" || warning "Failed to build/install $dir_name"
     cd - >/dev/null || error "Failed to return to previous directory"
+}
+
+show_menu() {
+    install_packages libnewt
+    
+    # Capture the selected options before the while loop starts
+    while true; do
+        selected_options=$("${options_command[@]}" 3>&1 1>&2 2>&3)
+
+        # Check if the user pressed Cancel (exit status 1)
+        if [ $? -ne 0 ]; then
+            echo -e "\n"
+            echo "You cancelled the selection. Goodbye!"
+            exit 0  # Exit the script if Cancel is pressed
+        fi
+
+        # If no option was selected, notify and restart the selection
+        if [ -z "$selected_options" ]; then
+            whiptail --title "Warning" --msgbox "No options were selected. Please select at least one option." 10 60
+            continue  # Return to selection if no options selected
+        fi
+
+        # Strip the quotes and trim spaces if necessary (sanitize the input)
+        selected_options=$(echo "$selected_options" | tr -d '"' | tr -s ' ')
+
+        # Convert selected options into an array (preserving spaces in values)
+        IFS=' ' read -r -a options <<< "$selected_options"
+
+        break
+    done
 }
 
 ask_user() {
@@ -434,7 +484,7 @@ configure_system() {
     # Reloads the systemd manager configuration
     # sudo systemctl daemon-reload
     # Regenerate Initramfs
-    sudo mkinitcpio -P
+    sudo mkinitcpio -P >/dev/null
 }
 
 # ======================
@@ -442,20 +492,9 @@ configure_system() {
 # ======================
 main() {
     echo -e "\n${GREEN}🚀 Starting Arch Auto Install ${NC}"
-	
-    sudo -v || error "Failed to get sudo privileges"
-    
-    # Keep-alive: update existing sudo time stamp if set, otherwise do nothing
-    while true; do
-        sudo -n true
-        sleep 60
-        kill -0 "$$" 2>/dev/null || exit
-    done & 2>/dev/null
+	sudo_cache
 
     show_menu
-
-    mapfile -t SELECTIONS < selected
-    rm -f selected
 
     detect_system
     install_base_system
@@ -464,16 +503,31 @@ main() {
     install_compressions
     install_fonts
 
-    for selection in "${SELECTIONS[@]}"; do
-        case $selection in
-            1) install_graphics ;;
-            2) install_ufw_firewall ;;
-            3) install_bluetooth ;;
-            4) install_gaming ;;
-            5) install_recomended_apps ;;
-            6) install_tkg_kernel ;;
+    for option in "${options[@]}"; do
+        case "$option" in
+            gpu)
+                install_graphics
+                ;;
+            firewall)
+                install_ufw_firewall
+                ;;
+            bluetooth)
+                install_bluetooth
+                ;;
+            gaming)
+                install_gaming
+                ;;
+            apps)
+                install_recomended_apps
+                ;;
+            tkg)
+                install_tkg_kernel
+                ;;
+            *)
+                echo "Unknown option: $option"
+                ;;
         esac
-    done
+    done    
 
     configure_system
 

@@ -13,16 +13,90 @@ JAYKOOLIT_INSTALLED=false
 # Color output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
+YELLOW='\033[0;33m'
+YELLOW_W='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-# Menu configuration
-MENU_OPTIONS=(
-	1  "Install Hyprland"          on
-	2  "Install JaKooLit DotFiles" on
-	3  "Configure Hyrpland"        on
+# Initialize the options array for whiptail checklist
+options_command=(
+    whiptail --title "Select Options" --checklist "Choose options to install or configure\nNOTE: 'SPACEBAR' to select & 'TAB' key to change selection" 14 68 6
 )
+
+# Add the remaining static options
+options_command+=(
+    "hyprland"  "> Install Hyprland"           "ON"
+    "jakoolit"  "> Install JaKooLit DotFiles"  "ON"
+    "settings"  "> Install Hyprland Settings"  "ON"
+)
+
+# ======================
+# INSTALLATION FUNCTIONS
+# ======================
+status() { echo -e "${GREEN}[+]${YELLOW} $1${NC}"; }
+status_step() { echo -e "${GREEN}    >${NC} $1"; }
+warning() { echo -e "${YELLOW_W}[!]${NC} $1"; }
+error() { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
+info() { echo -e "${BLUE}[i]${NC} $1"; }
+
+sudo_cache() {
+    status "Caching Sudo Password"
+    # Prompt once for sudo password
+    if sudo -v; then
+    # Keep the sudo session alive in the background
+    while true; do
+        sleep 60
+        sudo -n true
+        kill -0 "$$" || exit
+    done 2>/dev/null &
+    else
+    echo "Sudo authentication failed"
+    exit 1
+    fi    
+}
+
+install_packages() {    
+    local pkg
+    for pkg in "$@"; do
+        if ! pacman -Qi "$pkg" &>/dev/null; then
+            status_step "$pkg"
+            sudo pacman -S -qq --needed --noconfirm --noprogressbar "$pkg" 2>/dev/null || {
+                warning "Failed to install $pkg. Continuing..."
+                return 1
+            }
+        fi
+    done
+}
+
+install_aur() {
+    local pkg
+    for pkg in "$@"; do
+        if ! yay -Qi "$pkg" &>/dev/null; then
+            status_step "$pkg"
+            yay -S -qq --needed --noconfirm --noprogressbar "$pkg" 2>/dev/null || {
+                warning "Failed to install $pkg. Continuing..."
+                return 1
+            }
+        fi
+    done
+}
+
+clone_and_build() {
+    local repo_url=$1
+    local dir_name=$2
+    local build_cmd=${3:-"makepkg -si --needed --noconfirm --noprogressbar"}
+    local clone_flags=$4  # No default
+
+    status "Building $dir_name from source..."
+    sudo rm -rf "$INSTALL_DIR/$dir_name"
+    git clone $clone_flags "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
+    cd "$INSTALL_DIR/$dir_name" || error "Failed to enter $dir_name directory"
+    sudo chown -R "$USER":"$USER" . || error "Failed to change ownership"
+    sudo chmod -R 755 . || error "Failed to change permissions"
+    eval "$build_cmd" || warning "Failed to build/install $dir_name"
+    cd - >/dev/null || error "Failed to return to previous directory"
+}
+
 
 # ======================
 # SYSTEM DETECTION
@@ -62,64 +136,6 @@ detect_system() {
         export CPU="unknown"
         warning "Unknown CPU type"
     fi
-}
-
-# ======================
-# INSTALLATION FUNCTIONS
-# ======================
-status() { echo -e "${GREEN}[+]${NC} $1"; }
-warning() { echo -e "${YELLOW}[!]${NC} $1"; }
-error() { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
-info() { echo -e "${BLUE}[i]${NC} $1"; }
-
-show_menu() {
-	install_packages dialog
-    dialog --clear \
-        --title "Arch Hyprland Installation" \
-        --checklist "Select components to install:" 20 60 15 \
-        "${MENU_OPTIONS[@]}" 2>selected
-}
-
-install_packages() {
-    status "Installing packages: $*"
-    local pkg
-    for pkg in "$@"; do
-        if ! pacman -Qi "$pkg" &>/dev/null; then
-            sudo pacman -S -qq --needed --noconfirm --noprogressbar "$pkg" 2>/dev/null || {
-                warning "Failed to install $pkg. Continuing..."
-                return 1
-            }
-        fi
-    done
-}
-
-install_aur() {
-    status "Installing AUR packages: $*"
-    local pkg
-    for pkg in "$@"; do
-        if ! pacman -Qi "$pkg" &>/dev/null; then
-            yay -S -qq --needed --noconfirm --noprogressbar "$pkg" 2>/dev/null || {
-                warning "Failed to install $pkg. Continuing..."
-                return 1
-            }
-        fi
-    done
-}
-
-clone_and_build() {
-    local repo_url=$1
-    local dir_name=$2
-    local build_cmd=${3:-"makepkg -si --needed --noconfirm --noprogressbar"}
-    local clone_flags=$4  # No default
-
-    status "Building $dir_name from source..."
-    sudo rm -rf "$INSTALL_DIR/$dir_name"
-    git clone $clone_flags "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
-    cd "$INSTALL_DIR/$dir_name" || error "Failed to enter $dir_name directory"
-    sudo chown -R "$USER":"$USER" . || error "Failed to change ownership"
-    sudo chmod -R 755 . || error "Failed to change permissions"
-    eval "$build_cmd" || warning "Failed to build/install $dir_name"
-    cd - >/dev/null || error "Failed to return to previous directory"
 }
 
 # ======================
@@ -240,19 +256,26 @@ configure_hyprland() {
 # ======================
 main() {
 	echo -e "\n${GREEN}🚀 Starting Hyprland Install ${NC}"
+	sudo_cache
 
     show_menu
 
-    mapfile -t SELECTIONS < selected
-    rm -f selected
-
     detect_system
 
-    for selection in "${SELECTIONS[@]}"; do
-        case $selection in
-            1)  install_hyprland ;;
-			2)  install_jakoolit ;;
-			3)  configure_hyprland ;;
+    for option in "${options[@]}"; do
+        case "$option" in
+            hyprland)
+                install_hyprland
+                ;;
+            jakoolit)
+                install_jakoolit
+                ;;
+            settings)
+                configure_hyprland
+                ;;
+            *)
+                echo "Unknown option: $option"
+                ;;
         esac
     done
 	
