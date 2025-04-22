@@ -416,7 +416,10 @@ install_tkg_kernel() {
     clone_and_build "https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
                     "makepkg -si"
     # create a .conf in /boot/loader/entries
-    # sudo bootctl set-default linux-bore.conf
+    safe_download /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/linux-tkg.conf
+    local root_partuuid=$(blkid -s PARTUUID -o value "$(findmnt -no SOURCE /)")
+    sudo sed -i -E "s|PATITION_ID|$root_partuuid|" /boot/loader/entries/linux-tkg.conf
+    sudo bootctl set-default linux-tkg.conf
 }
 
 # ======================
