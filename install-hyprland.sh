@@ -89,7 +89,7 @@ clone_and_build() {
 
     status "Building $dir_name from source..."
     sudo rm -rf "$INSTALL_DIR/$dir_name"
-    git clone $clone_flags "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
+	git clone "$clone_flags" "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
     cd "$INSTALL_DIR/$dir_name" || error "Failed to enter $dir_name directory"
     sudo chown -R "$USER":"$USER" . || error "Failed to change ownership"
     sudo chmod -R 755 . || error "Failed to change permissions"
@@ -97,12 +97,42 @@ clone_and_build() {
     cd - >/dev/null || error "Failed to return to previous directory"
 }
 
+show_menu() {
+    install_packages libnewt
+    
+    # Capture the selected options before the while loop starts
+    while true; do
+        selected_options=$("${options_command[@]}" 3>&1 1>&2 2>&3)
+
+        # Check if the user pressed Cancel (exit status 1)
+        if [ $? -ne 0 ]; then
+            echo -e "\n"
+            echo "You cancelled the selection. Goodbye!"
+            exit 0  # Exit the script if Cancel is pressed
+        fi
+
+        # If no option was selected, notify and restart the selection
+        if [ -z "$selected_options" ]; then
+            whiptail --title "Warning" --msgbox "No options were selected. Please select at least one option." 10 60
+            continue  # Return to selection if no options selected
+        fi
+
+        # Strip the quotes and trim spaces if necessary (sanitize the input)
+        selected_options=$(echo "$selected_options" | tr -d '"' | tr -s ' ')
+
+        # Convert selected options into an array (preserving spaces in values)
+        IFS=' ' read -r -a options <<< "$selected_options"
+
+        break
+    done
+}
+
 
 # ======================
 # SYSTEM DETECTION
 # ======================
 detect_system() {
-    status "Detecting system hardware..."
+    status "Detecting System Hardware..."
     
     if [ -d /run/systemd/system ]; then
         info "System is using systemd"
@@ -142,25 +172,22 @@ detect_system() {
 # INSTALLATION SECTIONS
 # ======================
 install_hyprland() {
-	status "Installing Hyprland Dependecies..."
+	status "Installing Hyprland..."
+
  	# Update packages
 	yay -Syuq --needed --noconfirm --noprogressbar >/dev/null
 
-    status "Building Hyprland..."
 	install_aur hyprland-git
 }
 
 install_jakoolit() {
-	JAYKOOLIT_INSTALLED=true
 	status "Installing JaKooLit DotFiles..."
+
+	JAYKOOLIT_INSTALLED=true
 	INSTALL_DIR=$HOME
-	#clone_and_build "https://github.com/JaKooLit/Arch-Hyprland.git" "Arch-Hyprland" \
-	#				"sudo chmod +x install.sh && ./install.sh" "--depth=1"
 
     clone_and_build "https://github.com/JaKooLit/Arch-Hyprland.git" "Arch-Hyprland" \
 					"sudo chmod +x install.sh" "--depth=1"
-
-    # remove conflictin execution in the script
 	
 	# remove nvidia execution
 	sudo sed -i -E "s|execute_script "nvidia.sh"|#execute_script "nvidia.sh"|" "install.sh"
@@ -171,15 +198,14 @@ install_jakoolit() {
 }	 
 
 configure_hyprland() {
-    status "Configuring Hyprland..."
+    status "Installing Hyprland Settings..."
 	local CONFIG=""
 	
-	# Upgrade and Synchronize package database
-	yay -Syuq --needed --noconfirm --noprogressbar >/dev/null
-	
 	if [ "$JAYKOOLIT_INSTALLED" = true ]; then
+	    status_step "WindowRules"
 		CONFIG="$HOME/.config/hypr/UserConfigs/WindowRules.conf"
-		echo "# my settings" >> "$CONFIG"
+		echo -e "\n# -----------\n# My Settings\n# -----------\n" >> "$CONFIG"
+
 		echo "windowrulev2 = content game, tag:games*" >> "$CONFIG"
 		echo "windowrulev2 = nodim, tag:games*" >> "$CONFIG"
 		echo "windowrulev2 = noanim, tag:games*" >> "$CONFIG"
@@ -189,15 +215,16 @@ configure_hyprland() {
 		echo "windowrulev2 = allowsinput, tag:games*" >> "$CONFIG"
 		echo "windowrulev2 = immediate, tag:games*" >> "$CONFIG"
 		
+		status_step "UserSettings"
 		CONFIG="$HOME/.config/hypr/UserConfigs/UserSettings.conf"
 		sudo sed -i -E "s|#accel_profile =|accel_profile = flat|" "$CONFIG"
 		sudo sed -i -E "s|direct_scanout = 0|direct_scanout = 2|" "$CONFIG"
-
-		CONFIG="$HOME/.zprofile"
-  		sudo sed -i -E "s/#/ /g" "$CONFIG"
-
+		
 		if [ "$GPU" = "nvidia" ]; then
+			status_step "ENVariables (Nvidia)"
 			CONFIG="$HOME/.config/hypr/UserConfigs/ENVariables.conf"
+			echo -e "\n# -----------\n# My Settings\n# -----------\n" >> "$CONFIG"
+			
 			# Force GBM as a backend
 			echo "# my settings" >> "$CONFIG"
 			echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
@@ -206,6 +233,10 @@ configure_hyprland() {
 			# Hardware acceleration on NVIDIA GPUs
 			echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG" 
 		fi
+		
+        # Fix SDDM Bug
+		CONFIG="$HOME/.zprofile"
+  		sudo sed -i -E "s/#/ /g" "$CONFIG"		
 
 		# Correct SDDM login stuck bug 
 		#local card_code=$(lspci -nn | grep -E "RTX|GTX" | awk '{print $1}')
@@ -214,12 +245,12 @@ configure_hyprland() {
  	else
 		# Path to Hyprland config file
 		CONFIG="$HOME/.config/hypr/hyprland.conf"
-		
-		# Startup - wayland
-		echo "\n# My Settings" >> "$CONFIG"
+		echo -e "\n# -----------\n# My Settings\n# -----------\n" >> "$CONFIG"
+
+		status_step "Startups"
+		# Startup - wayland		
 		echo "exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP" >> "$CONFIG"
 		echo "exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP" >> "$CONFIG"
-
         # Startup - Apss
 		echo "exec-once = waybar" >> "$CONFIG"
 		echo "exec-once = swaync" >> "$CONFIG"
@@ -228,8 +259,8 @@ configure_hyprland() {
 		echo "exec-once = wl-paste --type image --watch cliphist store" >> "$CONFIG"		
 		echo "exec-once = hypridle" >> "$CONFIG"
 
-		# Environment variables
 		if [ "$GPU" = "nvidia" ]; then
+            status_step "ENVariables (Nvidia)"		
 		    # Force GBM as a backend
 			echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
 			echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
@@ -237,7 +268,8 @@ configure_hyprland() {
 			echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG"		
 		fi
 
-		# game tags
+        status_step "WindowRules"
+		# gaming rules
 		echo "windowrulev2 = tag +games, class:^(gamescope)$" >> "$CONFIG"
 		echo "windowrulev2 = tag +games, class:^(steam_app_\d+)$" >> "$CONFIG"
 		echo "windowrulev2 = content game, tag:games*" >> "$CONFIG"

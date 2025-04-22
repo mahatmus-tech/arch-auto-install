@@ -164,7 +164,7 @@ safe_download() {
 # SYSTEM DETECTION
 # ======================
 detect_system() {
-    status "Detecting system hardware..."
+    status "Detecting System Hardware..."
     
     if [ -d /run/systemd/system ]; then
         info "System is using systemd"
@@ -204,16 +204,14 @@ detect_system() {
 # INSTALLATION SECTIONS
 # ======================
 install_base_system() {
-    status "Updating system and installing base packages..."
-    
-    status "Changing pacman settings..."
-    sudo sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
-    sudo sed -i 's/^#VerbosePkgLists/VerbosePkgLists/' /etc/pacman.conf
-    sudo sed -i 's/^#ILoveCandy/ILoveCandy/' /etc/pacman.conf
-    
+    status "Installing Base Requirements..."
     # Update packages
     sudo pacman -Syuq --needed --noconfirm --noprogressbar >/dev/null
 
+    status_step "Pacman Settings"
+    sudo sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
+    sudo sed -i 's/^#VerbosePkgLists/VerbosePkgLists/' /etc/pacman.conf
+    sudo sed -i 's/^#ILoveCandy/ILoveCandy/' /etc/pacman.conf
 
     # Base packages
     install_packages git base-devel curl python wget meson systemd dbus libinih
@@ -226,20 +224,12 @@ install_base_system() {
     
     clone_and_build "https://aur.archlinux.org/yay.git" "yay"
 
-    # Create user directories
+    status_step "Default Directories"
     mkdir -p "$HOME"/{Downloads,Documents,Pictures,Projects,.config,Apps,Scripts}
 }
 
-install_tkg_kernel() {
-    status "Cloning linux-tkg kernel..."
-    clone_and_build "https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
-                    "makepkg -si"
-    # create a .conf in /boot/loader/entries
-    # sudo bootctl set-default linux-bore.conf
-}
-
 install_firmware() {
-    status "Installing firmware packages..."
+    status "Installing Firmwares..."
 
     install_packages linux-headers
 
@@ -248,15 +238,8 @@ install_firmware() {
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
 }
 
-install_ufw_firewall() {
-    status "Installing firewall..."
-    install_packages ufw
-    sudo systemctl enable --now ufw.service
-    sudo ufw enable
-}
-
 install_multimedia() {
-    status "Installing multimedia support..."
+    status "Installing Multimedia Support..."
     install_packages \
         ffmpeg gstreamer gstreamer-vaapi gst-libav \
 		gst-plugins-bad gst-plugins-good gst-plugins-ugly \
@@ -264,14 +247,8 @@ install_multimedia() {
         x264 x265 libvpx dav1d aom ffmpegthumbs
 }
 
-install_bluetooth() {
-    status "Installing bluetooth support..."
-    install_packages \
-		bluez bluez-plugins	bluez-utils	bluez-hid2hci bluez-libs
-}
-
 install_compressions() {
-    status "Installing compressions support..."
+    status "Installing Compressions Support..."
     install_packages \
         zip unzip p7zip gzip bzip2 xz \
         unrar lrzip zstd lzip lzop arj \
@@ -279,7 +256,7 @@ install_compressions() {
 }
 
 install_fonts() {
-    status "Installing fonts support..."
+    status "Installing Fonts..."
     install_packages \
 		ttf-droid ttf-fantasque-nerd ttf-fira-code \
 		ttf-jetbrains-mono ttf-jetbrains-mono-nerd \
@@ -287,10 +264,23 @@ install_fonts() {
 		noto-fonts-emoji otf-font-awesome
 }
 
-install_graphics() {
-    status "Installing graphics support..."
+install_ufw_firewall() {
+    status "Installing UFW Firewall..."
+    install_packages ufw
 
-    # Input & GPU Acceleration - generic
+    status_step "UFW Serice"
+    sudo systemctl enable --now ufw.service
+    sudo ufw enable
+}
+
+install_bluetooth() {
+    status "Installing Bluetooth Support..."
+    install_packages \
+		bluez bluez-plugins	bluez-utils	bluez-hid2hci bluez-libs
+}
+
+install_graphics() {
+    status "Installing GPU Acceleration..."
     install_packages \
 		libglvnd mesa lib32-mesa libva lib32-libva \
 		libvdpau lib32-libvdpau libvdpau-va-gl \
@@ -299,31 +289,28 @@ install_graphics() {
     # GPU-specific packages
     case $GPU in
         "nvidia")
+            status "Installing Nvidia Graphic Drivers..."
 			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
                             "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm --noprogressbar"
 
-            # nvidia.conf
+            status_step "nvidia.conf"
             sudo rm -f /etc/modprobe.d/nvidia.conf
             safe_download /etc/modprobe.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/nvidia.conf
-            # nvidia.rules
+
+            status_step "nvidia.rules"
             sudo rm -f /etc/udev/rules.d/89-nvidia-pm.rules
             safe_download /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules	 
-            # mkinitcpio.conf
-            sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
 
-            # Old cards 
-            # install_packages nvidia-dkms 
-            # Turing or newer hardware only
-            # install_packages nvidia-open-dkms
-            #install_packages \
-            #   nvidia-utils nvidia-settings nvidia-prime \
-	        # lib32-nvidia-utils opencl-nvidia libva-nvidia-driver
+            status_step "mkinitcpio.conf"
+            sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
             ;;
         "amd")
+            status "Installing AMD Graphic Drivers..."
 			install_packages \
 				xf86-video-amdgpu vulkan-radeon lib32-vulkan-radeon
             ;;
         "intel")
+            status "Installing AMD Graphic Drivers..."
 			install_packages \
 			    vulkan-intel lib32-vulkan-intel libva-intel-driver \
 			    intel-media-sdk intel-media-driver intel-gmmlib
@@ -338,14 +325,26 @@ install_graphics() {
 }
 
 install_gaming() {
-    status "Installing gaming support..."
+    status "Installing Gaming Apps..."
     install_packages \
         steam goverlay gamescope gamemode \
         lib32-gamemode mangohud lib32-mangohud
 
-    install_aur proton-ge-custom-bin    
+    install_aur proton-ge-custom-bin
 
-    # Download gamemode.ini
+    # Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
+    install_packages wine-staging
+    install_packages_asdeps \
+        giflib lib32-giflib gnutls lib32-gnutls v4l-utils \
+        lib32-v4l-utils libpulse lib32-libpulse alsa-plugins \
+        lib32-alsa-plugins alsa-lib lib32-alsa-lib sqlite lib32-sqlite \
+        libxcomposite lib32-libxcomposite ocl-icd lib32-ocl-icd libva \
+        lib32-libva gtk3 lib32-gtk3 gst-plugins-base-libs \
+        lib32-gst-plugins-base-libs vulkan-icd-loader \
+        lib32-vulkan-icd-loader sdl2-compat lib32-sdl2-compat    
+
+    status "Installing Gaming Settings..."
+    status_step "gamemode.ini"
     sudo rm -f /etc/gamemode.ini
     safe_download /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
 
@@ -358,25 +357,17 @@ install_gaming() {
             sudo sed -i 's/;enable_amd_pstate=1/enable_amd_pstate=1/' /etc/gamemode.ini
         fi
     fi
+
+    status_step "Gamemode Service"
     systemctl --user enable --now gamemoded.service
     sudo usermod -aG gamemode "$USER"
 
-    # Download Mangohud.conf
+    status_step "Mangohud.conf"
     sudo rm -f "$HOME/.config/MangoHud/MangoHud.conf"
     safe_download "$HOME"/.config/MangoHud https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/MangoHud.conf
     
-    # Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
-    install_packages wine-staging
-    install_packages_asdeps \
-        giflib lib32-giflib gnutls lib32-gnutls v4l-utils \
-        lib32-v4l-utils libpulse lib32-libpulse alsa-plugins \
-        lib32-alsa-plugins alsa-lib lib32-alsa-lib sqlite lib32-sqlite \
-        libxcomposite lib32-libxcomposite ocl-icd lib32-ocl-icd libva \
-        lib32-libva gtk3 lib32-gtk3 gst-plugins-base-libs \
-        lib32-gst-plugins-base-libs vulkan-icd-loader \
-        lib32-vulkan-icd-loader sdl2-compat lib32-sdl2-compat
     
-    status "Installing controller support..."
+    status "Installing Controller Support..."
     if ask_user "Do you want to install xpadneo? - It Improves Xbox gamepad support:"; then
         install_aur xpadneo-dkms-git
     fi
@@ -422,26 +413,31 @@ install_recomended_apps() {
     install_packages swww
 }
 
+install_tkg_kernel() {
+    status "Installing Linux-Tkg Kernel..."
+    clone_and_build "https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
+                    "makepkg -si"
+    # create a .conf in /boot/loader/entries
+    # sudo bootctl set-default linux-bore.conf
+}
+
 # ======================
 # POST-INSTALL
 # ======================
 configure_system() {
     status "Configuring system..."
     
-    # Upgrade and Synchronize packages
-    sudo pacman -Syuq --needed --noconfirm --noprogressbar >/dev/null
-    
-    # Add user to all required groups
+    status_step "Add user to all required groups"
     sudo usermod -aG wheel,video,input,audio,network,lp,storage,users,rfkill,sys "$USER"
     
-    # Download scx using LAVD
+    status_step "Set SCX = LAVD"
     sudo rm -f /etc/default/scx
     safe_download /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
     # Download optimal kernel.conf
     safe_download /usr/lib/sysctl.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf
     sudo sysctl --system
 
-    #status "Setting fstrim ..."
+
     # Get root filesystem type
     local root_fs_type=$(findmnt -n -o FSTYPE /)
     # Get the base device name (strip /dev/ and partition suffix)
@@ -463,9 +459,8 @@ configure_system() {
     #    sudo systemctl enable --now fstrim.timer
     #fi
     
-    status "Improving SSD journal performance..."
     if [[ "$is_ssd_or_nvme" == "true" ]]; then
-        status "Setting ext4 root partition performance..."    
+        status_step "Improving EXT4 Journal Performance"
         # set async journal
         sudo tune2fs -E mount_opts=journal_async_commit $(findmnt -n -o SOURCE /)
         sudo tune2fs -o journal_data_writeback $(findmnt -n -o SOURCE /)
@@ -483,7 +478,7 @@ configure_system() {
     
     # Reloads the systemd manager configuration
     # sudo systemctl daemon-reload
-    # Regenerate Initramfs
+    status_step "Regenerate Initramfs"
     sudo mkinitcpio -P >/dev/null
 }
 
