@@ -166,10 +166,8 @@ safe_download() {
 detect_system() {
     status "Detecting System Hardware..."
     
-    if [ -d /run/systemd/system ]; then
-        info "System is using systemd"
-    else
-        error "This script is only compatible with Systemd-Boot!"
+    if ! [ -d /run/systemd/system ]; then
+        error "This script is only compatible with Systemd-Boot"
     fi
 
     # GPU Detection
@@ -452,14 +450,7 @@ configure_system() {
         fi
     fi
     
-    # Filesystems known to support TRIM
-    #if [[ "$is_ssd_or_nvme" == "true" && \
-    #      "$root_fs_type" =~ ^(ext3|ext4|btrfs|f2fs|xfs|vfat|exfat|jfs|nilfs2|ntfs-3g)$ ]]; then
-    #    status "Filesystem '$root_fs_type' supports TRIM. Enabling fstrim.timer..."
-    #    sudo systemctl enable --now fstrim.timer
-    #fi
-    
-    if [[ "$is_ssd_or_nvme" == "true" ]]; then
+    if [[ "$is_ssd_or_nvme" == "true" && "$root_fs_type" == "ext4" ]]; then
         status_step "Improving EXT4 Journal Performance"
         # set async journal
         sudo tune2fs -E mount_opts=journal_async_commit $(findmnt -n -o SOURCE /)

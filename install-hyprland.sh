@@ -134,10 +134,8 @@ show_menu() {
 detect_system() {
     status "Detecting System Hardware..."
     
-    if [ -d /run/systemd/system ]; then
-        info "System is using systemd"
-    else
-        error "This script is only compatible with Systemd-Boot!"
+    if [ ! -d /run/systemd/system ]; then
+        error "This script is only compatible with Systemd-Boot"
     fi
 
     # GPU Detection
