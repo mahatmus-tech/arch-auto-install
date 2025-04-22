@@ -128,7 +128,7 @@ clone_and_build() {
 install_hyprland() {
 	status "Installing Hyprland Dependecies..."
  	# Update packages
-	sudo pacman -Syuq --noconfirm --noprogressbar
+	yay -Syuq --needed --noconfirm --noprogressbar >/dev/null
 
     status "Building Hyprland..."
 	install_aur hyprland-git
@@ -159,7 +159,7 @@ configure_hyprland() {
 	local CONFIG=""
 	
 	# Upgrade and Synchronize package database
-	sudo pacman -Syuq --noconfirm --noprogressbar
+	yay -Syuq --needed --noconfirm --noprogressbar >/dev/null
 	
 	if [ "$JAYKOOLIT_INSTALLED" = true ]; then
 		CONFIG="$HOME/.config/hypr/UserConfigs/WindowRules.conf"
@@ -200,7 +200,7 @@ configure_hyprland() {
 		CONFIG="$HOME/.config/hypr/hyprland.conf"
 		
 		# Startup - wayland
-		echo "# my settings" >> "$CONFIG"
+		echo "\n# My Settings" >> "$CONFIG"
 		echo "exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP" >> "$CONFIG"
 		echo "exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP" >> "$CONFIG"
 

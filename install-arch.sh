@@ -162,7 +162,9 @@ install_base_system() {
     sudo sed -i 's/^#ILoveCandy/ILoveCandy/' /etc/pacman.conf
     
     # Update packages
-    sudo pacman -Syuq --noconfirm --noprogressbar
+    sudo pacman -Syuq --needed --noconfirm --noprogressbar >/dev/null
+
+
     # Base packages
     install_packages git base-devel curl python wget meson systemd dbus libinih
     # scheaduler
@@ -377,7 +379,7 @@ configure_system() {
     status "Configuring system..."
     
     # Upgrade and Synchronize packages
-    sudo pacman -Syuq --noconfirm --noprogressbar
+    sudo pacman -Syuq --needed --noconfirm --noprogressbar >/dev/null
     
     # Add user to all required groups
     sudo usermod -aG wheel,video,input,audio,network,lp,storage,users,rfkill,sys "$USER"
