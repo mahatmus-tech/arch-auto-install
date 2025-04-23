@@ -188,10 +188,10 @@ install_jakoolit() {
 					"sudo chmod +x install.sh" "--depth=1"
 	
 	# remove nvidia execution
-	sudo sed -i -E "s|execute_script "nvidia.sh"|#execute_script "nvidia.sh"|" "install.sh"
-	sudo sed -i -E "s|execute_script "nvidia_nouveau.sh"|#execute_script "nvidia_nouveau.sh"|" "install.sh"
+	sudo sed -i -E "s|execute_script "nvidia.sh"|#execute_script "nvidia.sh"|" install.sh
+	sudo sed -i -E "s|execute_script "nvidia_nouveau.sh"|#execute_script "nvidia_nouveau.sh"|" install.sh
 	# remove reboot execution
-	sudo sed -i -E "s|systemctl reboot|#systemctl reboot|" "install.sh"
+	sudo sed -i -E "s|systemctl reboot|#systemctl reboot|" install.sh
 	./install.sh
 }	 
 
