@@ -134,8 +134,8 @@ show_menu() {
 detect_system() {
     status "Detecting System Hardware..."
     
-    if [ ! -d /run/systemd/system ]; then
-        error "This script is only compatible with Systemd-Boot"
+    if [ -d "$HOME/Arch-Hyprland" ]; then
+        JAYKOOLIT_INSTALLED=true
     fi
 
     # GPU Detection
