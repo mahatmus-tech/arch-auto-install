@@ -224,7 +224,6 @@ configure_hyprland() {
 			echo -e "\n# -----------\n# My Settings\n# -----------\n" >> "$CONFIG"
 			
 			# Force GBM as a backend
-			echo "# my settings" >> "$CONFIG"
 			echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
 			echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
 
