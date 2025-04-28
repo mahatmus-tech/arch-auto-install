@@ -233,7 +233,7 @@ configure_hyprland() {
 		
         # Fix SDDM Bug
 		CONFIG="$HOME/.zprofile"
-  		sudo sed -i -E "s/#/ /g" "$CONFIG"		
+  		sudo sed -i -E "s/#/ /g" "$CONFIG"
 
 		# Correct SDDM login stuck bug 
 		#local card_code=$(lspci -nn | grep -E "RTX|GTX" | awk '{print $1}')
