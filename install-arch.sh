@@ -283,7 +283,7 @@ install_graphics() {
 		libglvnd mesa lib32-mesa libva lib32-libva \
 		libvdpau lib32-libvdpau libvdpau-va-gl \
 		vulkan-icd-loader lib32-vulkan-icd-loader \
-        vulkan-mesa-layers vulkan-tools
+        vulkan-mesa-layers vulkan-tools libva-nvidia-driver
     
     # GPU-specific packages
     case $GPU in
@@ -309,7 +309,7 @@ install_graphics() {
 				xf86-video-amdgpu vulkan-radeon lib32-vulkan-radeon
             ;;
         "intel")
-            status "Installing AMD Graphic Drivers..."
+            status "Installing Intel Graphic Drivers..."
 			install_packages \
 			    vulkan-intel lib32-vulkan-intel libva-intel-driver \
 			    intel-media-sdk intel-media-driver intel-gmmlib
@@ -329,7 +329,7 @@ install_gaming() {
         steam goverlay gamescope gamemode \
         lib32-gamemode mangohud lib32-mangohud
 
-    install_aur proton-ge-custom-bin
+    install_aur protonup-qt
 
     # Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
     install_packages wine-staging
