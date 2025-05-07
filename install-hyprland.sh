@@ -228,7 +228,10 @@ configure_hyprland() {
 			echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
 
 			# Hardware acceleration on NVIDIA GPUs
-			echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG" 
+			echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG"
+
+            # VA-API hardware video acceleration on NVIDIA GPUs
+            echo "env = NVD_BACKEND,direct" >> "$CONFIG"
 		fi
 		
         # Fix SDDM Bug
@@ -258,11 +261,15 @@ configure_hyprland() {
 
 		if [ "$GPU" = "nvidia" ]; then
             status_step "ENVariables (Nvidia)"		
-		    # Force GBM as a backend
+			# Force GBM as a backend
 			echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
 			echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
+
 			# Hardware acceleration on NVIDIA GPUs
-			echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG"		
+			echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG"
+
+            # VA-API hardware video acceleration on NVIDIA GPUs
+            echo "env = NVD_BACKEND,direct" >> "$CONFIG"          
 		fi
 
         status_step "WindowRules"
