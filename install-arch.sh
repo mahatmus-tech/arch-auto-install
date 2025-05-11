@@ -283,14 +283,18 @@ install_graphics() {
 		libglvnd mesa lib32-mesa libva lib32-libva \
 		libvdpau lib32-libvdpau libvdpau-va-gl \
 		vulkan-icd-loader lib32-vulkan-icd-loader \
-        vulkan-mesa-layers vulkan-tools libva-nvidia-driver
+        vulkan-mesa-layers vulkan-tools
     
     # GPU-specific packages
     case $GPU in
         "nvidia")
             status "Installing Nvidia Graphic Drivers..."
-			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
-                            "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm --noprogressbar"
+			#clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
+            #                "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm --noprogressbar"
+
+            install_packages \
+                nvidia-open-dkms lib32-nvidia-utils lib32-opencl-nvidia \
+                nvidia-settings opencl-nvidia nvidia-utils libva-nvidia-driver
 
             status_step "nvidia.conf"
             sudo rm -f /etc/modprobe.d/nvidia.conf
@@ -320,7 +324,7 @@ install_graphics() {
     install_packages \
         wayland wayland-protocols wayland-utils \
 		lib32-wayland xorg-xwayland libinput \
-		egl-wayland qt5-wayland qt6-wayland    
+		egl-wayland qt5-wayland qt6-wayland
 }
 
 install_gaming() {
@@ -332,15 +336,15 @@ install_gaming() {
     install_aur protonup-qt
 
     # Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
-    install_packages wine-staging
-    install_packages_asdeps \
-        giflib lib32-giflib gnutls lib32-gnutls v4l-utils \
-        lib32-v4l-utils libpulse lib32-libpulse alsa-plugins \
-        lib32-alsa-plugins alsa-lib lib32-alsa-lib sqlite lib32-sqlite \
-        libxcomposite lib32-libxcomposite ocl-icd lib32-ocl-icd libva \
-        lib32-libva gtk3 lib32-gtk3 gst-plugins-base-libs \
-        lib32-gst-plugins-base-libs vulkan-icd-loader \
-        lib32-vulkan-icd-loader sdl2-compat lib32-sdl2-compat    
+    #install_packages wine-staging
+    #install_packages_asdeps \
+    #    giflib lib32-giflib gnutls lib32-gnutls v4l-utils \
+    #    lib32-v4l-utils libpulse lib32-libpulse alsa-plugins \
+    #    lib32-alsa-plugins alsa-lib lib32-alsa-lib sqlite lib32-sqlite \
+    #    libxcomposite lib32-libxcomposite ocl-icd lib32-ocl-icd libva \
+    #    lib32-libva gtk3 lib32-gtk3 gst-plugins-base-libs \
+    #    lib32-gst-plugins-base-libs vulkan-icd-loader \
+    #    lib32-vulkan-icd-loader sdl2-compat lib32-sdl2-compat    
 
     status "Installing Gaming Settings..."
     status_step "gamemode.ini"
