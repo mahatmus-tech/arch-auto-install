@@ -424,6 +424,7 @@ install_tkg_kernel() {
     safe_download /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/linux-tkg.conf
     local root_partuuid=$(blkid -s PARTUUID -o value "$(findmnt -no SOURCE /)")
     sudo sed -i -E "s|PATITION_ID|$root_partuuid|" /boot/loader/entries/linux-tkg.conf
+    sudo sed -i -E "s|PATITION_ID|$root_partuuid|" /boot/loader/entries/linux-tkg-fallback.conf
     sudo bootctl set-default linux-tkg.conf
 
     # Download bore kernel.conf
