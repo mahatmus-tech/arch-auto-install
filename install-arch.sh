@@ -425,6 +425,10 @@ install_tkg_kernel() {
     local root_partuuid=$(blkid -s PARTUUID -o value "$(findmnt -no SOURCE /)")
     sudo sed -i -E "s|PATITION_ID|$root_partuuid|" /boot/loader/entries/linux-tkg.conf
     sudo bootctl set-default linux-tkg.conf
+
+    # Download bore kernel.conf
+    safe_download /usr/lib/sysctl.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/69-bore-scheduler.conf
+    sudo sysctl --system
 }
 
 # ======================
