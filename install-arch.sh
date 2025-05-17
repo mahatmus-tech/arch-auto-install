@@ -361,15 +361,19 @@ install_gaming() {
         fi
     fi
 
-    status_step "Gamemode Service"
+    status_step "Set Gamemode Service"
     systemctl --user enable --now gamemoded.service
     sudo usermod -aG gamemode "$USER"
 
-    status_step "Mangohud.conf"
+    status_step "Set Mangohud.conf"
     sudo rm -f "$HOME/.config/MangoHud/MangoHud.conf"
     safe_download "$HOME"/.config/MangoHud https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/MangoHud.conf
     
-    
+    status_step "Set NTSYNC.conf"
+    sudo rm -f "/usr/lib/modules-load.d/ntsync.conf"
+    safe_download usr/lib/modules-load.d/ https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/ntsync.conf
+
+
     status "Installing Controller Support..."
     if ask_user "Do you want to install xpadneo? - It Improves Xbox gamepad support:"; then
         install_aur xpadneo-dkms-git
@@ -479,6 +483,10 @@ configure_system() {
             error "Failed to remount root partition."
         fi
     fi
+
+    status_step "Set Systemd-Resolved as DNS Resolver"
+    sudo rm -f "/usr/lib/NetworkManager/conf.d/dns.conf"
+    safe_download /usr/lib/NetworkManager/conf.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/dns.conf
     
     # Reloads the systemd manager configuration
     # sudo systemctl daemon-reload
