@@ -278,23 +278,17 @@ install_bluetooth() {
 }
 
 install_graphics() {
-    status "Installing GPU Acceleration..."
-    install_packages \
-		libglvnd mesa lib32-mesa libva lib32-libva \
-		libvdpau lib32-libvdpau libvdpau-va-gl \
-		vulkan-icd-loader lib32-vulkan-icd-loader \
-        vulkan-mesa-layers vulkan-tools
     
     # GPU-specific packages
     case $GPU in
         "nvidia")
             status "Installing Nvidia Graphic Drivers..."
-			#clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
-            #                "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm --noprogressbar"
+			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
+                            "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm --noprogressbar"
 
-            install_packages \
-                nvidia-open-dkms lib32-nvidia-utils lib32-opencl-nvidia \
-                nvidia-settings opencl-nvidia nvidia-utils libva-nvidia-driver
+            #install_packages \
+            #    nvidia-open-dkms lib32-nvidia-utils lib32-opencl-nvidia \
+            #    nvidia-settings opencl-nvidia nvidia-utils libva-nvidia-driver
 
             status_step "nvidia.conf"
             sudo rm -f /etc/modprobe.d/nvidia.conf
@@ -320,11 +314,20 @@ install_graphics() {
             ;;
     esac
 
+    status "Installing GPU Acceleration..."
+    install_packages \
+		libglvnd mesa lib32-mesa libva lib32-libva \
+		libvdpau lib32-libvdpau libvdpau-va-gl \
+		vulkan-icd-loader lib32-vulkan-icd-loader \
+        vulkan-mesa-layers vulkan-tools
+
+    install_aur vk-hdr-layer-kwin6-git
+            
     status "Installing Wayland..."
     install_packages \
         wayland wayland-protocols wayland-utils \
 		lib32-wayland xorg-xwayland libinput \
-		egl-wayland qt5-wayland qt6-wayland
+		egl-wayland qt5-wayland qt6-wayland    
 }
 
 install_gaming() {
