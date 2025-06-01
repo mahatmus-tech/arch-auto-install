@@ -175,7 +175,7 @@ install_hyprland() {
  	# Update packages
 	yay -Syuq --needed --noconfirm --noprogressbar >/dev/null
 
-	install_aur hyprland-git
+	install_packages hyprland
 }
 
 install_jakoolit() {
