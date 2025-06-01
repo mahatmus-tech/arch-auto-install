@@ -436,13 +436,13 @@ install_tkg_kernel() {
     sudo sed -i -E "s|PATITION_ID|$root_partuuid|" /boot/loader/entries/linux-tkg-fallback.conf
     sudo bootctl set-default linux-tkg.conf
 
-    status_step "Remove Others linux kernel"
-    cd /boot
-    sudo find . -maxdepth 1 -type f ! \( -name '*tkg*' -o -name '*ucode*' \) -exec rm -f {} \;
-    cd /boot/loader/entries
-    sudo find . -maxdepth 1 -type f ! \( -name '*tkg*' \) -exec rm -f {} \;
-    cd /etc/mkinitcpio.d
-    sudo find . -maxdepth 1 -type f ! \( -name '*tkg*' \) -exec rm -f {} \;
+    #status_step "Remove Others linux kernel"
+    #cd /boot
+    #sudo find . -maxdepth 1 -type f ! \( -name '*tkg*' -o -name '*ucode*' \) -exec rm -f {} \;
+    #cd /boot/loader/entries
+    #sudo find . -maxdepth 1 -type f ! \( -name '*tkg*' \) -exec rm -f {} \;
+    #cd /etc/mkinitcpio.d
+    #sudo find . -maxdepth 1 -type f ! \( -name '*tkg*' \) -exec rm -f {} \;
 
     sudo pacman -R linux-headers linux
 
