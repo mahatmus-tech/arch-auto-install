@@ -425,8 +425,8 @@ install_recomended_apps() {
 
 install_tkg_kernel() {
     status "Installing Linux-Tkg Kernel..."
-    #clone_and_build "https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
-    #                "makepkg -si"
+    clone_and_build "https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
+                    "makepkg -si"
     # create a .conf in /boot/loader/entries
     safe_download /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/linux-tkg.conf
     safe_download /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/linux-tkg-fallback.conf
@@ -522,10 +522,10 @@ main() {
 
     detect_system
     install_base_system
-    #install_firmware
-    #install_multimedia
-    #install_compressions
-    #install_fonts
+    install_firmware
+    install_multimedia
+    install_compressions
+    install_fonts
 
     for option in "${options[@]}"; do
         case "$option" in
