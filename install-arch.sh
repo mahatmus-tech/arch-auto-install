@@ -445,10 +445,10 @@ install_tkg_kernel() {
     #cd /etc/mkinitcpio.d
     #sudo find . -maxdepth 1 -type f ! \( -name '*tkg*' \) -exec rm -f {} \;
 
-    sudo pacman -R linux-headers linux
+    #sudo pacman -R linux-headers linux
 
     # Download bore kernel.conf
-    sudo sysctl -w kernel.sched_bore=1
+    #sudo sysctl -w kernel.sched_bore=1
     safe_download /usr/lib/sysctl.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/69-bore-scheduler.conf
     sudo sysctl --system
 }
