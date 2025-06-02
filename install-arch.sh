@@ -355,24 +355,19 @@ install_gaming() {
     status_step "Set Gamemode Service"
     systemctl --user enable --now gamemoded.service
     sudo usermod -aG gamemode "$USER"
-    
-    status_step "Set NTSYNC.conf"
-    sudo rm -f "/usr/lib/modules-load.d/ntsync.conf"
-    safe_download usr/lib/modules-load.d/ https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/ntsync.conf
-
 
     status "Installing Controller Support..."
-    if ask_user "Do you want to install xpadneo? - It Improves Xbox gamepad support:"; then
-        install_aur xpadneo-dkms-git
-    fi
+    #if ask_user "Do you want to install xpadneo? - It Improves Xbox gamepad support:"; then
+    #    install_aur xpadneo-dkms-git
+    #fi
     
-    if ask_user "Do you want to install xone? - It improves Xbox gamepad support with a USB wireless dongle:"; then
-        install_aur xone-dkms-git xone-dongle-firmware
-    fi
+    #if ask_user "Do you want to install xone? - It improves Xbox gamepad support with a USB wireless dongle:"; then
+    #    install_aur xone-dkms-git xone-dongle-firmware
+    #fi
     
-    if ask_user "Do you want to install PS5 controller support?:"; then
+    #if ask_user "Do you want to install PS5 controller support?:"; then
         install_aur dualsensectl-git
-    fi
+    #fi
 }
 
 install_recomended_apps() {
