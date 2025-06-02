@@ -226,12 +226,15 @@ configure_hyprland() {
 			status_step "ENVariables (Nvidia)"
 			CONFIG="$HOME/.config/hypr/UserConfigs/ENVariables.conf"
 			echo -e "\n# -----------\n# My Settings\n# -----------\n" >> "$CONFIG"
-			# Force GBM as a backend
+
+			echo -e "\n# Force GBM as a backend" >> "$CONFIG"
 			echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
 			echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
-			# Hardware acceleration on NVIDIA GPUs
+
+			echo -e "\n# Hardware acceleration on NVIDIA GPUs" >> "$CONFIG"
 			echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG"
-            # VA-API hardware video acceleration on NVIDIA GPUs
+
+            echo -e "\n# VA-API hardware video acceleration on NVIDIA GPUs" >> "$CONFIG"
             echo "env = NVD_BACKEND,direct" >> "$CONFIG"
 		fi
 		
@@ -249,10 +252,12 @@ configure_hyprland() {
 		echo -e "\n# -----------\n# My Settings\n# -----------\n" >> "$CONFIG"
 
 		status_step "Startups"
-		# Startup - wayland		
+
+		echo -e "\n# Startup - wayland" >> "$CONFIG"
 		echo "exec-once = dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP" >> "$CONFIG"
 		echo "exec-once = systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP" >> "$CONFIG"
-        # Startup - Apss
+
+        echo -e "\n# Startup - Apss" >> "$CONFIG"
 		echo "exec-once = waybar" >> "$CONFIG"
 		echo "exec-once = swaync" >> "$CONFIG"
 		echo "exec-once = blueman-applet" >> "$CONFIG"
@@ -262,17 +267,23 @@ configure_hyprland() {
 
 		if [ "$GPU" = "nvidia" ]; then
             status_step "ENVariables (Nvidia)"		
-			# Force GBM as a backend
+			echo -e "\n# Force GBM as a backend" >> "$CONFIG"
 			echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
 			echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
-			# Hardware acceleration on NVIDIA GPUs
+
+			echo -e "\n#  Hardware acceleration on NVIDIA GPUs" >> "$CONFIG"
 			echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG"
-            # VA-API hardware video acceleration on NVIDIA GPUs
+            echo -e "\n#  VA-API hardware video acceleration on NVIDIA GPUs" >> "$CONFIG"
             echo "env = NVD_BACKEND,direct" >> "$CONFIG"          
 		fi
 
-        status_step "WindowRules"
-        echo -e "\n# Gaming" >> "$CONFIG"
+        status_step "WindowRules"        
+
+        echo -e "\n# Game Tags" >> "$CONFIG"
+        echo "windowrule = tag +games, class:^(gamescope)$" >> "$CONFIG"
+        echo "windowrule = tag +games, class:^(steam_app_\d+)$" >> "$CONFIG"
+
+        echo -e "\n# Gaming" >> "$CONFIG"        
         echo "windowrulev2 = nodim, tag:games*" >> "$CONFIG"
         echo "windowrulev2 = noblur, tag:games*" >> "$CONFIG"
         echo "windowrulev2 = noanim, tag:games*" >> "$CONFIG"
