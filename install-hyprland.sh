@@ -192,7 +192,7 @@ install_jakoolit() {
 	sudo sed -i -E "s|execute_script "nvidia_nouveau.sh"|#execute_script "nvidia_nouveau.sh"|" install.sh
 	# remove reboot execution
 	sudo sed -i -E "s|systemctl reboot|#systemctl reboot|" install.sh
-	./install.sh
+	./install.sh # nao funcionou. Mudar forma de execucao com bash
 }	 
 
 configure_hyprland() {
