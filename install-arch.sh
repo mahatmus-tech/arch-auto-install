@@ -333,8 +333,8 @@ install_graphics() {
 install_gaming() {
     status "Installing Gaming Apps..."
     install_packages \
-        steam goverlay gamescope gamemode \
-        lib32-gamemode mangohud lib32-mangohud
+        steam gamescope gamemode lib32-gamemode \
+         mangohud lib32-mangohud goverlay
     install_aur protonup-qt
 
     status "Installing Gaming Settings..."
@@ -355,10 +355,6 @@ install_gaming() {
     status_step "Set Gamemode Service"
     systemctl --user enable --now gamemoded.service
     sudo usermod -aG gamemode "$USER"
-
-    status_step "Set Mangohud.conf"
-    sudo rm -f "$HOME/.config/MangoHud/MangoHud.conf"
-    safe_download "$HOME"/.config/MangoHud https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/MangoHud.conf
     
     status_step "Set NTSYNC.conf"
     sudo rm -f "/usr/lib/modules-load.d/ntsync.conf"
