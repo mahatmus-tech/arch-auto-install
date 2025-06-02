@@ -522,10 +522,10 @@ main() {
 
     detect_system
     install_base_system
-    install_firmware
-    install_multimedia
-    install_compressions
-    install_fonts
+    #install_firmware
+    #install_multimedia
+    #install_compressions
+    #install_fonts
 
     for option in "${options[@]}"; do
         case "$option" in
