@@ -204,14 +204,17 @@ configure_hyprland() {
 		CONFIG="$HOME/.config/hypr/UserConfigs/WindowRules.conf"
 		echo -e "\n# -----------\n# My Settings\n# -----------\n" >> "$CONFIG"
 
-		echo "windowrulev2 = content game, tag:games*" >> "$CONFIG"
-		echo "windowrulev2 = nodim, tag:games*" >> "$CONFIG"
-		echo "windowrulev2 = noanim, tag:games*" >> "$CONFIG"
-		echo "windowrulev2 = noborder, tag:games*" >> "$CONFIG"
-		echo "windowrulev2 = noshadow, tag:games*" >> "$CONFIG"
-		echo "windowrulev2 = norounding, tag:games*" >> "$CONFIG"
-		echo "windowrulev2 = allowsinput, tag:games*" >> "$CONFIG"
-		echo "windowrulev2 = immediate, tag:games*" >> "$CONFIG"
+        echo -e "\n# Gaming" >> "$CONFIG"
+        echo "windowrulev2 = nodim, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = noblur, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = noanim, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = noborder, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = noshadow, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = immediate, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = norounding, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = fullscreen, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = allowsinput, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = content game, tag:games*" >> "$CONFIG"
 		
 		status_step "UserSettings"
 		CONFIG="$HOME/.config/hypr/UserConfigs/UserSettings.conf"
@@ -222,14 +225,11 @@ configure_hyprland() {
 			status_step "ENVariables (Nvidia)"
 			CONFIG="$HOME/.config/hypr/UserConfigs/ENVariables.conf"
 			echo -e "\n# -----------\n# My Settings\n# -----------\n" >> "$CONFIG"
-			
 			# Force GBM as a backend
 			echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
 			echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
-
 			# Hardware acceleration on NVIDIA GPUs
 			echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG"
-
             # VA-API hardware video acceleration on NVIDIA GPUs
             echo "env = NVD_BACKEND,direct" >> "$CONFIG"
 		fi
@@ -264,26 +264,24 @@ configure_hyprland() {
 			# Force GBM as a backend
 			echo "env = GBM_BACKEND,nvidia-drm" >> "$CONFIG"
 			echo "env = __GLX_VENDOR_LIBRARY_NAME,nvidia" >> "$CONFIG"
-
 			# Hardware acceleration on NVIDIA GPUs
 			echo "env = LIBVA_DRIVER_NAME,nvidia" >> "$CONFIG"
-
             # VA-API hardware video acceleration on NVIDIA GPUs
             echo "env = NVD_BACKEND,direct" >> "$CONFIG"          
 		fi
 
         status_step "WindowRules"
-		# gaming rules
-		echo "windowrulev2 = tag +games, class:^(gamescope)$" >> "$CONFIG"
-		echo "windowrulev2 = tag +games, class:^(steam_app_\d+)$" >> "$CONFIG"
-		echo "windowrulev2 = content game, tag:games*" >> "$CONFIG"
-		echo "windowrulev2 = nodim, tag:games*" >> "$CONFIG"
-		echo "windowrulev2 = noanim, tag:games*" >> "$CONFIG"
-		echo "windowrulev2 = noborder, tag:games*" >> "$CONFIG"
-		echo "windowrulev2 = noshadow, tag:games*" >> "$CONFIG"
-		echo "windowrulev2 = norounding, tag:games*" >> "$CONFIG"
-		echo "windowrulev2 = allowsinput, tag:games*" >> "$CONFIG"
-		echo "windowrulev2 = immediate, tag:games*" >> "$CONFIG"		
+        echo -e "\n# Gaming" >> "$CONFIG"
+        echo "windowrulev2 = nodim, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = noblur, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = noanim, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = noborder, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = noshadow, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = immediate, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = norounding, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = fullscreen, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = allowsinput, tag:games*" >> "$CONFIG"
+        echo "windowrulev2 = content game, tag:games*" >> "$CONFIG"	
  	fi 
 }
 
