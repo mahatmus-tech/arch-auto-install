@@ -335,19 +335,7 @@ install_gaming() {
     install_packages \
         steam goverlay gamescope gamemode \
         lib32-gamemode mangohud lib32-mangohud
-
     install_aur protonup-qt
-
-    # Wine & dependencies - https://github.com/lutris/docs/blob/master/WineDependencies.md
-    #install_packages wine-staging
-    #install_packages_asdeps \
-    #    giflib lib32-giflib gnutls lib32-gnutls v4l-utils \
-    #    lib32-v4l-utils libpulse lib32-libpulse alsa-plugins \
-    #    lib32-alsa-plugins alsa-lib lib32-alsa-lib sqlite lib32-sqlite \
-    #    libxcomposite lib32-libxcomposite ocl-icd lib32-ocl-icd libva \
-    #    lib32-libva gtk3 lib32-gtk3 gst-plugins-base-libs \
-    #    lib32-gst-plugins-base-libs vulkan-icd-loader \
-    #    lib32-vulkan-icd-loader sdl2-compat lib32-sdl2-compat    
 
     status "Installing Gaming Settings..."
     status_step "gamemode.ini"
