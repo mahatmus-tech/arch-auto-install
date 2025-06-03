@@ -295,6 +295,8 @@ install_graphics() {
 			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
                             "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm --noprogressbar"
 
+            install_packages libva-nvidia-driver
+            
             #install_packages \
             #    nvidia-open-dkms lib32-nvidia-utils lib32-opencl-nvidia \
             #    nvidia-settings opencl-nvidia nvidia-utils libva-nvidia-driver
