@@ -28,7 +28,6 @@ options_command+=(
     "bluetooth"  "> Install Bluetooth Drivers"        "ON"
     "gaming"     "> Install Gaming Apps & Settings"   "ON"
     "apps"       "> Install Recommended Apps"         "ON"
-    "tkg"        "> Install TKG Kernel(! LONG TIME)"  "ON"
 )
 
 # ======================
@@ -413,36 +412,6 @@ install_recomended_apps() {
     install_packages swww
 }
 
-install_tkg_kernel() {
-    status "Installing Linux-Tkg Kernel..."
-    clone_and_build "https://github.com/Frogging-Family/linux-tkg.git" "linux-tkg" \
-                    "makepkg -si"
-    # create a .conf in /boot/loader/entries
-    safe_download /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/linux-tkg.conf
-    safe_download /boot/loader/entries https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/linux-tkg-fallback.conf
-
-    status_step "Add TKG CONF files"
-    local root_partuuid=$(blkid -s PARTUUID -o value "$(findmnt -no SOURCE /)")
-    sudo sed -i -E "s|PATITION_ID|$root_partuuid|" /boot/loader/entries/linux-tkg.conf
-    sudo sed -i -E "s|PATITION_ID|$root_partuuid|" /boot/loader/entries/linux-tkg-fallback.conf
-    sudo bootctl set-default linux-tkg.conf
-
-    #status_step "Remove Others linux kernel"
-    #cd /boot
-    #sudo find . -maxdepth 1 -type f ! \( -name '*tkg*' -o -name '*ucode*' \) -exec rm -f {} \;
-    #cd /boot/loader/entries
-    #sudo find . -maxdepth 1 -type f ! \( -name '*tkg*' \) -exec rm -f {} \;
-    #cd /etc/mkinitcpio.d
-    #sudo find . -maxdepth 1 -type f ! \( -name '*tkg*' \) -exec rm -f {} \;
-
-    #sudo pacman -R linux-headers linux
-
-    # Download bore kernel.conf
-    #sudo sysctl -w kernel.sched_bore=1
-    safe_download /usr/lib/sysctl.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/69-bore-scheduler.conf
-    sudo sysctl --system
-}
-
 # ======================
 # POST-INSTALL
 # ======================
@@ -534,9 +503,6 @@ main() {
                 ;;
             apps)
                 install_recomended_apps
-                ;;
-            tkg)
-                install_tkg_kernel
                 ;;
             *)
                 echo "Unknown option: $option"
