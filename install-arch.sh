@@ -236,12 +236,21 @@ install_firmware() {
     clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
 }
 
+install_audio() {
+    status "Installing Audio Support..."
+    install_packages \
+            pipewire wireplumber pipewire-alsa pipewire-jack \
+            pipewire-pulse alsa-utils alsa-plugins alsa-firmware \
+            alsa-ucm-conf sof-firmware rtkit
+}
+
 install_multimedia() {
     status "Installing Multimedia Support..."
     install_packages \
-        ffmpeg gstreamer gstreamer-vaapi gst-libav \
-		gst-plugins-bad gst-plugins-good gst-plugins-ugly \
-        libmpeg2 libmad lame flac wavpack opus faac faad2 \
+        gstreamer gstreamer-vaapi gst-libav \
+        gst-plugins-base gst-plugins-good gst-plugins-bad \
+        gst-plugins-ugly gst-plugin-pipewire \
+        ffmpeg libmpeg2 libmad lame flac wavpack opus faac faad2 \
         x264 x265 libvpx dav1d aom ffmpegthumbs
 }
 
@@ -334,7 +343,7 @@ install_gaming() {
     status "Installing Gaming Apps..."
     install_packages \
         steam gamescope gamemode lib32-gamemode \
-         mangohud lib32-mangohud goverlay
+        mangohud lib32-mangohud goverlay
     install_aur protonup-qt
 
     status "Installing Gaming Settings..."
@@ -502,6 +511,7 @@ main() {
     detect_system
     install_base_system
     install_firmware
+    install_audio
     install_multimedia
     install_compressions
     install_fonts
