@@ -45,7 +45,7 @@ warning()          { echo -e "${YELLOW_W}[!]${NC} $1"; }
 error()            { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
 status()           { echo -e "${GREEN}[+]${YELLOW} $1${NC}"; }
 status_step()      { echo -e "${GREEN}    >${NC} $1"; }
-status_step_info() { echo -e "$${BLUE}      $1"; }
+status_step_info() { echo -e "${BLUE}      $1"; }
 
 
 sudo_cache() {
