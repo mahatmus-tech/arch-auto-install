@@ -454,8 +454,8 @@ install_graphics() {
         "nvidia")            
             status_step "Nvidia Driver"
 
-			#clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
-            #                "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm >/dev/null 2>&1"
+			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
+                            "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm >/dev/null 2>&1"
 
             install_packages libva-nvidia-driver
 
