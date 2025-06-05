@@ -18,25 +18,24 @@ NC='\033[0m'
 
 # Initialize the options array for whiptail checklist
 options_command=(
-    whiptail --title "Select Options" --checklist "Choose options to install or configure\nNOTE: 'SPACEBAR' to select & 'TAB' key to change selection" 20 62 12
+    whiptail --title "Select Options" --checklist "NOTE: 'SPACEBAR' to select & 'TAB' to navigate" 19 59 12
 )
 
 # Add the remaining static options
 options_command+=(
-    "base"        "> Install Base Packages/Settings"    "ON"
-    "firmware"    "> Install Firmwares"                 "ON"
-    "firewall"    "> Install UFW Firewall"              "ON"
-    "audio"       "> Install Audio Drivers"             "ON"
-    "bluetooth"   "> Install Bluetooth Drivers"         "ON"
-    "fonts"       "> Install Fonts"                     "ON"
-    "multimedia"  "> Install Multimedia Support"        "ON"
-    "compression" "> Install compressions Support"      "ON"
-    "gpu"         "> Install Graphics Drivers"          "ON"
-    "gaming"      "> Install Gaming Apps"               "ON"
-    "performance" "> Install Performance System Tweaks" "ON"
-    "apps"        "> Install Recommended Wayland Apps"  "ON"
+    "base"        "> Install Base Packages/Settings "    "ON"
+    "firmware"    "> Install Firmwares "                 "ON"
+    "firewall"    "> Install UFW Firewall "              "ON"
+    "audio"       "> Install Audio Drivers "             "ON"
+    "bluetooth"   "> Install Bluetooth Drivers "         "ON"
+    "fonts"       "> Install Fonts "                     "ON"
+    "multimedia"  "> Install Multimedia Support "        "ON"
+    "compression" "> Install compressions Support "      "ON"
+    "gpu"         "> Install Graphics Drivers "          "ON"
+    "gaming"      "> Install Gaming Apps "               "ON"
+    "performance" "> Install System Performance Tweaks " "ON"
+    "apps"        "> Install Recommended Wayland Apps "  "ON"
 )
-
 # ======================
 # INSTALLATION FUNCTIONS
 # ======================

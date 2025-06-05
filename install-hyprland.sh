@@ -20,14 +20,14 @@ NC='\033[0m'
 
 # Initialize the options array for whiptail checklist
 options_command=(
-    whiptail --title "Select Options" --checklist "Choose options to install or configure\nNOTE: 'SPACEBAR' to select & 'TAB' key to change selection" 14 68 6
+    whiptail --title "Select Options" --checklist "NOTE: 'SPACEBAR' to select & 'TAB' to navigate" 10 50 3
 )
 
 # Add the remaining static options
 options_command+=(
-    "hyprland"  "> Install Hyprland"           "ON"
-    "jakoolit"  "> Install JaKooLit DotFiles"  "ON"
-    "settings"  "> Install Hyprland Settings"  "ON"
+    "hyprland"  "> Install Hyprland "           "ON"
+    "jakoolit"  "> Install JaKooLit DotFiles "  "ON"
+    "settings"  "> Install Hyprland Settings "  "ON"
 )
 
 # ======================
