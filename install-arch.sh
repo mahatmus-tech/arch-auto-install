@@ -45,7 +45,7 @@ status() { echo -e "${GREEN}[+]${YELLOW} $1${NC}"; }
 status_step() { echo -e "${GREEN}    >${NC} $1"; }
 warning() { echo -e "${YELLOW_W}[!]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
-info() { echo -e "${BLUE}[i]${NC} $1"; }
+info() { echo -e "${BLUE}    >${NC} $1"; }
 
 sudo_cache() {
     status "Caching Sudo Password"
