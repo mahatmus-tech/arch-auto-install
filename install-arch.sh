@@ -527,21 +527,6 @@ install_graphics() {
 install_gaming() {
     status "Installing Gaming Apps"
 
-    status_step "Controller Support"
-    install_aur dualsensectl-git
-
-    status_step "Gamescope"
-    install_packages gamescope
-        
-    status_step "Mangohud"
-    install_packages mangohud lib32-mangohud goverlay
-
-    status_step "Steam"
-    #---------------------
-    install_packages steam 
-    install_aur protonup-qt protontricks
-    #---------------------    
-    
     status_step "Gamemode"
     #---------------------
     install_packages gamemode lib32-gamemode
@@ -560,17 +545,39 @@ install_gaming() {
     sudo usermod -aG gamemode "$USER"
     #---------------------
 
-    #if ask_user "Do you want to install xpadneo? - It Improves Xbox gamepad support:"; then
-    #    install_aur xpadneo-dkms-git
-    #fi
+    status_step "Gamescope"
+    install_packages gamescope
+        
+    status_step "Mangohud"
+    #---------------------
+    install_packages mangohud lib32-mangohud goverlay
+
+    status_step_info "goverlay"
+    install_packages goverlay
+    #---------------------
+
+    status_step "Steam"
+    # ---------------------
+    install_packages steam
+
+    status_step_info "protonup-qt"
+    install_aur protonup-qt 
     
-    #if ask_user "Do you want to install xone? - It improves Xbox gamepad support with a USB wireless dongle:"; then
-    #    install_aur xone-dkms-git xone-dongle-firmware
-    #fi
-    
-    #if ask_user "Do you want to install PS5 controller support?:"; then
-    #    install_aur dualsensectl-git
-    #fi
+    status_step_info "protontricks"
+    install_aur protontricks
+    # ---------------------
+
+    status_step "Controller Support"
+    # ------------------------------    
+    status_step_info "PS5 DualSense"
+    install_aur dualsensectl-git
+
+    #status_step_info "Xbox gamepad support" 
+    #install_aur xpadneo-dkms-git
+
+    #status_step_info "Xbox gamepad support with a USB wireless dongle"
+    # install_aur xone-dkms-git xone-dongle-firmware
+    # ------------------------------    
 }
 
 install_apps() {
