@@ -18,7 +18,7 @@ NC='\033[0m'
 
 # Initialize the options array for whiptail checklist
 options_command=(
-    whiptail --title "Select Options" --checklist "Choose options to install or configure\nNOTE: 'SPACEBAR' to select & 'TAB' key to change selection" 14 68 6
+    whiptail --title "Select Options" --checklist "Choose options to install or configure\nNOTE: 'SPACEBAR' to select & 'TAB' key to change selection" 20 62 12
 )
 
 # Add the remaining static options
@@ -44,32 +44,29 @@ info()             { echo -e "${BLUE}[i]${NC} $1"; }
 warning()          { echo -e "${YELLOW_W}[!]${NC} $1"; }
 error()            { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
 status()           { echo -e "${GREEN}[+]${YELLOW} $1${NC}"; }
-status_step()      { echo -e "${GREEN}    >${NC} $1"; }
-status_step_info() { echo -e "${BLUE}      $1"; }
+status_step()      { echo -e "${GREEN}    -${NC} $1"; }
+status_step_info() { echo -e "${GREEN}      >${BLUE} $1"; }
 
 
 sudo_cache() {
-    status "Caching Sudo Password"
-    # Prompt once for sudo password
-    if sudo -v; then
-    # Keep the sudo session alive in the background
-    while true; do
-        sleep 60
-        sudo -n true
-        kill -0 "$$" || exit
-    done 2>/dev/null &
-    else
-    echo "Sudo authentication failed"
-    exit 1
-    fi    
+    status "Saving Sudo Password"
+    sudo -v
+    
+	# Allow makepkg without password (safer than editing sudoers directly)
+	sudo rm -f /etc/sudoers.d/42-user-nopassword
+    echo "$USER ALL=(ALL) NOPASSWD: /usr/bin/pacman" | sudo tee /etc/sudoers.d/42-user-nopassword >/dev/null
 }
 
-install_packages() {    
+sudo_release() {
+	sudo rm -f /etc/sudoers.d/42-user-nopassword
+}
+
+install_packages() {
     local pkg
     for pkg in "$@"; do
-        if ! pacman -Qi "$pkg" &>/dev/null; then
-            status_step "$pkg"
-            sudo pacman -S -qq --needed --noconfirm --noprogressbar "$pkg" 2>/dev/null || {
+        if ! pacman -Q "$pkg" &>/dev/null; then
+            sudo -v
+            sudo pacman -S --needed --noconfirm --quiet "$pkg" >/dev/null 2>&1 || {
                 warning "Failed to install $pkg. Continuing..."
                 return 1
             }
@@ -81,22 +78,9 @@ install_packages() {
 install_aur() {
     local pkg
     for pkg in "$@"; do
-        if ! yay -Qi "$pkg" &>/dev/null; then
-            status_step "$pkg"
-            yay -S -qq --needed --noconfirm --noprogressbar "$pkg" 2>/dev/null || {
-                warning "Failed to install $pkg. Continuing..."
-                return 1
-            }
-        fi
-    done
-}
-
-install_packages_asdeps() {    
-    local pkg
-    for pkg in "$@"; do
-        if ! pacman -Qi "$pkg" &>/dev/null; then
-            status_step "$pkg"
-            sudo pacman -S -qq --needed --noconfirm --noprogressbar --asdeps "$pkg" 2>/dev/null || {
+        if ! yay -Q "$pkg" &>/dev/null; then
+            sudo -v
+            yay -S --needed --noconfirm --quiet "$pkg" >/dev/null 2>&1 || {
                 warning "Failed to install $pkg. Continuing..."
                 return 1
             }
@@ -107,11 +91,10 @@ install_packages_asdeps() {
 clone_and_build() {
     local repo_url=$1
     local dir_name=$2
-    local build_cmd=${3:-"makepkg -si --needed --noconfirm --noprogressbar"}
+    local build_cmd=${3:-"makepkg -si --needed --noconfirm >/dev/null 2>&1"}
 
-    status_step "$dir_name"
     sudo rm -rf "$INSTALL_DIR/$dir_name"
-    git clone -q "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
+    git clone -q "$repo_url" >/dev/null 2>&1 "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
     cd "$INSTALL_DIR/$dir_name" || error "Failed to enter $dir_name directory"
     sudo chown -R "$USER" . || error "Failed to change ownership"
     sudo chmod -R 755 . || error "Failed to change permissions"
@@ -163,7 +146,7 @@ ask_user() {
 
 safe_download() {
     local dest=$1 url=$2
-    if ! sudo wget -P "$dest" -q --show-progress "$url"; then
+    if ! sudo wget -P "$dest" -q "$url"; then
         error "Failed to download $url"
         return 1
     fi
@@ -179,13 +162,13 @@ detect_system() {
         error "This script is only compatible with Systemd-Boot"
     fi
 
-    status_step "File System Type"
+    status_step "File System Type:"
     # ----------------------------
     ROOT_FS_TYPE=$(findmnt -n -o FSTYPE /)
     status_step_info "$ROOT_FS_TYPE"
     # ----------------------------
     
-    status_step "Disk Type"
+    status_step "Disk Type:"
     # ---------------------
     # Get the base device name (strip /dev/ and partition suffix)
     local root_source=$(findmnt -n -o SOURCE /)
@@ -200,40 +183,39 @@ detect_system() {
     fi
 
     if [[ "$SSD_OR_NVME_DISK" == "true" ]]; then
-        status_step_info "$Found SSD/NVME Disk"
+        status_step_info "ssd/nvme"
     else
-        status_step_info "$Found HD Disk"
+        status_step_info "hd"
     fi    
     # ---------------------
 
-    status_step "CPU"
+    status_step "CPU:"
     # ---------------
     if grep -iq "intel" /proc/cpuinfo; then
-        export CPU="intel"
-        status_step_info "Intel CPU has been found"
+        export CPU="intel"        
     elif grep -iq "amd" /proc/cpuinfo; then
         export CPU="amd"
-        status_step_info "AMD CPU has been found"
     else
         export CPU="unknown"
         warning "Unknown CPU type"
     fi
+    status_step_info "$CPU"
     # ---------------
 
     status_step "GPU"
+    # ---------------
     if lspci | grep -iq "nvidia"; then
         export GPU="nvidia"
-        status_step_info "NVIDIA GPU has been found"
     elif lspci | grep -iq "amd"; then
         export GPU="amd"
-        status_step_info "AMD GPU has been found"
     elif lspci | grep -iq "intel"; then
         export GPU="intel"
-        status_step_info "Intel GPU has been found"
     else
         export GPU="unknown"
         warning "Unknown GPU - installing basic drivers"
     fi
+    status_step_info "$GPU"
+    # ---------------
 }
 
 # ======================
@@ -253,15 +235,15 @@ install_base() {
     sudo sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
     sudo sed -i 's/^#VerbosePkgLists/VerbosePkgLists/' /etc/pacman.conf
     sudo sed -i 's/^#ILoveCandy/ILoveCandy/' /etc/pacman.conf    
-    sudo pacman -Syuq --needed --noconfirm --noprogressbar >/dev/null
+    sudo pacman -Syuq --needed --noconfirm >/dev/null
 
     install_packages pacman-contrib
     sudo systemctl enable --now paccache.timer    
     # ---------------------------
 
-    status_step "YAY (AUR)"
-    clone_and_build "https://aur.archlinux.org/yay.git" "yay"
-
+	status_step "YAY (AUR)"
+	clone_and_build "https://aur.archlinux.org/yay.git" "yay"
+	
     status_step "Base Packages"
     pkgs=(
         git 
@@ -281,11 +263,14 @@ install_base() {
 install_firmware() {
     status "Installing Firmwares"
 
-    install_packages linux-zen-headers
+	if pacman -Qi "linux-zen" &>/dev/null; then
+    	install_packages linux-zen-headers
+    fi	
 
     status_step "mkinitcpio"
     install_aur mkinitcpio-firmware
-    clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
+    
+    #clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
 }
 
 install_audio() {
@@ -429,16 +414,15 @@ install_firewall() {
 
     status_step "UFW"
     install_packages ufw
-
-    status_step "UFW Serice"
+    
     sudo systemctl enable --now ufw.service
-    sudo ufw enable
+    sudo ufw enable >/dev/null
 }
 
 install_bluetooth() {
     status "Installing Bluetooth Support"
 
-    status_step "Bluez"
+    status_step "BlueMan/Bluez"
     pkgs=(
         blueman
 		bluez
@@ -448,6 +432,7 @@ install_bluetooth() {
         bluez-plugins
     )
     install_packages "${pkgs[@]}"
+    sudo systemctl enable --now bluetooth.service 2>&1
 }
 
 install_graphics() {
@@ -480,32 +465,21 @@ install_graphics() {
         "nvidia")            
             status_step "Nvidia Driver"
 
-			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
-                            "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm --noprogressbar"
+			#clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
+            #                "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm >/dev/null 2>&1"
 
             install_packages libva-nvidia-driver
-            
-            #pkgs=(
-            #    nvidia-utils
-            #    opencl-nvidia
-            #    nvidia-settings
-            #    nvidia-open-dkms
-            #    lib32-nvidia-utils
-            #    lib32-opencl-nvidia
-            #    libva-nvidia-driver
-            #)
-            #install_packages "${pkgs[@]}"
 
-            status_step "Nvidia Config File"
+            status_step "Nvidia Settings"
+            # ---------------------------
             sudo rm -f /etc/modprobe.d/nvidia.conf
             safe_download /etc/modprobe.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/nvidia.conf
 
-            status_step "Nvidia Rule File"
             sudo rm -f /etc/udev/rules.d/89-nvidia-pm.rules
             safe_download /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules	 
 
-            status_step "Mkinitcpio Nvidia Modules"
             sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
+            # ---------------------------
             ;;
     esac
 
@@ -547,11 +521,11 @@ install_graphics() {
     )
     install_packages "${pkgs[@]}"
 
-    status_step "Compatibilities"
+    # Compatibilities
     install_packages glfw
     install_aur vk-hdr-layer-kwin6-git
             
-    status "Wayland"
+    status_step "Wayland"
     pkgs=(
         wayland
         wayland-protocols
@@ -568,7 +542,7 @@ install_graphics() {
 install_gaming() {
     status "Installing Gaming Apps"
 
-    status "Controller Support"
+    status_step "Controller Support"
     install_aur dualsensectl-git
 
     status_step "Gamescope"
@@ -579,8 +553,8 @@ install_gaming() {
 
     status_step "Steam"
     #---------------------
-    install_packages steam protontricks
-    install_aur protonup-qt
+    install_packages steam 
+    install_aur protonup-qt protontricks
     #---------------------    
     
     status_step "Gamemode"
@@ -616,48 +590,48 @@ install_gaming() {
 }
 
 install_apps() {
-    status "Installing Recomended Apps"
+    status "Installing Recomended Wayland Apps"
 
-    status_step "terminal & editor"
-    install_packages kitty man-db man-pages fastfetch jq 
+    status_step "Terminal & Editor"
+   	install_packages kitty man-db man-pages fastfetch jq 
 
-    status_step "Linux resource monitors"
+    status_step "Linux Resource Monitors"
     install_packages htop nvtop btop inxi duf
 
-    status_step "media controller & player"
+    status_step "Media Controller & Player"
     install_packages playerctl mpv mpv-mpris
 
     status_step "Audio Controller"
     install_packages pavucontrol pamixer
 
-    status_step "brightness control"
+    status_step "Brightness Control"
     install_packages brightnessctl
 
-    status_step "image viewer"
+    status_step "Image Viewer"
     install_packages loupe imagemagick libspng
 
-    status_step "calculator"
+    status_step "Calculator"
     install_packages qalculate-gtk
 
     status_step "Desktop Theme"
     install_packages kvantum qt5ct qt6ct qt6-svg nwg-look
 
-    status_step "notifications"
+    status_step "Notifications"
     install_packages swaync
 
     status_step "Menu Apps/Bar/Logout"
     install_packages rofi-wayland waybar
 
-    status_step "printscreen"
+    status_step "Printscreen"
     install_packages slurp grim swappy
 
-    status_step "Copy/Paste utilities"
+    status_step "Copy/Paste Utilities"
     install_packages wl-clipboard cliphist
 
-    status_step "Monitor utilities"
+    status_step "Monitor Utilities"
     install_packages nwg-displays
 
-    status_step "Wallpaper utilities"
+    status_step "Wallpaper Utilities"
     install_packages swww
 }
 
@@ -682,15 +656,15 @@ install_performance() {
     # -----------------------------------
     sudo rm -f /usr/lib/sysctl.d/79-kernel-settings.conf
     safe_download /usr/lib/sysctl.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf
-    sudo sysctl --system
+    sudo sysctl --system >/dev/null 2>&1
     # -----------------------------------
     
     if [[ "$SSD_OR_NVME_DISK" == "true" && "$ROOT_FS_TYPE" == "ext4" ]]; then
         status_step "EXT4 Journal Performance"
 
         # set async journal
-        sudo tune2fs -E mount_opts=journal_async_commit $(findmnt -n -o SOURCE /)
-        sudo tune2fs -o journal_data_writeback $(findmnt -n -o SOURCE /)
+        sudo tune2fs -E mount_opts=journal_async_commit $(findmnt -n -o SOURCE /) >/dev/null
+        sudo tune2fs -o journal_data_writeback $(findmnt -n -o SOURCE /) >/dev/null
 
         # Define the UUID of the partition (adaptar para escolhera  partição)
         UUID=$(blkid -s UUID -o value $(findmnt -n -o SOURCE /))
@@ -699,8 +673,12 @@ install_performance() {
         NEW_MOUNT_OPTIONS="defaults,noatime"
 
         # Edit the fstab file to change the mount options
-        sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID \/ ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab
+        #sudo sed -i -E "s|^UUID=$UUID.*|UUID=$UUID \/ ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab
+        sudo sed -i -E "s|^UUID=.*|UUID=$UUID \/ ext4 $NEW_MOUNT_OPTIONS 0 2|" /etc/fstab
 
+		# systemd reload	
+		sudo systemctl daemon-reload
+				
         # remount the root partition
         if ! sudo mount -o remount /; then
             error "Failed to remount root partition."
@@ -712,9 +690,9 @@ install_performance() {
 # MAIN INSTALLATION FLOW
 # ======================
 main() {
-    echo -e "\n${GREEN}🚀 Starting Arch Auto Install ${NC}"
-
-	sudo_cache
+    echo -e "\n${GREEN}🚀 Starting Arch Auto Install ${NC}\n"
+	
+	sudo_cache	
     show_menu
     detect_system
     
@@ -735,6 +713,8 @@ main() {
             *)           echo "Unknown option: $option" ;;
         esac
     done
+  
+    sudo_release
 
     echo -e "\n${GREEN} Installation completed successfully! ${NC}"
     echo -e "${YELLOW} Please reboot your system to apply all changes. ${NC}"
