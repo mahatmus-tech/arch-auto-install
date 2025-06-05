@@ -45,7 +45,7 @@ warning()          { echo -e "${YELLOW_W}[!]${NC} $1"; }
 error()            { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
 status()           { echo -e "${GREEN}[+]${YELLOW} $1${NC}"; }
 status_step()      { echo -e "${GREEN}    >${NC} $1"; }
-status_step_info() { echo -e "${GREEN}    >${BLUE} $1"; }
+status_step_info() { echo -e "$${BLUE}      $1"; }
 
 
 sudo_cache() {
@@ -210,10 +210,10 @@ detect_system() {
     # ---------------
     if grep -iq "intel" /proc/cpuinfo; then
         export CPU="intel"
-        status_step_info "Found Intel CPU"
+        status_step_info "Intel CPU has been found"
     elif grep -iq "amd" /proc/cpuinfo; then
         export CPU="amd"
-        status_step_info "Found AMD CPU"
+        status_step_info "AMD CPU has been found"
     else
         export CPU="unknown"
         warning "Unknown CPU type"
@@ -223,13 +223,13 @@ detect_system() {
     status_step "GPU"
     if lspci | grep -iq "nvidia"; then
         export GPU="nvidia"
-        status_step_info "Found NVIDIA GPU"
+        status_step_info "NVIDIA GPU has been found"
     elif lspci | grep -iq "amd"; then
         export GPU="amd"
-        status_step_info "Found AMD GPU"
+        status_step_info "AMD GPU has been found"
     elif lspci | grep -iq "intel"; then
         export GPU="intel"
-        status_step_info "Found Intel GPU"
+        status_step_info "Intel GPU has been found"
     else
         export GPU="unknown"
         warning "Unknown GPU - installing basic drivers"
