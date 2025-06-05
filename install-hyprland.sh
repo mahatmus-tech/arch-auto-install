@@ -87,7 +87,6 @@ clone_and_build() {
     local build_cmd=${3:-"makepkg -si --needed --noconfirm >/dev/null 2>&1"}
     local clone_flags=$4  # No default
 
-    status "Building $dir_name from source..."
     sudo rm -rf "$INSTALL_DIR/$dir_name"
 	git clone "$clone_flags" "$repo_url" >/dev/null 2>&1 "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
     cd "$INSTALL_DIR/$dir_name" || error "Failed to enter $dir_name directory"
@@ -172,18 +171,24 @@ install_hyprland() {
  	# Update packages
 	yay -Syuq --needed --noconfirm >/dev/null
 
+	status_step "pacman package"
 	install_packages hyprland
 }
 
 install_jakoolit() {
 	status "Installing JaKooLit DotFiles"
 
+	status_step "Download Files"
+	# --------------------------
 	JAYKOOLIT_INSTALLED=true
 	INSTALL_DIR=$HOME
-
     clone_and_build "https://github.com/JaKooLit/Arch-Hyprland.git" "Arch-Hyprland" \
 					"sudo chmod +x install.sh" "--depth=1"
-	
+	# --------------------------
+
+	status_step "Install"
+	# -------------------
+	cd "$INSTALL_DIR/Arch-Hyprland"
 	# remove nvidia execution
 	sudo sed -i -E "s|execute_script "nvidia.sh"|#execute_script "nvidia.sh"|" install.sh
 	sudo sed -i -E "s|execute_script "nvidia_nouveau.sh"|#execute_script "nvidia_nouveau.sh"|" install.sh
@@ -191,6 +196,7 @@ install_jakoolit() {
 	sudo sed -i -E "s|systemctl reboot|#systemctl reboot|" install.sh
     # install
     bash install.sh
+    # -------------------
 }	 
 
 configure_hyprland() {
