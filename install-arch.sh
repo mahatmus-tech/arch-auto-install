@@ -40,12 +40,13 @@ options_command+=(
 # ======================
 # INSTALLATION FUNCTIONS
 # ======================
+info()             { echo -e "${BLUE}[i]${NC} $1"; }
+warning()          { echo -e "${YELLOW_W}[!]${NC} $1"; }
+error()            { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
+status()           { echo -e "${GREEN}[+]${YELLOW} $1${NC}"; }
+status_step()      { echo -e "${GREEN}    >${NC} $1"; }
+status_step_info() { echo -e "${GREEN}    >${BLUE} $1"; }
 
-status() { echo -e "${GREEN}[+]${YELLOW} $1${NC}"; }
-status_step() { echo -e "${GREEN}    >${NC} $1"; }
-warning() { echo -e "${YELLOW_W}[!]${NC} $1"; }
-error() { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
-info() { echo -e "${BLUE}    >${NC} $1"; }
 
 sudo_cache() {
     status "Caching Sudo Password"
@@ -179,10 +180,13 @@ detect_system() {
     fi
 
     status_step "File System Type"
+    # ----------------------------
     ROOT_FS_TYPE=$(findmnt -n -o FSTYPE /)
+    status_step_info "$ROOT_FS_TYPE"
+    # ----------------------------
     
     status_step "Disk Type"
-    # ----------------
+    # ---------------------
     # Get the base device name (strip /dev/ and partition suffix)
     local root_source=$(findmnt -n -o SOURCE /)
     local root_device=$(basename "$root_source" | sed -E 's/p?[0-9]+$//')
@@ -194,16 +198,22 @@ detect_system() {
             SSD_OR_NVME_DISK="true"
         fi
     fi
-    # ----------------
+
+    if [[ "$SSD_OR_NVME_DISK" == "true" ]]; then
+        status_step_info "$Found SSD/NVME Disk"
+    else
+        status_step_info "$Found HD Disk"
+    fi    
+    # ---------------------
 
     status_step "CPU"
     # ---------------
     if grep -iq "intel" /proc/cpuinfo; then
         export CPU="intel"
-        info "Found Intel CPU"
+        status_step_info "Found Intel CPU"
     elif grep -iq "amd" /proc/cpuinfo; then
         export CPU="amd"
-        info "Found AMD CPU"
+        status_step_info "Found AMD CPU"
     else
         export CPU="unknown"
         warning "Unknown CPU type"
@@ -213,13 +223,13 @@ detect_system() {
     status_step "GPU"
     if lspci | grep -iq "nvidia"; then
         export GPU="nvidia"
-        info "Found NVIDIA GPU"
+        status_step_info "Found NVIDIA GPU"
     elif lspci | grep -iq "amd"; then
         export GPU="amd"
-        info "Found AMD GPU"
+        status_step_info "Found AMD GPU"
     elif lspci | grep -iq "intel"; then
         export GPU="intel"
-        info "Found Intel GPU"
+        status_step_info "Found Intel GPU"
     else
         export GPU="unknown"
         warning "Unknown GPU - installing basic drivers"
