@@ -33,34 +33,33 @@ options_command+=(
 # ======================
 # INSTALLATION FUNCTIONS
 # ======================
-status() { echo -e "${GREEN}[+]${YELLOW} $1${NC}"; }
-status_step() { echo -e "${GREEN}    >${NC} $1"; }
-warning() { echo -e "${YELLOW_W}[!]${NC} $1"; }
-error() { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
-info() { echo -e "${BLUE}[i]${NC} $1"; }
+info()             { echo -e "${BLUE}[i]${NC} $1"; }
+warning()          { echo -e "${YELLOW_W}[!]${NC} $1"; }
+error()            { echo -e "${RED}[ERROR]${NC} $1" >&2; exit 1; }
+status()           { echo -e "${GREEN}[+]${YELLOW} $1${NC}"; }
+status_step()      { echo -e "${GREEN}    -${NC} $1"; }
+status_step_info() { echo -e "${GREEN}      >${BLUE} $1"; }
+
 
 sudo_cache() {
-    status "Caching Sudo Password"
-    # Prompt once for sudo password
-    if sudo -v; then
-    # Keep the sudo session alive in the background
-    while true; do
-        sleep 60
-        sudo -n true
-        kill -0 "$$" || exit
-    done 2>/dev/null &
-    else
-    echo "Sudo authentication failed"
-    exit 1
-    fi    
+    status "Saving Sudo Password"
+    sudo -v
+    
+	# Allow makepkg without password (safer than editing sudoers directly)
+	sudo rm -f /etc/sudoers.d/42-user-nopassword
+    echo "$USER ALL=(ALL) NOPASSWD: /usr/bin/pacman" | sudo tee /etc/sudoers.d/42-user-nopassword >/dev/null
 }
 
-install_packages() {    
+sudo_release() {
+	sudo rm -f /etc/sudoers.d/42-user-nopassword
+}
+
+install_packages() {
     local pkg
     for pkg in "$@"; do
-        if ! pacman -Qi "$pkg" &>/dev/null; then
-            status_step "$pkg"
-            sudo pacman -S -qq --needed --noconfirm --noprogressbar "$pkg" 2>/dev/null || {
+        if ! pacman -Q "$pkg" &>/dev/null; then
+            sudo -v
+            sudo pacman -S --needed --noconfirm --quiet "$pkg" >/dev/null 2>&1 || {
                 warning "Failed to install $pkg. Continuing..."
                 return 1
             }
@@ -68,12 +67,13 @@ install_packages() {
     done
 }
 
+
 install_aur() {
     local pkg
     for pkg in "$@"; do
-        if ! yay -Qi "$pkg" &>/dev/null; then
-            status_step "$pkg"
-            yay -S -qq --needed --noconfirm --noprogressbar "$pkg" 2>/dev/null || {
+        if ! yay -Q "$pkg" &>/dev/null; then
+            sudo -v
+            yay -S --needed --noconfirm --quiet "$pkg" >/dev/null 2>&1 || {
                 warning "Failed to install $pkg. Continuing..."
                 return 1
             }
@@ -84,12 +84,12 @@ install_aur() {
 clone_and_build() {
     local repo_url=$1
     local dir_name=$2
-    local build_cmd=${3:-"makepkg -si --needed --noconfirm --noprogressbar"}
+    local build_cmd=${3:-"makepkg -si --needed --noconfirm >/dev/null 2>&1"}
     local clone_flags=$4  # No default
 
     status "Building $dir_name from source..."
     sudo rm -rf "$INSTALL_DIR/$dir_name"
-	git clone "$clone_flags" "$repo_url" "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
+	git clone "$clone_flags" "$repo_url" >/dev/null 2>&1 "$INSTALL_DIR/$dir_name" || error "Failed to clone $dir_name"
     cd "$INSTALL_DIR/$dir_name" || error "Failed to enter $dir_name directory"
     sudo chown -R "$USER":"$USER" . || error "Failed to change ownership"
     sudo chmod -R 755 . || error "Failed to change permissions"
@@ -132,54 +132,51 @@ show_menu() {
 # SYSTEM DETECTION
 # ======================
 detect_system() {
-    status "Detecting System Hardware..."
-    
-    if [ -d "$HOME/Arch-Hyprland" ]; then
-        JAYKOOLIT_INSTALLED=true
-    fi
+    status "Detecting System Hardware"
 
-    # GPU Detection
-    if lspci | grep -iq "nvidia"; then
-        export GPU="nvidia"
-        info "Found NVIDIA GPU"
-    elif lspci | grep -iq "amd"; then
-        export GPU="amd"
-        info "Found AMD GPU"
-    elif lspci | grep -iq "intel"; then
-        export GPU="intel"
-        info "Found Intel GPU"
-    else
-        export GPU="unknown"
-        warning "Unknown GPU - installing basic drivers"
-    fi
-
-    # CPU Detection
+    status_step "CPU:"
+    # ---------------
     if grep -iq "intel" /proc/cpuinfo; then
-        export CPU="intel"
-        info "Found Intel CPU"
+        export CPU="intel"        
     elif grep -iq "amd" /proc/cpuinfo; then
         export CPU="amd"
-        info "Found AMD CPU"
     else
         export CPU="unknown"
         warning "Unknown CPU type"
     fi
+    status_step_info "$CPU"
+    # ---------------
+
+    status_step "GPU"
+    # ---------------
+    if lspci | grep -iq "nvidia"; then
+        export GPU="nvidia"
+    elif lspci | grep -iq "amd"; then
+        export GPU="amd"
+    elif lspci | grep -iq "intel"; then
+        export GPU="intel"
+    else
+        export GPU="unknown"
+        warning "Unknown GPU - installing basic drivers"
+    fi
+    status_step_info "$GPU"
+    # ---------------
 }
 
 # ======================
 # INSTALLATION SECTIONS
 # ======================
 install_hyprland() {
-	status "Installing Hyprland..."
+	status "Installing Hyprland"
 
  	# Update packages
-	yay -Syuq --needed --noconfirm --noprogressbar >/dev/null
+	yay -Syuq --needed --noconfirm >/dev/null
 
 	install_packages hyprland
 }
 
 install_jakoolit() {
-	status "Installing JaKooLit DotFiles..."
+	status "Installing JaKooLit DotFiles"
 
 	JAYKOOLIT_INSTALLED=true
 	INSTALL_DIR=$HOME
@@ -197,7 +194,7 @@ install_jakoolit() {
 }	 
 
 configure_hyprland() {
-    status "Installing Hyprland Settings..."
+    status "Installing Hyprland Settings"
 	local CONFIG=""
 	
 	if [ "$JAYKOOLIT_INSTALLED" = true ]; then
@@ -301,11 +298,10 @@ configure_hyprland() {
 # MAIN INSTALLATION FLOW
 # ======================
 main() {
-	echo -e "\n${GREEN}🚀 Starting Hyprland Install ${NC}"
+	echo -e "\n${GREEN}🚀 Starting Hyprland Install ${NC}\n"
+
 	sudo_cache
-
     show_menu
-
     detect_system
 
     for option in "${options[@]}"; do
@@ -325,6 +321,8 @@ main() {
         esac
     done
 	
+    sudo_release
+
 	echo -e "\n${GREEN} Installation completed successfully! ${NC}"
 	echo -e "${YELLOW} Please reboot your system to apply all changes. ${NC}"
 }

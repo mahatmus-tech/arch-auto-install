@@ -457,7 +457,7 @@ install_graphics() {
 			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
                             "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm >/dev/null 2>&1"
 
-            install_packages libva-nvidia-driver
+            install_packages xorg-server xorg-xinit libva-nvidia-driver
 
             status_step "Nvidia Settings"
             # ---------------------------
