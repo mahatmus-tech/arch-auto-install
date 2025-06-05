@@ -88,6 +88,15 @@ install_aur() {
     done
 }
 
+safe_download() {
+    local dir_name=$1 file_name=$2 url=$3
+    sudo rm -rf "$dir_name/$file_name"
+    if ! sudo wget -P "$dir_name" -q "$url"; then
+        error "Failed to download $url"
+        return 1
+    fi
+}
+
 clone_and_build() {
     local repo_url=$1
     local dir_name=$2
@@ -130,26 +139,6 @@ show_menu() {
 
         break
     done
-}
-
-ask_user() {
-    local prompt="${1:-Are you sure?}"
-    while true; do
-        read -rp "$prompt [y/n]: " yn
-        case "${yn,,}" in  # lowercase input for consistency
-            y|yes) info "Continuing..."; return 0 ;;
-            n|no)  info "Skiping..."; return 1 ;;
-            *)     info "Please answer y or n." ;;
-        esac
-    done
-}
-
-safe_download() {
-    local dest=$1 url=$2
-    if ! sudo wget -P "$dest" -q "$url"; then
-        error "Failed to download $url"
-        return 1
-    fi
 }
 
 # ======================
@@ -472,12 +461,8 @@ install_graphics() {
 
             status_step "Nvidia Settings"
             # ---------------------------
-            sudo rm -f /etc/modprobe.d/nvidia.conf
-            safe_download /etc/modprobe.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/nvidia.conf
-
-            sudo rm -f /etc/udev/rules.d/89-nvidia-pm.rules
-            safe_download /etc/udev/rules.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules	 
-
+            safe_download /etc/modprobe.d "conf" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/nvidia.conf
+            safe_download /etc/udev/rules.d "89-nvidia-pm.rules" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules	 
             sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
             # ---------------------------
             ;;
@@ -560,8 +545,7 @@ install_gaming() {
     status_step "Gamemode"
     #---------------------
     install_packages gamemode lib32-gamemode
-    sudo rm -f /etc/gamemode.ini
-    safe_download /etc https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
+    safe_download /etc "gamemode.ini" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
 
     if [[ "$CPU" == "amd" ]]; then
         # Enable EPP if supported
@@ -639,23 +623,18 @@ install_performance() {
     status "Installing System Performance Improvements"
 
     status_step "Systemd-Resolved as DNS Resolver"
-    # -------------------------------
-    sudo rm -f "/usr/lib/NetworkManager/conf.d/dns.conf"
-    safe_download /usr/lib/NetworkManager/conf.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/dns.conf
-    # -------------------------------    
+    safe_download /usr/lib/NetworkManager/conf.d "dns.conf" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/dns.conf
     
     status_step "Scheaduler SCX LAVD"
     # -------------------------------
     install_packages scx-scheds
-    sudo rm -f /etc/default/scx
-    safe_download /etc/default https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
+    safe_download /etc/default "scx" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
     sudo systemctl enable --now scx.service
     # -------------------------------
 
     status_step "Kernel Settings"
     # -----------------------------------
-    sudo rm -f /usr/lib/sysctl.d/79-kernel-settings.conf
-    safe_download /usr/lib/sysctl.d https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf
+    safe_download /usr/lib/sysctl.d "79-kernel-settings.conf" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf
     sudo sysctl --system >/dev/null 2>&1
     # -----------------------------------
     
