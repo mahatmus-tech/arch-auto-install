@@ -192,11 +192,11 @@ detect_system() {
 
     status_step "GPU"
     # ---------------
-    if lspci | grep -iq "nvidia"; then
+    if lspci | grep -i "nvidia"; then
         export GPU="nvidia"
-    elif lspci | grep -iq "amd"; then
+    elif lspci | grep -i "amd"; then
         export GPU="amd"
-    elif lspci | grep -iq "intel"; then
+    elif lspci | grep -i "intel"; then
         export GPU="intel"
     else
         export GPU="unknown"
