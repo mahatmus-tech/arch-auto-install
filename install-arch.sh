@@ -212,26 +212,6 @@ detect_system() {
 install_base() {
     status "Installing Base Requirements"
 
-    status_step "Default Directories"
-    mkdir -p "$HOME"/{Downloads,Documents,Pictures,Projects,.config,Apps,Scripts}
-
-    status_step "User Privileges"
-    sudo usermod -aG wheel,video,input,audio,network,lp,storage,users,rfkill,sys "$USER"    
-
-    status_step "Pacman Settings"
-    # ---------------------------
-    sudo sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
-    sudo sed -i 's/^#VerbosePkgLists/VerbosePkgLists/' /etc/pacman.conf
-    sudo sed -i 's/^#ILoveCandy/ILoveCandy/' /etc/pacman.conf    
-    sudo pacman -Syuq --needed --noconfirm >/dev/null
-
-    install_packages pacman-contrib
-    sudo systemctl enable --now paccache.timer    
-    # ---------------------------
-
-	status_step "YAY (AUR)"
-	clone_and_build "https://aur.archlinux.org/yay.git" "yay"
-	
     status_step "Base Packages"
     pkgs=(
         git 
@@ -246,6 +226,26 @@ install_base() {
         libinput
     )
     install_packages "${pkgs[@]}" 
+
+    status_step "Pacman Settings"
+    # ---------------------------
+    sudo sed -i 's/^#ParallelDownloads = 5/ParallelDownloads = 10/' /etc/pacman.conf
+    sudo sed -i 's/^#VerbosePkgLists/VerbosePkgLists/' /etc/pacman.conf
+    sudo sed -i 's/^#ILoveCandy/ILoveCandy/' /etc/pacman.conf    
+    sudo pacman -Syuq --needed --noconfirm >/dev/null
+
+    install_packages pacman-contrib
+    sudo systemctl enable --now paccache.timer    
+    # ---------------------------
+
+	status_step "YAY (AUR)"
+	clone_and_build "https://aur.archlinux.org/yay.git" "yay"
+
+    status_step "Default Directories"
+    mkdir -p "$HOME"/{Downloads,Documents,Pictures,Projects,.config,Apps,Scripts}
+
+    status_step "User Privileges"
+    sudo usermod -aG wheel,video,input,audio,network,lp,storage,users,rfkill,sys "$USER"        
 }
 
 install_firmware() {
