@@ -245,7 +245,7 @@ install_base() {
     mkdir -p "$HOME"/{Downloads,Documents,Pictures,Projects,.config,Apps,Scripts}
 
     status_step "User Privileges"
-    sudo usermod -aG wheel,video,input,audio,network,lp,storage,users,rfkill,sys "$USER"        
+    sudo usermod -aG wheel,video,input,audio,network,lp,storage,users,rfkill,sys "$USER"
 }
 
 install_firmware() {
@@ -460,9 +460,18 @@ install_graphics() {
 
             status_step "Nvidia Settings"
             # ---------------------------
+
+            # Include nvidia udev rule
+            safe_download /etc/udev/rules.d "89-nvidia-pm.rules" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules
+            sudo udevadm control --reload
+            sudo udevadm trigger
+
+            # Include modprobe nvidia config
             safe_download /etc/modprobe.d "conf" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/nvidia.conf
-            safe_download /etc/udev/rules.d "89-nvidia-pm.rules" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules	 
+
+            # Include nvidia do initframes modules
             sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
+            sudo mkinitcpio -P
             # ---------------------------
             ;;
     esac
