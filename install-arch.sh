@@ -513,9 +513,6 @@ install_graphics() {
         lib32-vulkan-mesa-layers
     )
     install_packages "${pkgs[@]}"
-
-    # Compatibilities
-    install_aur vk-hdr-layer-kwin6-git
             
     status_step "Wayland"
     pkgs=(
@@ -529,6 +526,9 @@ install_graphics() {
         xorg-xwayland
     )
     install_packages "${pkgs[@]}"
+
+    # HDR Compatible: Vulkan Wayland HDR WSI Layer (Xaver Hugl's fork for KWin 6)
+    install_aur vk-hdr-layer-kwin6-git    
 }
 
 install_gaming() {
