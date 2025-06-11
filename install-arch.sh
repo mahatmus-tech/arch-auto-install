@@ -515,7 +515,6 @@ install_graphics() {
     install_packages "${pkgs[@]}"
 
     # Compatibilities
-    install_packages glfw
     install_aur vk-hdr-layer-kwin6-git
             
     status_step "Wayland"
