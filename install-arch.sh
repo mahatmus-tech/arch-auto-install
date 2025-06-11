@@ -577,7 +577,7 @@ install_gaming() {
     status_step "Controller Support"
     # ------------------------------    
     status_step_info "PS5 DualSense"
-    install_aur dualsensectl-git
+    install_aur dualsensectl-git joystickwake
 
     #status_step_info "Xbox gamepad support" 
     #install_aur xpadneo-dkms-git
