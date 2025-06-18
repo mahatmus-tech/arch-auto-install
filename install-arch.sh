@@ -462,7 +462,7 @@ install_graphics() {
             # ---------------------------
 
             # Include nvidia udev rule
-            safe_download /etc/udev/rules.d "89-nvidia-pm.rules" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules
+            safe_download /usr/lib/udev/rules.d "89-nvidia-pm.rules" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/89-nvidia-pm.rules
             sudo udevadm control --reload
             sudo udevadm trigger
 
