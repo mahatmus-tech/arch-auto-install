@@ -536,20 +536,20 @@ install_gaming() {
 
     status_step "Gamemode"
     #---------------------
-    install_packages gamemode lib32-gamemode
-    safe_download /etc "gamemode.ini" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
+        install_packages gamemode lib32-gamemode
+        safe_download /etc "gamemode.ini" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
 
-    if [[ "$CPU" == "amd" ]]; then
-        # Enable EPP if supported
-        if [[ -f "/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference" ]]; then
-            sudo sed -i 's/;enable_amd_pstate_epp=1/enable_amd_pstate_epp=1/' /etc/gamemode.ini
-            sudo sed -i 's/;amd_epp_profile=performance/amd_epp_profile=performance/' /etc/gamemode.ini
-        else
-            sudo sed -i 's/;enable_amd_pstate=1/enable_amd_pstate=1/' /etc/gamemode.ini
+        if [[ "$CPU" == "amd" ]]; then
+            # Enable EPP if supported
+            if [[ -f "/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference" ]]; then
+                sudo sed -i 's/;enable_amd_pstate_epp=1/enable_amd_pstate_epp=1/' /etc/gamemode.ini
+                sudo sed -i 's/;amd_epp_profile=performance/amd_epp_profile=performance/' /etc/gamemode.ini
+            else
+                sudo sed -i 's/;enable_amd_pstate=1/enable_amd_pstate=1/' /etc/gamemode.ini
+            fi
         fi
-    fi
-    systemctl --user enable --now gamemoded.service
-    sudo usermod -aG gamemode "$USER"
+        systemctl --user enable --now gamemoded.service
+        sudo usermod -aG gamemode "$USER"
     #---------------------
 
     status_step "Gamescope"
@@ -557,33 +557,37 @@ install_gaming() {
         
     status_step "Mangohud"
     #---------------------
-    install_packages mangohud lib32-mangohud goverlay
+        install_packages mangohud lib32-mangohud goverlay
 
-    status_step_info "goverlay"
-    install_packages goverlay
+        status_step_info "goverlay"
+        install_packages goverlay
     #---------------------
 
     status_step "Steam"
     # ---------------------
-    install_packages steam
+        install_packages steam
 
-    status_step_info "protonup-qt"
-    install_aur protonup-qt 
-    
-    status_step_info "protontricks"
-    install_aur protontricks
+        status_step_info "protonup-qt"
+        install_aur protonup-qt 
+        
+        status_step_info "protontricks"
+        install_aur protontricks
     # ---------------------
 
     status_step "Controller Support"
     # ------------------------------    
-    status_step_info "PS5 DualSense"
-    install_aur dualsensectl-git joystickwake
+        status_step_info "PS5 DualSense"
+        install_aur dualsensectl-git joystickwake    
+        # Disable touchpad acting as mouse
+        safe_download /usr/lib/udev/rules.d "49-disable-touchpad-click-dualsense.rules" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/49-disable-touchpad-click-dualsense.rules
+        sudo udevadm control --reload
+        sudo udevadm trigger
 
-    #status_step_info "Xbox gamepad support" 
-    #install_aur xpadneo-dkms-git
+        #status_step_info "Xbox gamepad support" 
+        #install_aur xpadneo-dkms-git
 
-    #status_step_info "Xbox gamepad support with a USB wireless dongle"
-    # install_aur xone-dkms-git xone-dongle-firmware
+        #status_step_info "Xbox gamepad support with a USB wireless dongle"
+        # install_aur xone-dkms-git xone-dongle-firmware
     # ------------------------------    
 }
 
