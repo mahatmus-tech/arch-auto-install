@@ -1,5 +1,5 @@
-# List of scx_schedulers: scx_bpfland scx_central scx_flash scx_lavd scx_layered scx_nest scx_qmap scx_rlfifo scx_rustland scx_rusty scx_simple scx_userland scx_p2dq scx_tickless
+# Set the scx_scheduler
 SCX_SCHEDULER=scx_lavd
 
 # Set custom flags for scheduler
-#SCX_FLAGS='--autopilot'
+SCX_FLAGS='--autopilot'
