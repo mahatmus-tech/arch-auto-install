@@ -290,8 +290,11 @@ install_audio() {
         mpg123
         lib32-mpg123
         sof-firmware
+        realtime-privileges
     )    
     install_packages "${pkgs[@]}"
+
+    sudo gpasswd -a $USER realtime
 }
 
 install_multimedia() {
@@ -534,24 +537,6 @@ install_graphics() {
 install_gaming() {
     status "Installing Gaming Apps"
 
-    status_step "Gamemode"
-    #---------------------
-        install_packages gamemode lib32-gamemode
-        safe_download /etc "gamemode.ini" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/gamemode.ini
-
-        if [[ "$CPU" == "amd" ]]; then
-            # Enable EPP if supported
-            if [[ -f "/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference" ]]; then
-                sudo sed -i 's/;enable_amd_pstate_epp=1/enable_amd_pstate_epp=1/' /etc/gamemode.ini
-                sudo sed -i 's/;amd_epp_profile=performance/amd_epp_profile=performance/' /etc/gamemode.ini
-            else
-                sudo sed -i 's/;enable_amd_pstate=1/enable_amd_pstate=1/' /etc/gamemode.ini
-            fi
-        fi
-        systemctl --user enable --now gamemoded.service
-        sudo usermod -aG gamemode "$USER"
-    #---------------------
-
     status_step "Gamescope"
     install_packages gamescope
         
@@ -642,18 +627,37 @@ install_performance() {
 
     status_step "Systemd-Resolved as DNS Resolver"
     safe_download /usr/lib/NetworkManager/conf.d "dns.conf" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/dns.conf
-    
+
+    status_step "CPU Power Performance"
+    # ---------------------------------
+        install_packages cpupower
+        sudo cpupower frequency-set -g powersave >/dev/null
+
+        if [[ "$CPU" == "amd" ]]; then
+            # Enable EPP if supported
+            if [[ -f "/sys/devices/system/cpu/cpu0/cpufreq/energy_performance_preference" ]]; then
+                # Set AMD P-State Mode to AMD P-State EPP (Autonomous Mode)
+                echo active | sudo tee /sys/devices/system/cpu/amd_pstate/status >/dev/null
+                # Set AMD P-State EPP preference to Power
+                echo power | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference >/dev/null
+            else
+                # Set AMD P-State Mode to AMD P-State (Non-Autonomous Mode)
+                echo passive | sudo tee /sys/devices/system/cpu/amd_pstate/status >/dev/null
+            fi
+        fi
+    # ---------------------------------
+
     status_step "Scheaduler SCX LAVD"
     # -------------------------------
-    install_packages scx-scheds
-    safe_download /etc/default "scx" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
-    sudo systemctl enable --now scx.service
+        install_packages scx-scheds
+        safe_download /etc/default "scx" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
+        sudo systemctl enable --now scx.service
     # -------------------------------
 
     status_step "Kernel Settings"
     # -----------------------------------
-    safe_download /usr/lib/sysctl.d "79-kernel-settings.conf" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf
-    sudo sysctl --system >/dev/null 2>&1
+        safe_download /usr/lib/sysctl.d "79-kernel-settings.conf" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf
+        sudo sysctl --system >/dev/null 2>&1
     # -----------------------------------
     
     if [[ "$SSD_OR_NVME_DISK" == "true" && "$ROOT_FS_TYPE" == "ext4" ]]; then
