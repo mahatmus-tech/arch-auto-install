@@ -423,7 +423,7 @@ install_bluetooth() {
         bluez-plugins
     )
     install_packages "${pkgs[@]}"
-    sudo systemctl enable --now bluetooth.service 2>&1
+    sudo systemctl enable --now bluetooth.service >/dev/null 2>&1
 }
 
 install_graphics() {
@@ -457,7 +457,7 @@ install_graphics() {
             status_step "Nvidia Driver"
 
 			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
-                            "{ printf "2\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm >/dev/null 2>&1"
+                            "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm >/dev/null 2>&1"
 
             install_packages xorg-server xorg-xinit xorg-xkill libva-nvidia-driver
 
