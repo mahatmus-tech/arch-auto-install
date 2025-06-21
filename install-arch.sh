@@ -456,10 +456,22 @@ install_graphics() {
         "nvidia")            
             status_step "Nvidia Driver"
 
-			clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
-                            "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm >/dev/null 2>&1"
+			#clone_and_build "https://github.com/Frogging-Family/nvidia-all.git" "nvidia-all" \
+            #                "{ printf "1\n"; printf "1\n"; printf "N\n"; } | makepkg -si --needed --noconfirm >/dev/null 2>&1"
 
-            install_packages xorg-server xorg-xinit xorg-xkill libva-nvidia-driver
+			pkgs=(
+                nvidia-open-dkms
+                nvidia-settings
+                opencl-nvidia
+                lib32-opencl-nvidia
+                nvidia-utils
+                lib32-nvidia-utils
+                xorg-server
+                xorg-xinit
+                xorg-xkill
+                libva-nvidia-driver                
+            )
+            install_packages "${pkgs[@]}" 
 
             status_step "Nvidia Settings"
             # ---------------------------
