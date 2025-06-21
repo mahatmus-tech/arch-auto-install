@@ -235,7 +235,7 @@ install_base() {
     sudo pacman -Syuq --needed --noconfirm >/dev/null
 
     install_packages pacman-contrib
-    sudo systemctl enable --now paccache.timer    
+    sudo systemctl enable --now paccache.timer >/dev/null
     # ---------------------------
 
 	status_step "YAY (AUR)"
@@ -294,7 +294,7 @@ install_audio() {
     )    
     install_packages "${pkgs[@]}"
 
-    sudo gpasswd -a $USER realtime
+    sudo gpasswd -a $USER realtime >/dev/null
 }
 
 install_multimedia() {
@@ -406,7 +406,7 @@ install_firewall() {
     status_step "UFW"
     install_packages ufw
     
-    sudo systemctl enable --now ufw.service
+    sudo systemctl enable --now ufw.service >/dev/null
     sudo ufw enable >/dev/null
 }
 
