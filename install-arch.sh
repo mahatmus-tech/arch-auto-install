@@ -77,9 +77,9 @@ install_packages() {
 install_aur() {
     local pkg
     for pkg in "$@"; do
-        if ! yay -Q "$pkg" &>/dev/null; then
+        if ! paru -Q "$pkg" &>/dev/null; then
             sudo -v
-            yay -S --needed --noconfirm --quiet "$pkg" >/dev/null 2>&1 || {
+            paru -S --needed --noconfirm --quiet "$pkg" >/dev/null 2>&1 || {
                 warning "Failed to install $pkg. Continuing..."
                 return 1
             }
@@ -238,8 +238,8 @@ install_base() {
     sudo systemctl enable --now paccache.timer >/dev/null
     # ---------------------------
 
-	status_step "YAY (AUR)"
-	clone_and_build "https://aur.archlinux.org/yay.git" "yay"
+	status_step "Paru (AUR)"
+	clone_and_build "https://aur.archlinux.org/paru.git" "paru"
 
     status_step "Default Directories"
     mkdir -p "$HOME"/{Downloads,Documents,Pictures,Projects,.config,Apps,Scripts}
@@ -486,7 +486,7 @@ install_graphics() {
 
             # Include nvidia do initframes modules
             sudo sed -i -E "s|^MODULES=.*|MODULES=( nvidia nvidia_modeset nvidia_uvm nvidia_drm )|" /etc/mkinitcpio.conf
-            sudo mkinitcpio -P
+            sudo mkinitcpio -P >/dev/null 2>&1
             # ---------------------------
             ;;
     esac

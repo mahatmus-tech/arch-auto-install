@@ -71,9 +71,9 @@ install_packages() {
 install_aur() {
     local pkg
     for pkg in "$@"; do
-        if ! yay -Q "$pkg" &>/dev/null; then
+        if ! paru -Q "$pkg" &>/dev/null; then
             sudo -v
-            yay -S --needed --noconfirm --quiet "$pkg" >/dev/null 2>&1 || {
+            paru -S --needed --noconfirm --quiet "$pkg" >/dev/null 2>&1 || {
                 warning "Failed to install $pkg. Continuing..."
                 return 1
             }
@@ -169,7 +169,7 @@ install_hyprland() {
 	status "Installing Hyprland"
 
  	# Update packages
-	yay -Syuq --needed --noconfirm >/dev/null
+	paru -Syuq --needed --noconfirm >/dev/null
 
 	status_step "pacman package"
 	install_packages hyprland
