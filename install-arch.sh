@@ -663,7 +663,7 @@ install_performance() {
     # -------------------------------
         install_packages scx-scheds
         safe_download /etc "scx_loader.toml" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx_loader.toml
-        sudo systemctl enable --now scx_loarder.service
+        sudo systemctl enable --now scx_loader.service
         # https://github.com/sched-ext/scx/blob/main/rust/scx_loader/configuration.md
     # -------------------------------
 
