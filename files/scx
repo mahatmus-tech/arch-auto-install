@@ -1,5 +1,0 @@
-# Set the scx_scheduler
-SCX_SCHEDULER=scx_lavd
-
-# Set custom flags for scheduler
-SCX_FLAGS='--autopilot'

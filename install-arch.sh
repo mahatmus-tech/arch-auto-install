@@ -255,8 +255,8 @@ install_firmware() {
     	install_packages linux-zen-headers
     fi	
 
-    status_step "mkinitcpio"
-    install_aur mkinitcpio-firmware
+    status_step "linux-firmware"
+    install_packages linux-firmware
     
     #clone_and_build "https://github.com/mahatmus-tech/uPD72020x-Firmware.git" "uPD72020x-Firmware"
 }
@@ -643,7 +643,7 @@ install_performance() {
     status_step "CPU Power Performance"
     # ---------------------------------
         install_packages cpupower
-        sudo cpupower frequency-set -g powersave >/dev/null
+        sudo cpupower frequency-set -g performance >/dev/null
 
         if [[ "$CPU" == "amd" ]]; then
             # Enable EPP if supported
@@ -659,11 +659,12 @@ install_performance() {
         fi
     # ---------------------------------
 
-    status_step "Scheaduler SCX LAVD"
+    status_step "Scheaduler SCX BPFLAND Gaming"
     # -------------------------------
         install_packages scx-scheds
-        safe_download /etc/default "scx" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx
-        sudo systemctl enable --now scx.service
+        safe_download /etc "scx_loader.toml" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/scx_loader.toml
+        sudo systemctl enable --now scx_loarder.service
+        # https://github.com/sched-ext/scx/blob/main/rust/scx_loader/configuration.md
     # -------------------------------
 
     status_step "Kernel Settings"
