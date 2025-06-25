@@ -642,8 +642,8 @@ install_performance() {
 
     status_step "CPU Power Performance"
     # ---------------------------------
-        install_packages cpupower
-        sudo cpupower frequency-set -g performance >/dev/null
+        #install_packages cpupower
+        #sudo cpupower frequency-set -g performance >/dev/null
 
         if [[ "$CPU" == "amd" ]]; then
             # Enable EPP if supported
