@@ -592,7 +592,7 @@ install_apps() {
     status "Installing Recomended Wayland Apps"
 
     status_step "Terminal & Editor"
-   	install_packages kitty man-db man-pages fastfetch jq 
+   	install_packages kitty man-db man-pages fastfetch jq lsd
 
     status_step "Linux Resource Monitors"
     install_packages htop nvtop btop inxi duf
