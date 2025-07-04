@@ -652,7 +652,8 @@ install_performance() {
                 echo active | sudo tee /sys/devices/system/cpu/amd_pstate/status >/dev/null
                 # Set AMD P-State EPP preference to Power
                 echo power | sudo tee /sys/devices/system/cpu/cpu*/cpufreq/energy_performance_preference >/dev/null
-            else
+            fi
+            if [[ -f "/sys/devices/system/cpu/amd_pstate/status" ]]; then
                 # Set AMD P-State Mode to AMD P-State (Non-Autonomous Mode)
                 echo passive | sudo tee /sys/devices/system/cpu/amd_pstate/status >/dev/null
             fi
@@ -669,8 +670,10 @@ install_performance() {
 
     status_step "Kernel Settings"
     # -----------------------------------
-        safe_download /usr/lib/sysctl.d "79-kernel-settings.conf" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf
+        safe_download /usr/lib/sysctl.d "79-kernel-settings.conf" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/79-kernel-settings.conf        
         sudo sysctl --system >/dev/null 2>&1
+        safe_download /etc/modules-load.d "ntsync.conf" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/ntsync.conf
+        sudo modprobe -a ntsync >/dev/null 2>&1
     # -----------------------------------
     
     if [[ "$SSD_OR_NVME_DISK" == "true" && "$ROOT_FS_TYPE" == "ext4" ]]; then
