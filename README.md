@@ -1,7 +1,3 @@
-Certainly! Here's an improved version of your project's README, incorporating clearer instructions, enhanced formatting, and additional details for better clarity and usability:
-
----
-
 # Arch Linux Automated Installation
 
 This project automates the installation of Arch Linux with a customized configuration, including Hyprland, Nvidia drivers, and gaming optimizations.
