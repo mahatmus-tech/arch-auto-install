@@ -64,7 +64,3 @@ This project automates the installation of Arch Linux with a customized configur
    env -u SDL_VIDEODRIVER gamemoderun gamescope --hdr-enabled -O HDMI-A-1 -f -W 3840 -H 2160 -w 3840 -h 2160 -r 120 --mangoapp -- env DXVK_HDR=1 %command%
    ```      
 5. **Run your game**
-
----
-
-Feel free to further customize this README based on your project's specific requirements or any additional information you'd like to include. 
