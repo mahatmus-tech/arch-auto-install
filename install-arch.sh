@@ -637,8 +637,8 @@ install_apps() {
 install_performance() {
     status "Installing System Performance Improvements"
 
-    status_step "Systemd-Resolved as DNS Resolver"
-    safe_download /usr/lib/NetworkManager/conf.d "dns.conf" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/dns.conf
+    #status_step "Systemd-Resolved as DNS Resolver"
+    #safe_download /usr/lib/NetworkManager/conf.d "dns.conf" https://raw.githubusercontent.com/mahatmus-tech/arch-auto-install/refs/heads/main/files/dns.conf
 
     status_step "CPU Power Performance"
     # ---------------------------------

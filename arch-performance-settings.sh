@@ -321,6 +321,10 @@ EOF
 # Writes /etc/modprobe.d/nvidia.conf directly (updating it in place if it
 # already exists, e.g. from the driver install) instead of layering a second
 # nvidia-custom.conf file that could disagree with it.
+# Also grants $USER a scoped NOPASSWD sudo rule for `nvidia-smi -lgc`/`-rgc`
+# (GPU clock lock/reset, used by game-boost below): the driver checks
+# uid==0 directly for these, not a Linux capability — setcap on nvidia-smi
+# does nothing (confirmed empirically), unlike most real ELF binaries.
 # =============================================================================
 apply_nvidia_settings() {
     status "Phase 5 — NVIDIA Driver Settings"
@@ -372,6 +376,20 @@ EOF
 
     status_step "Enabling nvidia-persistenced.service"
     sudo systemctl enable --now nvidia-persistenced.service
+
+    status_step "Allowing $USER to lock/reset GPU clocks without a password prompt"
+    local sudoers_tmp
+    sudoers_tmp=$(mktemp)
+    cat > "$sudoers_tmp" << EOF
+$USER ALL=(root) NOPASSWD: /usr/bin/nvidia-smi -lgc *, /usr/bin/nvidia-smi -rgc
+EOF
+    if sudo visudo -cf "$sudoers_tmp" &>/dev/null; then
+        sudo install -m 0440 -o root -g root "$sudoers_tmp" /etc/sudoers.d/99-gaming-nvidia-clock
+        status_step_info "GPU clock-lock sudo rule installed"
+    else
+        warning "Generated sudoers rule failed validation, skipping GPU clock-lock permission"
+    fi
+    rm -f "$sudoers_tmp"
 }
 
 # =============================================================================
@@ -468,6 +486,15 @@ EOF
 # cgroup delegation enables proper resource management for gamescope,
 # pressure-vessel (Steam runtime) and scx_loader within user sessions.
 # Reduced timeouts: faster service start/stop during gaming sessions.
+# Also raises RLIMIT_NICE for user@.service itself (LimitNICE=30 → nice
+# floor 20-30 = -10), so game-boost's `renice -n -10` below can actually
+# work. This must live HERE — a system-level drop-in on user@.service — not
+# in /etc/systemd/user.conf.d/ (DefaultLimitNICE there only sets a default
+# for units the --user manager spawns, and per systemd-user.conf(5) is
+# explicitly "not applied to the service manager process... itself"; a
+# process can never grant a child a hard rlimit above its own, confirmed
+# empirically). Only takes effect once user@.service restarts fresh, i.e.
+# after a reboot — it survives a plain logout/login of the same user.
 # =============================================================================
 setup_systemd() {
     status "Phase 8 — Systemd Limits + cgroup Delegation"
@@ -495,6 +522,12 @@ EOF
     sudo tee /etc/systemd/system/user@.service.d/delegate.conf > /dev/null << 'EOF'
 [Service]
 Delegate=cpu cpuset io memory pids
+EOF
+
+    status_step "Raising RLIMIT_NICE ceiling for user@.service (nice floor -10, for game-boost)"
+    sudo tee /etc/systemd/system/user@.service.d/50-gaming-nice.conf > /dev/null << 'EOF'
+[Service]
+LimitNICE=30
 EOF
 
     status_step "Journald size cap"
@@ -553,17 +586,39 @@ EOF
 # duplicated across multiple launch scripts. Meant to be used either as a
 # Steam launch-option prefix ("game-boost %command%") or a standalone launcher
 # prefix on any DE/WM. It:
-#   1. Reasserts the scx_loader "Gaming" mode (scx_bpfland) on entry — GameMode
+#   1. Renices the game process itself to -10 (renice -p $$, before any exec
+#      — the PID survives every exec below it, so the renice sticks to the
+#      eventual game process). Needs the RLIMIT_NICE ceiling raised by
+#      setup_systemd's user@.service.d/50-gaming-nice.conf above; silently
+#      no-ops otherwise. Deliberately NOT done via setcap on this file: file
+#      capabilities are never honored on a script with a shebang — the
+#      kernel re-execs /bin/bash for scripts, so it's bash's own (absent)
+#      capabilities that would apply, not this file's. Also NOT done via
+#      `systemd-run --scope --user -p Nice=-10`: transient scope units
+#      categorically reject all ExecContext/resource-control properties
+#      (confirmed — a scope only groups an already-running process, it never
+#      execs one), and the --service alternative doesn't inherit the
+#      caller's environment, which would silently drop every env var a
+#      caller exports before invoking game-boost.
+#   2. Reasserts the scx_loader "Gaming" mode (scx_bpfland) on entry — GameMode
 #      used to do this via desiredgov; this replaces GameMode with scx_loader,
 #      so the equivalent reinforcement is a SwitchScheduler D-Bus call.
-#   2. Elevates the power profile to performance and inhibits sleep/idle
+#   3. Locks the GPU to its max supported graphics clock (nvidia-smi -lgc),
+#      so it doesn't downclock during lighter loads (menus, cutscenes,
+#      CPU-bound scenes) — same intent as GameMode's optional NVIDIA
+#      integration. Needs the NOPASSWD sudo rule installed by
+#      apply_nvidia_settings above; `sudo -n` never blocks on a password
+#      prompt if that rule is missing, it just no-ops. Reverted by a
+#      backgrounded watcher, keyed off this script's own PID (unchanged by
+#      exec), once the wrapped process exits.
+#   4. Elevates the power profile to performance and inhibits sleep/idle
 #      (systemd-inhibit --what=sleep:idle:handle-lid-switch), held only for the
 #      lifetime of the wrapped process, reverting automatically when it exits.
-# Both steps degrade gracefully (|| true / command -v checks) if scx_loader or
-# power-profiles-daemon aren't installed. No monitor/workspace switching here
-# — that's DE-specific and layered on top by callers that need it (e.g.
-# tv-monitor/main-monitor in install-omarchy.sh end with `exec game-boost "$@"`
-# after doing their own Hyprland monitor switch).
+# All steps degrade gracefully (|| true / command -v checks) if scx_loader,
+# power-profiles-daemon, or nvidia-smi aren't installed/configured. No
+# monitor/workspace switching here — that's DE-specific and layered on top by
+# callers that need it (e.g. tv-monitor/main-monitor in install-omarchy.sh end
+# with `exec game-boost "$@"` after doing their own Hyprland monitor switch).
 # =============================================================================
 install_game_boost() {
     status "Phase 10 — game-boost (game-launch performance wrapper)"
@@ -576,7 +631,20 @@ install_game_boost() {
 # Usage: game-boost %command%   (Steam launch options)
 #        game-boost mygame      (standalone)
 
+renice -n -10 -p $$ &>/dev/null || true
+
 busctl call org.scx.Loader /org/scx/Loader org.scx.Loader SwitchScheduler su "scx_bpfland" 1 &>/dev/null || true
+
+if command -v nvidia-smi &>/dev/null; then
+	GPU_MAX_CLOCK=$(nvidia-smi --query-gpu=clocks.max.graphics --format=csv,noheader,nounits 2>/dev/null | tr -d ' ')
+	if [ -n "$GPU_MAX_CLOCK" ] && sudo -n nvidia-smi -lgc "${GPU_MAX_CLOCK},${GPU_MAX_CLOCK}" &>/dev/null; then
+		GPU_CLOCK_PID=$$
+		( while kill -0 "$GPU_CLOCK_PID" 2>/dev/null; do sleep 10; done
+		  sudo -n nvidia-smi -rgc &>/dev/null || true
+		) &
+		disown
+	fi
+fi
 
 if command -v powerprofilesctl &>/dev/null && powerprofilesctl list | grep -q 'performance:'; then
 	if command -v systemd-inhibit &>/dev/null; then
@@ -615,12 +683,12 @@ PHASE_DESCS=(
     "linux-cachyos Kernel (BORE scheduler)"
     "scx Scheduler (scx_bpfland Gaming Mode + polkit rule)"
     "Kernel sysctl Settings (memory/CPU/network tuning, ntsync, watchdog blacklist)"
-    "NVIDIA Driver Settings (auto-skipped if no NVIDIA GPU detected)"
+    "NVIDIA Driver Settings + GPU clock-lock sudo rule (auto-skipped if no NVIDIA GPU detected)"
     "I/O Scheduler udev Rules (NVMe/SATA/HDD) + fstrim.timer"
     "Memory: zram + Transparent Hugepages (enabled=madvise)"
-    "Systemd Limits + cgroup Delegation"
+    "Systemd Limits + cgroup Delegation + nice ceiling for game-boost"
     "Audio Realtime Permissions"
-    "game-boost (game-launch performance wrapper)"
+    "game-boost (renice -10, scx Gaming mode, GPU clock lock, performance profile)"
 )
 
 # =============================================================================
