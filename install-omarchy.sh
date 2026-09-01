@@ -370,6 +370,86 @@ setup_voxtype() {
 }
 
 # =============================================================================
+# OMARCHY EXTRA 4 — Cliamp (YouTube Music player)
+# Installs cliamp (retro TUI music player, AUR) plus yt-dlp and
+# python-secretstorage (required so yt-dlp can pull the OS-keyring key and
+# decrypt Chrome's v11 cookies — without it, cookie-based auth fails silently
+# with "no key found"/"failed to decrypt cookie" instead of erroring out).
+#
+# Configures cliamp's [ytmusic] section for a Premium account:
+#   - cookies_from: targets a specific Chrome profile (adjust CHROME_PROFILE
+#     below if your YT Music login lives in a different profile — check with
+#     `python3 -c "import json; d=json.load(open('$HOME/.config/google-chrome/Local State'));
+#     [print(k, v['name']) for k,v in d['profile']['info_cache'].items()]"`).
+#     Requires the `+gnomekeyring` keyring suffix on this system.
+#   - client_id/client_secret: a Google Cloud OAuth "Desktop app" client with
+#     YouTube Data API v3 enabled — required for the ytmusic provider to show
+#     up / browse your library at all; cookies alone are not enough. An
+#     existing GCP project (e.g. one already used for Calendar) can be
+#     reused — just enable the API and add a new OAuth client to it. Prompted
+#     interactively here (never hardcoded) since this repo is public.
+# =============================================================================
+setup_cliamp_ytmusic() {
+    status "Omarchy Extra 4 — Cliamp (YouTube Music player)"
+
+    local CHROME_PROFILE="Profile 3"
+
+    status_step "Installing cliamp (AUR)"
+    yay -S --needed --noconfirm cliamp || warning "Failed to install cliamp"
+
+    status_step "Installing yt-dlp + python-secretstorage (Chrome cookie decryption)"
+    install_packages yt-dlp python-secretstorage
+
+    local CONFIG_DIR="$HOME/.config/cliamp"
+    local CONFIG="$CONFIG_DIR/config.toml"
+    mkdir -p "$CONFIG_DIR"
+    touch "$CONFIG"
+
+    if grep -q '^\s*client_id\s*=' "$CONFIG" 2>/dev/null; then
+        status_step "[ytmusic] already configured, skipping"
+    else
+        status_step "Configuring [ytmusic] (cookies: $CHROME_PROFILE)"
+
+        # Drop any partial [ytmusic] section so this stays safe to re-run
+        awk '
+            /^\[ytmusic\]/ { skip=1; next }
+            /^\[/ { skip=0 }
+            skip { next }
+            { print }
+        ' "$CONFIG" > "$CONFIG.tmp" && mv "$CONFIG.tmp" "$CONFIG"
+
+        echo -e "${YELLOW}cliamp needs a Google Cloud OAuth client (Desktop app, YouTube Data API v3 enabled) to browse YT Music.${NC}"
+        echo -e "${YELLOW}Reuse an existing GCP project if you have one — enable the API + add a new client there.${NC}"
+        echo -e "${YELLOW}Console: https://console.cloud.google.com/apis/credentials${NC}"
+        read -rp "  YT Music OAuth client_id (blank to skip): " YTMUSIC_CLIENT_ID
+        local YTMUSIC_CLIENT_SECRET=""
+        if [[ -n "$YTMUSIC_CLIENT_ID" ]]; then
+            read -rsp "  YT Music OAuth client_secret: " YTMUSIC_CLIENT_SECRET
+            echo
+        fi
+
+        {
+            echo ""
+            echo "[ytmusic]"
+            echo "enabled = true"
+            echo "cookies_from = \"chrome+gnomekeyring:$CHROME_PROFILE\""
+            if [[ -n "$YTMUSIC_CLIENT_ID" ]]; then
+                echo "client_id = \"$YTMUSIC_CLIENT_ID\""
+                echo "client_secret = \"$YTMUSIC_CLIENT_SECRET\""
+            fi
+        } >> "$CONFIG"
+
+        chmod 600 "$CONFIG"
+
+        if [[ -z "$YTMUSIC_CLIENT_ID" ]]; then
+            warning "No OAuth client entered — add client_id/client_secret to $CONFIG later, or the ytmusic provider won't authenticate."
+        fi
+    fi
+
+    status_step_info "cliamp ready — run 'cliamp', pick the ytmusic provider, and authorize in the browser on first launch"
+}
+
+# =============================================================================
 # MAIN
 # =============================================================================
 main() {
@@ -377,12 +457,13 @@ main() {
     echo -e "${BLUE}This script applies personal performance tweaks on top of Omarchy.${NC}"
     echo -e "${BLUE}Run after a fresh omarchy install. Safe to re-run (idempotent).${NC}"
 
-    local -a all_funcs=("${PHASE_FUNCS[@]}" setup_gaming_scripts setup_hyprland_gaming setup_voxtype)
+    local -a all_funcs=("${PHASE_FUNCS[@]}" setup_gaming_scripts setup_hyprland_gaming setup_voxtype setup_cliamp_ytmusic)
     local -a all_descs=(
         "${PHASE_DESCS[@]}"
         "Gaming Scripts (tv-monitor/main-monitor/toggle-hdmi, Hyprland-specific)"
         "Hyprland Gaming Config (tearing, window rules, HDMI keybinds, gamescope)"
         "Voxtype (Voice Typing, AUR + GPU acceleration)"
+        "Cliamp (YouTube Music player, AUR + yt-dlp + OAuth setup)"
     )
 
     local -a chosen=()
